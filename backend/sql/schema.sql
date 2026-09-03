@@ -129,6 +129,29 @@ CREATE TABLE order_details (
     FOREIGN KEY (delivery_id) REFERENCES delivery_details(delivery_id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
+-- =========================================================
+-- 10. ORDER_ITEMS
+-- =========================================================
+
+CREATE TABLE order_items (
+    order_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    supplier_price_id INT NOT NULL, -- to know which supplier price you took (Makro/Boxer)
+    quantity INT NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES order_details(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
+    FOREIGN KEY (supplier_price_id) REFERENCES supplier_prices(supplier_price_id) ON DELETE RESTRICT
+);
+
+ALTER TABLE order_details
+ADD COLUMN user_id INT,
+ADD COLUMN stokvel_id INT,
+ADD FOREIGN KEY (user_id) REFERENCES users(user_id),
+ADD FOREIGN KEY (stokvel_id) REFERENCES stokvels(stokvel_id);
+
 INSERT INTO users (full_name, email, password, phone_number, role) VALUES
 ('Nosipho Makeleni', 'nosipho@gmail.com', 'password123', '0612345678', 'chairperson'),
 ('Thabisa Mkhonto', 'thabisa@gmail.com', 'password123', '0623456789', 'member'),
@@ -224,3 +247,8 @@ INSERT INTO order_details (card_id, delivery_id, order_date, total_amount, order
 (2, 5, '2025-08-27 16:00:00', 750.75, 'Cancelled'),
 (2, NULL, '2025-08-26 12:00:00', 300.00, 'Pending'),
 (1, 2, '2025-08-30 09:30:00', 1500.00, 'Pending');
+
+INSERT INTO order_items (order_id, product_id, supplier_price_id, quantity, unit_price, subtotal) VALUES
+(1, 1, 3, 10, 87.99, 879.90), (1, 3, 9, 5, 76.99, 307.96);
+-- Update the total to match the items
+UPDATE order_details SET total_amount = (SELECT SUM(subtotal) FROM order_items WHERE order_id = 1) WHERE order_id = 1;
