@@ -16,3 +16,6 @@ Thumbs.db
 # logs
 *.log
 npm-debug.log*
+
+#ca.pem
+backend/config/ca.pem
