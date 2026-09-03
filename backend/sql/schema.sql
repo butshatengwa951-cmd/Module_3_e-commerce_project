@@ -252,3 +252,22 @@ INSERT INTO order_items (order_id, product_id, supplier_price_id, quantity, unit
 (1, 1, 3, 10, 87.99, 879.90), (1, 3, 9, 5, 76.99, 307.96);
 -- Update the total to match the items
 UPDATE order_details SET total_amount = (SELECT SUM(subtotal) FROM order_items WHERE order_id = 1) WHERE order_id = 1;
+
+-- Alterations made to database
+ALTER TABLE stokvels
+DROP FOREIGN KEY stokvels_ibfk_1;
+
+ALTER TABLE stokvels
+DROP COLUMN chairperson_id;
+
+UPDATE users
+SET role = 'member'
+WHERE user_id = 1;
+
+UPDATE users
+SET role = 'member'
+WHERE user_id = 6;
+
+UPDATE users
+SET role = 'member'
+WHERE user_id = 11;
