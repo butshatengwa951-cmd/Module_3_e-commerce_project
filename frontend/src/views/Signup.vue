@@ -119,5 +119,9 @@ onMounted(() => {
     </form>
     <p v-if="successMessage">{{ successMessage }}</p>
     <p v-if="errorMessage">{{ errorMessage }}</p>
+    <p>
+      Already have an account?
+      <router-link to="/login">Login</router-link>
+    </p>
   </main>
 </template>

@@ -1,7 +1,7 @@
 <script setup>
-import Signup from "./views/Signup.vue";
+import Login from "./views/Login.vue";
 </script>
 
 <template>
-  <Signup />
+  <router-view />
 </template>

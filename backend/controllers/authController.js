@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 import pool from "../config/db.js";
 
@@ -12,9 +13,9 @@ import {
 } from "../models/Stokvel.js";
 
 import {
-    createStokvelMembership
+    createStokvelMembership,
+    findMembershipByUserId
 } from "../models/StokvelMem.js";
-
 
 export const signup = async (req, res) => {
     let connection;
@@ -197,5 +198,118 @@ export const signup = async (req, res) => {
         if (connection) {
             connection.release();
         }
+    }
+};
+
+export const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // ----------------------------------------
+        // 1. Validate required fields
+        // ----------------------------------------
+
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Email and password are required."
+            });
+        }
+
+        // ----------------------------------------
+        // 2. Clean email
+        // ----------------------------------------
+
+        const cleanEmail = email.trim().toLowerCase();
+
+        // ----------------------------------------
+        // 3. Find user
+        // ----------------------------------------
+
+        const user = await findUserByEmail(cleanEmail);
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email or password."
+            });
+        }
+
+        // ----------------------------------------
+        // 4. Check password
+        // ----------------------------------------
+
+        const passwordMatches = await bcrypt.compare(
+            password,
+            user.password
+        );
+
+        if (!passwordMatches) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email or password."
+            });
+        }
+
+        // ----------------------------------------
+        // 5. Check Stokvel membership
+        // ----------------------------------------
+
+        const membership = await findMembershipByUserId(
+            user.user_id
+        );
+
+        if (!membership) {
+            return res.status(403).json({
+                success: false,
+                message: "You must be a member of a Stokvel to log in."
+            });
+        }
+
+        // ----------------------------------------
+        // 6. Create JWT
+        // ----------------------------------------
+
+        const token = jwt.sign(
+            {
+                user_id: user.user_id,
+                email: user.email,
+                role: user.role
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "1d"
+            }
+        );
+
+        // ----------------------------------------
+        // 7. Successful login response
+        // ----------------------------------------
+
+        return res.status(200).json({
+            success: true,
+            message: "Login successful.",
+            token,
+            user: {
+                user_id: user.user_id,
+                full_name: user.full_name,
+                email: user.email,
+                phone_number: user.phone_number,
+                role: user.role
+            },
+            stokvel: {
+                stokvel_id: membership.stokvel_id,
+                stokvel_name: membership.stokvel_name
+            }
+        });
+
+    } catch (error) {
+        console.error("Login failed!");
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Login failed."
+        });
     }
 };
