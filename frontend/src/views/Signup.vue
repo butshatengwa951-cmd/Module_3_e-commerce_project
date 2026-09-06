@@ -86,10 +86,7 @@ onMounted(() => {
 <template>
   <main class="signup-page">
     <!-- Animated background lights -->
-    <div class="background-orb orb-one"></div>
-    <div class="background-orb orb-two"></div>
-    <div class="background-orb orb-three"></div>
-    <div class="background-orb orb-four"></div>
+    <PageBackground />
 
     <!-- Grain overlay -->
     <div class="page-grain"></div>

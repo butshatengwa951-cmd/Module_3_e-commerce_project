@@ -3,6 +3,7 @@ import { ref } from "vue";
 import GlassCard from "../components/GlassCard.vue";
 import { login } from "../services/api.js";
 import { useTheme } from "../composables/useTheme.js";
+import PageBackground from "../components/PageBackground.vue";
 
 const { isDark } = useTheme();
 
@@ -64,11 +65,7 @@ const handleLogin = async () => {
 <template>
   <main class="login-page">
     <!-- Background -->
-    <div class="background-orb orb-one"></div>
-    <div class="background-orb orb-two"></div>
-    <div class="background-orb orb-three"></div>
-
-    <div class="page-grain"></div>
+    <PageBackground />
 
     <!-- Branding -->
     <header class="page-brand">
@@ -229,11 +226,11 @@ const handleLogin = async () => {
 
   padding: 80px 20px;
 
-  background: linear-gradient(135deg, #312b50, #795d89, #c2583d);
+  background: var(--sw-page-gradient);
 
   color: white;
 
-  font-family: "DM Mono", monospace;
+  font-family: var(--sw-font-body);
 }
 
 /* ========================================
