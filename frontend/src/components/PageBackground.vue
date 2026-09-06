@@ -1,11 +1,8 @@
 <template>
   <div class="page-background" aria-hidden="true">
     <div class="background-orb orb-gold"></div>
-
     <div class="background-orb orb-orange"></div>
-
     <div class="background-orb orb-purple"></div>
-
     <div class="background-orb orb-lavender"></div>
 
     <div class="page-grain"></div>
@@ -15,17 +12,19 @@
 <style scoped>
 .page-background {
   position: absolute;
-
   inset: 0;
+
+  z-index: 0;
 
   overflow: hidden;
 
   pointer-events: none;
 }
 
-/* ========================================
-   SHARED ORB
-   ======================================== */
+
+/* =========================================================
+   ORBS
+   ========================================================= */
 
 .background-orb {
   position: absolute;
@@ -39,57 +38,65 @@
   opacity: var(--sw-orb-opacity);
 }
 
-/* ========================================
-   GOLD
-   ======================================== */
+
+/* Gold */
 
 .orb-gold {
-  width: 40vw;
-  height: 40vw;
+  width: 38vw;
+  height: 38vw;
 
-  top: -16%;
-  left: -12%;
+  top: -14%;
+  left: -10%;
 
-  background: var(--sw-gold-500);
+  background: var(--sw-orb-gold);
 
-  animation: orbGold 16s ease-in-out infinite;
+  animation:
+    pageOrbGold
+    16s
+    ease-in-out
+    infinite;
 }
 
-/* ========================================
-   ORANGE
-   ======================================== */
+
+/* Orange */
 
 .orb-orange {
-  width: 36vw;
-  height: 36vw;
+  width: 34vw;
+  height: 34vw;
 
-  top: 10%;
-  right: -14%;
+  top: 8%;
+  right: -12%;
 
-  background: var(--sw-orange-600);
+  background: var(--sw-orb-orange);
 
-  animation: orbOrange 19s ease-in-out infinite;
+  animation:
+    pageOrbOrange
+    19s
+    ease-in-out
+    infinite;
 }
 
-/* ========================================
-   PURPLE
-   ======================================== */
+
+/* Purple */
 
 .orb-purple {
-  width: 41vw;
-  height: 41vw;
+  width: 42vw;
+  height: 42vw;
 
-  bottom: -24%;
-  left: 24%;
+  bottom: -22%;
+  left: 22%;
 
-  background: var(--sw-purple-700);
+  background: var(--sw-orb-purple);
 
-  animation: orbPurple 21s ease-in-out infinite;
+  animation:
+    pageOrbPurple
+    21s
+    ease-in-out
+    infinite;
 }
 
-/* ========================================
-   LAVENDER
-   ======================================== */
+
+/* Lavender */
 
 .orb-lavender {
   width: 28vw;
@@ -98,85 +105,111 @@
   bottom: 10%;
   right: 18%;
 
-  background: var(--sw-lavender-500);
+  background: var(--sw-orb-lavender);
 
-  animation: orbLavender 18s ease-in-out infinite;
+  animation:
+    pageOrbLavender
+    18s
+    ease-in-out
+    infinite;
 }
 
-/* ========================================
+
+/* =========================================================
    GRAIN
-   ======================================== */
+   ========================================================= */
 
 .page-grain {
   position: absolute;
-
   inset: 0;
 
   pointer-events: none;
 
   opacity: var(--sw-grain-opacity);
 
-  background-image: radial-gradient(
-    var(--sw-grain-dot) 0.7px,
-    transparent 0.7px
-  );
+  background-image:
+    radial-gradient(
+      var(--sw-grain-dot) 0.7px,
+      transparent 0.7px
+    );
 
   background-size: 5px 5px;
 
   mix-blend-mode: soft-light;
 }
 
-/* ========================================
+
+/* =========================================================
    ANIMATIONS
-   ======================================== */
+   ========================================================= */
 
-@keyframes orbGold {
+@keyframes pageOrbGold {
   0%,
   100% {
-    transform: translate(0, 0) scale(1);
+    transform:
+      translate(0, 0)
+      scale(1);
   }
 
   50% {
-    transform: translate(80px, 40px) scale(1.15);
+    transform:
+      translate(80px, 40px)
+      scale(1.15);
   }
 }
 
-@keyframes orbOrange {
+
+@keyframes pageOrbOrange {
   0%,
   100% {
-    transform: translate(0, 0) scale(1);
+    transform:
+      translate(0, 0)
+      scale(1);
   }
 
   50% {
-    transform: translate(-70px, 60px) scale(1.12);
+    transform:
+      translate(-70px, 60px)
+      scale(1.12);
   }
 }
 
-@keyframes orbPurple {
+
+@keyframes pageOrbPurple {
   0%,
   100% {
-    transform: translate(0, 0) scale(1);
+    transform:
+      translate(0, 0)
+      scale(1);
   }
 
   50% {
-    transform: translate(45px, -55px) scale(1.1);
+    transform:
+      translate(45px, -55px)
+      scale(1.1);
   }
 }
 
-@keyframes orbLavender {
+
+@keyframes pageOrbLavender {
   0%,
   100% {
-    transform: translate(0, 0) scale(1);
+    transform:
+      translate(0, 0)
+      scale(1);
   }
 
   50% {
-    transform: translate(-35px, -45px) scale(1.08);
+    transform:
+      translate(-40px, -45px)
+      scale(1.08);
   }
 }
 
-/* ========================================
+
+/* =========================================================
    MOBILE
-   ======================================== */
+   ========================================================= */
 
 @media (max-width: 768px) {
   .background-orb {
@@ -184,9 +217,10 @@
   }
 }
 
-/* ========================================
+
+/* =========================================================
    REDUCED MOTION
-   ======================================== */
+   ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
   .background-orb {

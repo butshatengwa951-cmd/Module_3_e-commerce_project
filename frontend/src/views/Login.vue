@@ -1,9 +1,9 @@
 <script setup>
 import { ref } from "vue";
 import GlassCard from "../components/GlassCard.vue";
+import PageBackground from "../components/PageBackground.vue";
 import { login } from "../services/api.js";
 import { useTheme } from "../composables/useTheme.js";
-import PageBackground from "../components/PageBackground.vue";
 
 const { isDark } = useTheme();
 
@@ -38,9 +38,15 @@ const handleLogin = async () => {
 
       localStorage.setItem("token", response.token);
 
-      localStorage.setItem("user", JSON.stringify(response.user));
+      localStorage.setItem(
+        "user",
+        JSON.stringify(response.user)
+      );
 
-      localStorage.setItem("stokvel", JSON.stringify(response.stokvel));
+      localStorage.setItem(
+        "stokvel",
+        JSON.stringify(response.stokvel)
+      );
 
       console.log("Logged in user:", response.user);
 
@@ -64,7 +70,6 @@ const handleLogin = async () => {
 
 <template>
   <main class="login-page">
-    <!-- Background -->
     <PageBackground />
 
     <!-- Branding -->
@@ -134,22 +139,27 @@ const handleLogin = async () => {
         </svg>
       </div>
 
-      <span> LOGIN to StockWell </span>
+      <span>LOGIN to StockWell</span>
     </header>
 
     <!-- Glass Login Card -->
-
     <GlassCard :variant="isDark ? 'dark' : 'light'">
       <div class="login-content">
-        <span class="eyebrow"> Welcome back </span>
+        <span class="eyebrow">
+          Welcome back
+        </span>
 
         <h1>Login</h1>
 
-        <p class="intro">Continue your StockWell journey.</p>
+        <p class="intro">
+          Continue your StockWell journey.
+        </p>
 
         <form @submit.prevent="handleLogin">
           <div class="field">
-            <label for="email"> Email </label>
+            <label for="email">
+              Email
+            </label>
 
             <input
               id="email"
@@ -162,7 +172,9 @@ const handleLogin = async () => {
           </div>
 
           <div class="field">
-            <label for="password"> Password </label>
+            <label for="password">
+              Password
+            </label>
 
             <input
               id="password"
@@ -180,37 +192,56 @@ const handleLogin = async () => {
             </router-link>
           </div>
 
-          <button type="submit" :disabled="loading">
-            <span v-if="!loading"> Login </span>
+          <button
+            type="submit"
+            :disabled="loading"
+          >
+            <span v-if="!loading">
+              Login
+            </span>
 
-            <span v-else> Logging in... </span>
+            <span v-else>
+              Logging in...
+            </span>
           </button>
         </form>
 
-        <p v-if="message" class="success-message">
+        <p
+          v-if="message"
+          class="success-message"
+        >
           {{ message }}
         </p>
 
-        <p v-if="error" class="error-message">
+        <p
+          v-if="error"
+          class="error-message"
+        >
           {{ error }}
         </p>
 
         <div class="bottom-link">
-          <span> Don't have an account? </span>
+          <span>
+            Don't have an account?
+          </span>
 
-          <router-link to="/signup"> Sign up </router-link>
+          <router-link to="/signup">
+            Sign up
+          </router-link>
         </div>
       </div>
     </GlassCard>
 
-    <footer>Save · Grow · Together</footer>
+    <footer>
+      Save · Grow · Together
+    </footer>
   </main>
 </template>
 
 <style scoped>
-/* ========================================
+/* =========================================================
    PAGE
-   ======================================== */
+   ========================================================= */
 
 .login-page {
   position: relative;
@@ -224,24 +255,29 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
 
-  padding: 80px 20px;
+  padding:
+    var(--sw-space-14)
+    var(--sw-space-7);
 
   background: var(--sw-page-gradient);
 
-  color: white;
+  color: var(--sw-white);
 
   font-family: var(--sw-font-body);
+
+  box-sizing: border-box;
 }
 
-/* ========================================
+
+/* =========================================================
    BRAND
-   ======================================== */
+   ========================================================= */
 
 .page-brand {
   position: absolute;
 
-  top: 28px;
-  left: 32px;
+  top: var(--sw-space-9);
+  left: var(--sw-space-11);
 
   z-index: 20;
 
@@ -249,11 +285,13 @@ const handleLogin = async () => {
 
   align-items: center;
 
-  gap: 10px;
+  gap: var(--sw-space-3);
 
   font-weight: 700;
 
-  font-size: 0.95rem;
+  font-size: var(--sw-text-xl);
+
+  letter-spacing: 0.02em;
 }
 
 .brand-mark {
@@ -271,84 +309,10 @@ const handleLogin = async () => {
   height: 100%;
 }
 
-/* ========================================
-   ORBS
-   ======================================== */
 
-.background-orb {
-  position: absolute;
-
-  border-radius: 50%;
-
-  pointer-events: none;
-
-  filter: blur(80px);
-
-  opacity: 0.45;
-}
-
-.orb-one {
-  width: 45vw;
-  height: 45vw;
-
-  top: -20%;
-  left: -15%;
-
-  background: #c8b019;
-
-  animation: loginOrbOne 16s ease-in-out infinite;
-}
-
-.orb-two {
-  width: 38vw;
-  height: 38vw;
-
-  right: -15%;
-  top: 15%;
-
-  background: #c2583d;
-
-  animation: loginOrbTwo 19s ease-in-out infinite;
-}
-
-.orb-three {
-  width: 40vw;
-  height: 40vw;
-
-  left: 30%;
-  bottom: -25%;
-
-  background: #795d89;
-
-  animation: loginOrbThree 21s ease-in-out infinite;
-}
-
-/* ========================================
-   GRAIN
-   ======================================== */
-
-.page-grain {
-  position: absolute;
-
-  inset: 0;
-
-  pointer-events: none;
-
-  opacity: 0.1;
-
-  background-image: radial-gradient(
-    rgba(255, 255, 255, 0.9) 0.7px,
-    transparent 0.7px
-  );
-
-  background-size: 5px 5px;
-
-  mix-blend-mode: soft-light;
-}
-
-/* ========================================
+/* =========================================================
    CONTENT
-   ======================================== */
+   ========================================================= */
 
 .login-content {
   display: flex;
@@ -359,59 +323,65 @@ const handleLogin = async () => {
 }
 
 .eyebrow {
-  margin-bottom: 10px;
+  margin:
+    0 0
+    var(--sw-space-3);
 
-  font-size: 0.68rem;
+  font-size: var(--sw-text-sm);
 
   letter-spacing: 0.18em;
 
   text-transform: uppercase;
 
-  opacity: 0.65;
+  color: var(--sw-page-text-muted);
 }
 
 h1 {
   margin: 0;
 
-  font-size: 3.5rem;
+  font-size: var(--sw-heading-xl);
+
+  line-height: 1;
 
   letter-spacing: -0.06em;
 
-  color: #312b50;
+  color: var(--sw-page-text);
 }
 
 .intro {
-  margin-top: 10px;
+  margin:
+    var(--sw-space-3)
+    0
+    var(--sw-space-12);
 
-  margin-bottom: 35px;
+  color: var(--sw-page-text-soft);
 
-  color: rgba(49, 43, 80, 0.7);
-
-  font-size: 0.85rem;
+  font-size: var(--sw-text-lg);
 
   line-height: 1.7;
 }
 
-/* ========================================
+
+/* =========================================================
    FIELDS
-   ======================================== */
+   ========================================================= */
 
 .field {
-  margin-bottom: 20px;
+  margin-bottom: var(--sw-space-7);
 }
 
 .field label {
   display: block;
 
-  margin-bottom: 8px;
+  margin-bottom: var(--sw-space-2);
 
-  font-size: 0.72rem;
+  font-size: var(--sw-text-md);
 
   font-weight: 700;
 
   letter-spacing: 0.08em;
 
-  color: #312b50;
+  color: var(--sw-page-text);
 }
 
 .field input {
@@ -419,56 +389,66 @@ h1 {
 
   box-sizing: border-box;
 
-  padding: 14px 16px;
+  padding:
+    var(--sw-space-4)
+    var(--sw-space-5);
 
-  border: 1px solid rgba(49, 43, 80, 0.16);
+  border:
+    1px solid
+    var(--sw-input-border);
 
-  border-radius: 12px;
+  border-radius: var(--sw-radius-md);
 
   outline: none;
 
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--sw-input-background);
 
-  color: #312b50;
+  color: var(--sw-input-text);
 
   font-family: inherit;
 
-  font-size: 0.8rem;
+  font-size: var(--sw-text-base);
 
   transition:
-    border-color 250ms ease,
-    background 250ms ease,
-    box-shadow 250ms ease;
+    border-color var(--sw-transition),
+    background var(--sw-transition),
+    box-shadow var(--sw-transition),
+    transform var(--sw-transition);
 }
 
 .field input::placeholder {
-  color: rgba(49, 43, 80, 0.4);
+  color: var(--sw-placeholder);
 }
 
 .field input:focus {
-  border-color: rgba(121, 93, 137, 0.7);
+  border-color: var(--sw-focus);
 
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--sw-input-background-focus);
 
-  box-shadow: 0 0 0 4px rgba(121, 93, 137, 0.1);
+  box-shadow:
+    0 0 0 4px
+    var(--sw-focus-ring);
+
+  transform: translateY(-1px);
 }
 
-/* ========================================
-   FORGOT
-   ======================================== */
+
+/* =========================================================
+   FORGOT PASSWORD
+   ========================================================= */
 
 .forgot {
   margin-top: -6px;
 
-  margin-bottom: 25px;
+  margin-bottom: var(--sw-space-9);
 
   text-align: right;
 }
 
 .forgot a {
-  font-size: 0.68rem;
+  font-size: var(--sw-text-sm);
 
-  color: #795d89;
+  color: var(--sw-purple-700);
 
   text-decoration: none;
 }
@@ -477,9 +457,10 @@ h1 {
   text-decoration: underline;
 }
 
-/* ========================================
+
+/* =========================================================
    BUTTON
-   ======================================== */
+   ========================================================= */
 
 button {
   width: 100%;
@@ -488,15 +469,15 @@ button {
 
   border: none;
 
-  border-radius: 999px;
+  border-radius: var(--sw-radius-pill);
 
-  background: linear-gradient(90deg, #312b50, #795d89, #c2583d);
+  background: var(--sw-button-gradient);
 
-  color: white;
+  color: var(--sw-white);
 
   font-family: inherit;
 
-  font-size: 0.78rem;
+  font-size: var(--sw-text-base);
 
   font-weight: 700;
 
@@ -505,14 +486,20 @@ button {
   cursor: pointer;
 
   transition:
-    transform 250ms ease,
-    box-shadow 250ms ease;
+    transform var(--sw-transition),
+    box-shadow var(--sw-transition),
+    opacity var(--sw-transition);
 }
 
 button:hover:not(:disabled) {
   transform: translateY(-2px);
 
-  box-shadow: 0 10px 25px rgba(49, 43, 80, 0.2);
+  box-shadow:
+    var(--sw-button-shadow);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 button:disabled {
@@ -521,44 +508,46 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* ========================================
+
+/* =========================================================
    MESSAGES
-   ======================================== */
+   ========================================================= */
 
 .success-message {
-  margin-top: 18px;
+  margin-top: var(--sw-space-6);
 
-  color: #312b50;
+  color: var(--sw-page-text);
 
-  font-size: 0.75rem;
+  font-size: var(--sw-text-base);
 }
 
 .error-message {
-  margin-top: 18px;
+  margin-top: var(--sw-space-6);
 
-  color: #a33c2d;
+  color: var(--sw-red-600);
 
-  font-size: 0.75rem;
+  font-size: var(--sw-text-base);
 }
 
-/* ========================================
+
+/* =========================================================
    BOTTOM LINK
-   ======================================== */
+   ========================================================= */
 
 .bottom-link {
-  margin-top: 30px;
+  margin-top: var(--sw-space-10);
 
   text-align: center;
 
-  font-size: 0.72rem;
+  font-size: var(--sw-text-md);
 
-  color: rgba(49, 43, 80, 0.65);
+  color: var(--sw-page-text-muted);
 }
 
 .bottom-link a {
-  margin-left: 5px;
+  margin-left: var(--sw-space-1);
 
-  color: #312b50;
+  color: var(--sw-page-text);
 
   font-weight: 700;
 
@@ -569,156 +558,55 @@ button:disabled {
   text-decoration: underline;
 }
 
-/* ========================================
+
+/* =========================================================
    FOOTER
-   ======================================== */
+   ========================================================= */
 
 footer {
   position: absolute;
 
   bottom: 25px;
-  left: 32px;
+  left: var(--sw-space-11);
 
-  font-size: 0.65rem;
+  font-size: var(--sw-text-xs);
 
   letter-spacing: 0.12em;
 
   opacity: 0.55;
 }
 
-/* ========================================
-   ORB ANIMATIONS
-   ======================================== */
 
-@keyframes loginOrbOne {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-
-  50% {
-    transform: translate(80px, 40px) scale(1.15);
-  }
-}
-
-@keyframes loginOrbTwo {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-
-  50% {
-    transform: translate(-70px, 60px) scale(1.12);
-  }
-}
-
-@keyframes loginOrbThree {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-
-  50% {
-    transform: translate(45px, -55px) scale(1.1);
-  }
-}
-
-/* ========================================
+/* =========================================================
    MOBILE
-   ======================================== */
+   ========================================================= */
 
 @media (max-width: 768px) {
   .login-page {
-    padding: 80px 16px;
+    padding:
+      var(--sw-space-14)
+      var(--sw-space-5);
   }
 
   .page-brand {
-    top: 20px;
-    left: 20px;
+    top: var(--sw-space-7);
+
+    left: var(--sw-space-7);
   }
 
   h1 {
-    font-size: clamp(2.6rem, 12vw, 3.5rem);
+    font-size:
+      clamp(
+        2.6rem,
+        12vw,
+        var(--sw-heading-xl)
+      );
   }
 
   footer {
-    left: 20px;
+    left: var(--sw-space-7);
 
-    bottom: 18px;
+    bottom: var(--sw-space-6);
   }
-
-  .background-orb {
-    filter: blur(60px);
-  }
-}
-
-/* ========================================
-   DARK MODE
-   ======================================== */
-
-:global(html.dark-mode) .login-page {
-  background: linear-gradient(135deg, #111019 0%, #292137 48%, #4a2119 100%);
-
-  color: #f7f5f1;
-}
-
-:global(html.dark-mode) .page-grain {
-  opacity: 0.14;
-}
-
-:global(html.dark-mode) .eyebrow {
-  color: rgba(247, 245, 241, 0.62);
-}
-
-:global(html.dark-mode) h1 {
-  color: #f7f5f1;
-}
-
-:global(html.dark-mode) .intro {
-  color: rgba(247, 245, 241, 0.7);
-}
-
-:global(html.dark-mode) .field label {
-  color: #f7f5f1;
-}
-
-:global(html.dark-mode) .field input {
-  border-color: rgba(255, 255, 255, 0.16);
-
-  background: rgba(255, 255, 255, 0.07);
-
-  color: #f7f5f1;
-}
-
-:global(html.dark-mode) .field input::placeholder {
-  color: rgba(247, 245, 241, 0.4);
-}
-
-:global(html.dark-mode) .field input:focus {
-  border-color: rgba(200, 176, 25, 0.65);
-
-  background: rgba(255, 255, 255, 0.1);
-
-  box-shadow: 0 0 0 4px rgba(200, 176, 25, 0.1);
-}
-
-:global(html.dark-mode) .forgot a {
-  color: #d7c85a;
-}
-
-:global(html.dark-mode) .success-message {
-  color: #f7f5f1;
-}
-
-:global(html.dark-mode) .error-message {
-  color: #ff9b88;
-}
-
-:global(html.dark-mode) .bottom-link {
-  color: rgba(247, 245, 241, 0.62);
-}
-
-:global(html.dark-mode) .bottom-link a {
-  color: #f7f5f1;
 }
 </style>

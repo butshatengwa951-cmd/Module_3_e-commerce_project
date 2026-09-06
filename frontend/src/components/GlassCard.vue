@@ -23,98 +23,80 @@ defineProps({
 </template>
 
 <style scoped>
+/* =========================================================
+   BASE GLASS
+   ========================================================= */
+
 .glass-card {
   position: relative;
 
   width: min(520px, 90%);
 
-  padding: 48px;
+  padding: var(--sw-space-13);
 
   overflow: hidden;
 
-  border-radius: 28px;
+  border-radius: var(--sw-radius-xl);
 
   isolation: isolate;
 
   backdrop-filter:
-    blur(24px)
-    saturate(130%);
+    blur(var(--sw-glass-blur))
+    saturate(var(--sw-glass-saturation));
 
   -webkit-backdrop-filter:
-    blur(24px)
-    saturate(130%);
-
-  box-shadow:
-    0 25px 70px
-    rgba(49, 43, 80, 0.18),
-
-    inset 0 1px 1px
-    rgba(255, 255, 255, 0.45),
-
-    inset 0 -1px 1px
-    rgba(49, 43, 80, 0.08);
+    blur(var(--sw-glass-blur))
+    saturate(var(--sw-glass-saturation));
 
   animation:
     glassAppear
-    900ms
-    cubic-bezier(0.22, 1, 0.36, 1)
+    var(--sw-transition-slow)
     both;
+
+  transition:
+    box-shadow var(--sw-transition);
 }
 
 
-/* ========================================
+/* =========================================================
    LIGHT GLASS
-   ======================================== */
+   ========================================================= */
 
 .glass-light {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.42),
-      rgba(255, 255, 255, 0.18)
-    );
+  background: var(--sw-glass-light);
 
   border:
     1px solid
-    rgba(255, 255, 255, 0.48);
+    var(--sw-glass-light-border);
 
-  color: #312b50;
-}
-
-
-/* ========================================
-   DARK GLASS
-   ======================================== */
-
-.glass-dark {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(15, 15, 18, 0.52),
-      rgba(15, 15, 18, 0.24)
-    );
-
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.15);
-
-  color: #f7f5f1;
+  color: var(--sw-glass-light-text);
 
   box-shadow:
-    0 25px 70px
-    rgba(0, 0, 0, 0.4),
-
-    inset 0 1px 1px
-    rgba(255, 255, 255, 0.12),
-
-    inset 0 -1px 1px
-    rgba(0, 0, 0, 0.25);
+    var(--sw-glass-shadow-light);
 }
 
 
-/* ========================================
-   GLASS HIGHLIGHT
-   ======================================== */
+/* =========================================================
+   DARK GLASS
+   ========================================================= */
+
+.glass-dark {
+  background: var(--sw-glass-dark);
+
+  border:
+    1px solid
+    var(--sw-glass-dark-border);
+
+  color: var(--sw-glass-dark-text);
+
+  box-shadow:
+    var(--sw-glass-shadow-dark);
+}
+
+
+/* =========================================================
+   HIGHLIGHT
+   ========================================================= */
 
 .glass-highlight {
   position: absolute;
@@ -139,9 +121,9 @@ defineProps({
 }
 
 
-/* ========================================
-   GLASS NOISE
-   ======================================== */
+/* =========================================================
+   NOISE
+   ========================================================= */
 
 .glass-noise {
   position: absolute;
@@ -166,9 +148,9 @@ defineProps({
 }
 
 
-/* ========================================
+/* =========================================================
    CONTENT
-   ======================================== */
+   ========================================================= */
 
 .glass-content {
   position: relative;
@@ -177,41 +159,26 @@ defineProps({
 }
 
 
-/* ========================================
+/* =========================================================
    HOVER
-   ======================================== */
+   ========================================================= */
 
-.glass-card:hover {
+.glass-light:hover {
   box-shadow:
-    0 30px 80px
-    rgba(49, 43, 80, 0.22),
-
-    inset 0 1px 1px
-    rgba(255, 255, 255, 0.55),
-
-    inset 0 -1px 1px
-    rgba(49, 43, 80, 0.08);
+    var(--sw-glass-shadow-light-hover);
 }
 
 .glass-dark:hover {
   box-shadow:
-    0 30px 80px
-    rgba(0, 0, 0, 0.5),
-
-    inset 0 1px 1px
-    rgba(255, 255, 255, 0.16),
-
-    inset 0 -1px 1px
-    rgba(0, 0, 0, 0.3);
+    var(--sw-glass-shadow-dark-hover);
 }
 
 
-/* ========================================
+/* =========================================================
    ENTRANCE
-   ======================================== */
+   ========================================================= */
 
 @keyframes glassAppear {
-
   0% {
     opacity: 0;
 
@@ -234,28 +201,28 @@ defineProps({
 }
 
 
-/* ========================================
+/* =========================================================
    MOBILE
-   ======================================== */
+   ========================================================= */
 
 @media (max-width: 768px) {
-
   .glass-card {
     width: 90%;
 
-    padding: 32px 24px;
+    padding:
+      var(--sw-space-11)
+      var(--sw-space-8);
 
-    border-radius: 22px;
+    border-radius: var(--sw-radius-lg);
   }
 }
 
 
-/* ========================================
+/* =========================================================
    REDUCED MOTION
-   ======================================== */
+   ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
-
   .glass-card {
     animation: none;
   }

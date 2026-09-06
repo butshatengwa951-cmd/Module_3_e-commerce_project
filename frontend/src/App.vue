@@ -9,12 +9,31 @@ const { isDark, toggleTheme } = useTheme();
     <button
       class="theme-toggle"
       type="button"
-      :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-      :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+      :aria-label="
+        isDark
+          ? 'Switch to light mode'
+          : 'Switch to dark mode'
+      "
+      :title="
+        isDark
+          ? 'Switch to light mode'
+          : 'Switch to dark mode'
+      "
       @click="toggleTheme"
     >
-      <span v-if="isDark" aria-hidden="true">☀</span>
-      <span v-else aria-hidden="true">☾</span>
+      <span
+        v-if="isDark"
+        aria-hidden="true"
+      >
+        ☀
+      </span>
+
+      <span
+        v-else
+        aria-hidden="true"
+      >
+        ☾
+      </span>
 
       <span class="theme-toggle-label">
         {{ isDark ? "Light" : "Dark" }}
@@ -26,84 +45,69 @@ const { isDark, toggleTheme } = useTheme();
 </template>
 
 <style>
-:root {
-  color-scheme: light;
-
-  --page-text: #312b50;
-  --page-muted: rgba(49, 43, 80, 0.7);
-
-  --toggle-background: rgba(255, 255, 255, 0.22);
-  --toggle-border: rgba(255, 255, 255, 0.32);
-  --toggle-text: #ffffff;
-
-  --dark-page-text: #f7f5f1;
-}
-
-html.dark-mode {
-  color-scheme: dark;
-}
-
-html,
-body,
-#app {
-  margin: 0;
-  min-height: 100%;
-}
-
-body {
-  min-height: 100vh;
-}
-
 .app-shell {
   min-height: 100vh;
 }
 
+
+/* =========================================================
+   THEME TOGGLE
+   ========================================================= */
+
 .theme-toggle {
   position: fixed;
 
-  top: 24px;
-  right: 28px;
+  top: var(--sw-space-8);
+  right: var(--sw-space-9);
 
   z-index: 100;
 
   display: inline-flex;
+
   align-items: center;
-  gap: 8px;
 
-  padding: 9px 14px;
+  gap: var(--sw-space-2);
 
-  border: 1px solid var(--toggle-border);
-  border-radius: 999px;
+  padding:
+    9px
+    14px;
 
-  background: var(--toggle-background);
+  border:
+    1px solid
+    var(--sw-toggle-border);
 
-  color: var(--toggle-text);
+  border-radius: var(--sw-radius-pill);
+
+  background: var(--sw-toggle-background);
+
+  color: var(--sw-toggle-text);
 
   backdrop-filter: blur(14px);
+
   -webkit-backdrop-filter: blur(14px);
 
   box-shadow:
-    0 8px 25px rgba(0, 0, 0, 0.1),
-    inset 0 1px 1px rgba(255, 255, 255, 0.18);
+    var(--sw-toggle-shadow);
 
-  font-family: "DM Mono", monospace;
-  font-size: 0.68rem;
+  font-family: var(--sw-font-body);
+
+  font-size: var(--sw-text-sm);
+
   font-weight: 700;
 
   cursor: pointer;
 
   transition:
-    transform 200ms ease,
-    background 200ms ease,
-    box-shadow 200ms ease;
+    transform var(--sw-transition-fast),
+    background var(--sw-transition-fast),
+    box-shadow var(--sw-transition-fast);
 }
 
 .theme-toggle:hover {
   transform: translateY(-2px);
 
   box-shadow:
-    0 12px 30px rgba(0, 0, 0, 0.16),
-    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    var(--sw-toggle-shadow-hover);
 }
 
 .theme-toggle:active {
@@ -111,7 +115,10 @@ body {
 }
 
 .theme-toggle:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline:
+    2px solid
+    rgba(255, 255, 255, 0.8);
+
   outline-offset: 3px;
 }
 
@@ -119,12 +126,20 @@ body {
   letter-spacing: 0.04em;
 }
 
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
 @media (max-width: 768px) {
   .theme-toggle {
-    top: 18px;
-    right: 18px;
+    top: var(--sw-space-6);
 
-    padding: 8px 11px;
+    right: var(--sw-space-6);
+
+    padding:
+      var(--sw-space-2)
+      var(--sw-space-3);
   }
 
   .theme-toggle-label {

@@ -1,7 +1,13 @@
+/* =========================================================
+   StockWell Global Theme
+   ========================================================= */
+
 :root {
-  /* ========================================
-     STOCKWELL BRAND COLOURS
-     ======================================== */
+  color-scheme: light;
+
+  /* -------------------------------------------------------
+     Brand colours
+  ------------------------------------------------------- */
 
   --sw-purple-900: #312b50;
   --sw-purple-700: #795d89;
@@ -10,110 +16,125 @@
   --sw-lavender-500: #9b86a7;
   --sw-red-600: #a33c2d;
 
-  /* ========================================
-     TYPOGRAPHY
-     ======================================== */
+  --sw-white: #ffffff;
+  --sw-off-white: #f7f5f1;
+  --sw-black: #111019;
+
+  /* -------------------------------------------------------
+     Typography
+  ------------------------------------------------------- */
 
   --sw-font-body: "DM Mono", monospace;
 
   --sw-text-xs: 0.65rem;
-  --sw-text-sm: 0.72rem;
-  --sw-text-md: 0.8rem;
+  --sw-text-sm: 0.68rem;
+  --sw-text-md: 0.72rem;
+  --sw-text-base: 0.8rem;
   --sw-text-lg: 0.85rem;
+  --sw-text-xl: 0.95rem;
 
-  /* ========================================
-     SPACING
-     ======================================== */
+  --sw-heading-lg: 3rem;
+  --sw-heading-xl: 3.5rem;
+
+  /* -------------------------------------------------------
+     Spacing
+  ------------------------------------------------------- */
 
   --sw-space-1: 4px;
   --sw-space-2: 8px;
-  --sw-space-3: 12px;
-  --sw-space-4: 16px;
-  --sw-space-5: 20px;
-  --sw-space-6: 24px;
-  --sw-space-7: 32px;
-  --sw-space-8: 48px;
+  --sw-space-3: 10px;
+  --sw-space-4: 12px;
+  --sw-space-5: 16px;
+  --sw-space-6: 18px;
+  --sw-space-7: 20px;
+  --sw-space-8: 24px;
+  --sw-space-9: 28px;
+  --sw-space-10: 30px;
+  --sw-space-11: 32px;
+  --sw-space-12: 35px;
+  --sw-space-13: 48px;
+  --sw-space-14: 80px;
 
-  /* ========================================
-     BORDER RADIUS
-     ======================================== */
+  /* -------------------------------------------------------
+     Border radius
+  ------------------------------------------------------- */
 
-  --sw-radius-sm: 12px;
-  --sw-radius-md: 22px;
-  --sw-radius-lg: 28px;
+  --sw-radius-sm: 8px;
+  --sw-radius-md: 12px;
+  --sw-radius-lg: 22px;
+  --sw-radius-xl: 28px;
   --sw-radius-pill: 999px;
 
-  /* ========================================
-     TRANSITIONS
-     ======================================== */
+  /* -------------------------------------------------------
+     Transitions
+  ------------------------------------------------------- */
 
   --sw-transition-fast: 200ms ease;
   --sw-transition: 250ms ease;
+  --sw-transition-slow: 900ms cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* ========================================
-     PAGE
-     ======================================== */
+  /* -------------------------------------------------------
+     Page
+  ------------------------------------------------------- */
 
-  --sw-page-gradient: linear-gradient(
-    135deg,
-    var(--sw-purple-900),
-    var(--sw-purple-700),
-    var(--sw-orange-600)
-  );
+  --sw-page-gradient:
+    linear-gradient(
+      135deg,
+      var(--sw-purple-900) 0%,
+      var(--sw-purple-700) 50%,
+      var(--sw-orange-600) 100%
+    );
 
-  --sw-page-text: #312b50;
+  --sw-page-text: var(--sw-purple-900);
+  --sw-page-text-soft: rgba(49, 43, 80, 0.7);
+  --sw-page-text-muted: rgba(49, 43, 80, 0.65);
+  --sw-page-text-faint: rgba(49, 43, 80, 0.45);
 
-  --sw-page-muted: rgba(49, 43, 80, 0.7);
-
-  --sw-page-muted-soft: rgba(49, 43, 80, 0.65);
-
-  /* ========================================
-     FORM CONTROLS
-     ======================================== */
+  /* -------------------------------------------------------
+     Forms
+  ------------------------------------------------------- */
 
   --sw-input-border: rgba(49, 43, 80, 0.16);
-
   --sw-input-background: rgba(255, 255, 255, 0.3);
-
   --sw-input-background-focus: rgba(255, 255, 255, 0.5);
-
-  --sw-input-text: #312b50;
-
+  --sw-input-text: var(--sw-purple-900);
   --sw-placeholder: rgba(49, 43, 80, 0.45);
 
   --sw-focus: rgba(121, 93, 137, 0.7);
-
   --sw-focus-ring: rgba(121, 93, 137, 0.1);
 
-  /* ========================================
-     BUTTON
-     ======================================== */
+  /* -------------------------------------------------------
+     Buttons
+  ------------------------------------------------------- */
 
-  --sw-button-gradient: linear-gradient(
-    90deg,
-    var(--sw-purple-900),
-    var(--sw-purple-700),
-    var(--sw-orange-600)
-  );
+  --sw-button-gradient:
+    linear-gradient(
+      90deg,
+      var(--sw-purple-900),
+      var(--sw-purple-700),
+      var(--sw-orange-600)
+    );
 
   --sw-button-shadow:
     0 10px 25px rgba(49, 43, 80, 0.2);
 
-  /* ========================================
-     GLASS
-     ======================================== */
+  /* -------------------------------------------------------
+     Glass
+  ------------------------------------------------------- */
 
-  --sw-glass-light: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.42),
-    rgba(255, 255, 255, 0.18)
-  );
+  --sw-glass-light:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.42),
+      rgba(255, 255, 255, 0.18)
+    );
 
-  --sw-glass-dark: linear-gradient(
-    135deg,
-    rgba(15, 15, 18, 0.52),
-    rgba(15, 15, 18, 0.24)
-  );
+  --sw-glass-dark:
+    linear-gradient(
+      135deg,
+      rgba(15, 15, 18, 0.52),
+      rgba(15, 15, 18, 0.24)
+    );
 
   --sw-glass-light-border:
     rgba(255, 255, 255, 0.48);
@@ -121,100 +142,176 @@
   --sw-glass-dark-border:
     rgba(255, 255, 255, 0.15);
 
-  /* ========================================
-     BACKGROUND EFFECTS
-     ======================================== */
+  --sw-glass-light-text:
+    var(--sw-purple-900);
+
+  --sw-glass-dark-text:
+    var(--sw-off-white);
+
+  --sw-glass-shadow-light:
+    0 25px 70px rgba(49, 43, 80, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -1px 1px rgba(49, 43, 80, 0.08);
+
+  --sw-glass-shadow-light-hover:
+    0 30px 80px rgba(49, 43, 80, 0.22),
+    inset 0 1px 1px rgba(255, 255, 255, 0.55),
+    inset 0 -1px 1px rgba(49, 43, 80, 0.08);
+
+  --sw-glass-shadow-dark:
+    0 25px 70px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.25);
+
+  --sw-glass-shadow-dark-hover:
+    0 30px 80px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.16),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.3);
+
+  --sw-glass-blur: 24px;
+  --sw-glass-saturation: 130%;
+
+  /* -------------------------------------------------------
+     Background / orb system
+  ------------------------------------------------------- */
 
   --sw-orb-blur: 80px;
-
   --sw-orb-opacity: 0.45;
 
-  --sw-grain-opacity: 0.1;
+  --sw-orb-gold: var(--sw-gold-500);
+  --sw-orb-orange: var(--sw-orange-600);
+  --sw-orb-purple: var(--sw-purple-700);
+  --sw-orb-lavender: var(--sw-lavender-500);
 
+  --sw-grain-opacity: 0.1;
   --sw-grain-dot: rgba(255, 255, 255, 0.9);
+
+  /* -------------------------------------------------------
+     Theme toggle
+  ------------------------------------------------------- */
+
+  --sw-toggle-background: rgba(255, 255, 255, 0.22);
+  --sw-toggle-border: rgba(255, 255, 255, 0.32);
+  --sw-toggle-text: var(--sw-white);
+
+  --sw-toggle-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.18);
+
+  --sw-toggle-shadow-hover:
+    0 12px 30px rgba(0, 0, 0, 0.16),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
 }
 
-/* ========================================
+
+/* =========================================================
    DARK THEME
-   ======================================== */
+   ========================================================= */
 
 html.dark-mode {
   color-scheme: dark;
 
-  --sw-page-gradient: linear-gradient(
-    135deg,
-    #111019 0%,
-    #292137 48%,
-    #4a2119 100%
-  );
+  --sw-page-gradient:
+    linear-gradient(
+      135deg,
+      #111019 0%,
+      #292137 48%,
+      #4a2119 100%
+    );
 
-  --sw-page-text: #f7f5f1;
+  --sw-page-text: var(--sw-off-white);
+  --sw-page-text-soft: rgba(247, 245, 241, 0.7);
+  --sw-page-text-muted: rgba(247, 245, 241, 0.65);
+  --sw-page-text-faint: rgba(247, 245, 241, 0.45);
 
-  --sw-page-muted:
-    rgba(247, 245, 241, 0.7);
+  --sw-input-border: rgba(255, 255, 255, 0.16);
+  --sw-input-background: rgba(255, 255, 255, 0.07);
+  --sw-input-background-focus: rgba(255, 255, 255, 0.11);
+  --sw-input-text: var(--sw-off-white);
+  --sw-placeholder: rgba(247, 245, 241, 0.45);
 
-  --sw-page-muted-soft:
-    rgba(247, 245, 241, 0.65);
-
-  --sw-input-border:
-    rgba(255, 255, 255, 0.16);
-
-  --sw-input-background:
-    rgba(255, 255, 255, 0.08);
-
-  --sw-input-background-focus:
-    rgba(255, 255, 255, 0.12);
-
-  --sw-input-text: #f7f5f1;
-
-  --sw-placeholder:
-    rgba(247, 245, 241, 0.45);
-
-  --sw-focus:
-    rgba(155, 134, 167, 0.8);
-
-  --sw-focus-ring:
-    rgba(155, 134, 167, 0.15);
-
-  --sw-button-shadow:
-    0 10px 25px rgba(0, 0, 0, 0.35);
-
-  --sw-toggle-background:
-    rgba(20, 18, 26, 0.42);
-
-  --sw-toggle-border:
-    rgba(255, 255, 255, 0.16);
-
-  --sw-toggle-text: #f7f5f1;
+  --sw-focus: rgba(155, 134, 167, 0.8);
+  --sw-focus-ring: rgba(155, 134, 167, 0.14);
 
   --sw-grain-opacity: 0.14;
 }
 
-/* ========================================
-   GLOBAL BASE
-   ======================================== */
 
-* {
+/* =========================================================
+   GLOBAL RESET
+   ========================================================= */
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-html,
-body,
-#app {
+html {
   margin: 0;
   min-height: 100%;
 }
 
 body {
+  margin: 0;
   min-height: 100vh;
+
   font-family: var(--sw-font-body);
+
+  background: var(--sw-page-gradient);
   color: var(--sw-page-text);
+
+  transition:
+    background var(--sw-transition),
+    color var(--sw-transition);
 }
 
-a,
+body,
 button,
 input,
 select,
 textarea {
-  font: inherit;
+  font-family: var(--sw-font-body);
+}
+
+button,
+input,
+select,
+textarea {
+  font-size: inherit;
+}
+
+button {
+  border: 0;
+}
+
+a {
+  color: inherit;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 3px;
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
 }
