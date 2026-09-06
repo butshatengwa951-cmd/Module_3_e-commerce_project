@@ -79,6 +79,9 @@ const handleLogin = async () => {
       <button type="submit" :disabled="loading">
         {{ loading ? "Logging in..." : "Login" }}
       </button>
+      <p>
+        <router-link to="/forgot-password"> Forgot your password? </router-link>
+      </p>
     </form>
     <p v-if="message" class="success-message">{{ message }}</p>
     <p v-if="error" class="error-message">{{ error }}</p>

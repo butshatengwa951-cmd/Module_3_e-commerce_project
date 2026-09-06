@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 import pool from "../config/db.js";
 
@@ -16,6 +17,15 @@ import {
     createStokvelMembership,
     findMembershipByUserId
 } from "../models/StokvelMem.js";
+
+import {
+    createPasswordReset,
+    findValidPasswordResetByTokenHash,
+    markPasswordResetUsed,
+    deletePasswordReset
+} from "../models/PasswordReset.js";
+
+import sendPasswordResetEmail from "../utils/mailer.js";
 
 export const signup = async (req, res) => {
     let connection;
@@ -310,6 +320,253 @@ export const login = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Login failed."
+        });
+    }
+};
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "Email is required."
+            });
+        }
+
+        const cleanEmail = email.trim().toLowerCase();
+
+        const user = await findUserByEmail(cleanEmail);
+
+        // Do not reveal whether the account exists.
+        if (!user) {
+            return res.status(200).json({
+                success: true,
+                message:
+                    "If an account exists for this email, a password reset link has been sent."
+            });
+        }
+
+        // Generate random one-time token.
+        const resetToken = crypto.randomBytes(32).toString("hex");
+
+        // Store only the hash of the token.
+        const tokenHash = crypto
+            .createHash("sha256")
+            .update(resetToken)
+            .digest("hex");
+
+        // Token expires after 30 minutes.
+        const expiresAt = new Date(
+            Date.now() + 30 * 60 * 1000
+        );
+
+        const resetRecord = await createPasswordReset(
+            user.user_id,
+            tokenHash,
+            expiresAt
+        );
+
+        const frontendUrl =
+            process.env.FRONTEND_URL ||
+            "http://localhost:5173";
+
+        const resetUrl =
+            `${frontendUrl}/reset-password?token=${resetToken}`;
+
+        try {
+            await sendPasswordResetEmail(
+                user.email,
+                user.full_name,
+                resetUrl
+            );
+        } catch (emailError) {
+            // Do not leave a usable reset token if email delivery failed.
+            await deletePasswordReset(
+                resetRecord.passwordResetId
+            );
+
+            throw emailError;
+        }
+
+        return res.status(200).json({
+            success: true,
+            message:
+                "If an account exists for this email, a password reset link has been sent."
+        });
+
+    } catch (error) {
+        console.error("Forgot password failed!");
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to process password reset request."
+        });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    let connection;
+
+    try {
+        const {
+            token,
+            password,
+            confirm_password
+        } = req.body;
+
+        if (!token || !password || !confirm_password) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Reset token, password and password confirmation are required."
+            });
+        }
+
+        if (password.length < 8) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Password must be at least 8 characters long."
+            });
+        }
+
+        if (password !== confirm_password) {
+            return res.status(400).json({
+                success: false,
+                message: "Passwords do not match."
+            });
+        }
+
+        // Hash the token supplied in the reset link.
+        const tokenHash = crypto
+            .createHash("sha256")
+            .update(token)
+            .digest("hex");
+
+        connection = await pool.getConnection();
+
+        await connection.beginTransaction();
+
+        const resetRecord =
+            await findValidPasswordResetByTokenHash(
+                tokenHash,
+                connection
+            );
+
+        if (!resetRecord) {
+            await connection.rollback();
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "This password reset link is invalid or has expired."
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(
+            password,
+            10
+        );
+
+        await connection.query(
+            `
+            UPDATE users
+            SET password = ?
+            WHERE user_id = ?
+            `,
+            [
+                hashedPassword,
+                resetRecord.user_id
+            ]
+        );
+
+        await markPasswordResetUsed(
+            resetRecord.password_reset_id,
+            connection
+        );
+
+        await connection.commit();
+
+        return res.status(200).json({
+            success: true,
+            message:
+                "Password reset successfully. You can now log in."
+        });
+
+    } catch (error) {
+        if (connection) {
+            try {
+                await connection.rollback();
+            } catch (rollbackError) {
+                console.error(
+                    "Rollback failed:",
+                    rollbackError.message
+                );
+            }
+        }
+
+        console.error("Reset password failed!");
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to reset password."
+        });
+
+    } finally {
+        if (connection) {
+            connection.release();
+        }
+    }
+};
+
+export const verifyResetToken = async (req, res) => {
+    try {
+        const { token } = req.query;
+
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                message: "Password reset token is required."
+            });
+        }
+
+        const tokenHash = crypto
+            .createHash("sha256")
+            .update(token)
+            .digest("hex");
+
+        const resetRecord =
+            await findValidPasswordResetByTokenHash(
+                tokenHash
+            );
+
+        if (!resetRecord) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "This password reset link is invalid or has expired."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset link is valid."
+        });
+
+    } catch (error) {
+        console.error(
+            "Verify reset token failed!"
+        );
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message:
+                "Unable to verify password reset link."
         });
     }
 };

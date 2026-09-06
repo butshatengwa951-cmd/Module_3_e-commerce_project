@@ -21,6 +21,7 @@
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.24.3",
     "node": "^26.8.1",
+    "nodemailer": "^10.0.0",
     "nodemon": "^3.1.14"
   }
 }
