@@ -193,6 +193,18 @@ defineProps({
     rgba(49, 43, 80, 0.08);
 }
 
+.glass-dark:hover {
+  box-shadow:
+    0 30px 80px
+    rgba(0, 0, 0, 0.5),
+
+    inset 0 1px 1px
+    rgba(255, 255, 255, 0.16),
+
+    inset 0 -1px 1px
+    rgba(0, 0, 0, 0.3);
+}
+
 
 /* ========================================
    ENTRANCE

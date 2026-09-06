@@ -2,6 +2,9 @@
 import { ref } from "vue";
 import GlassCard from "../components/GlassCard.vue";
 import { login } from "../services/api.js";
+import { useTheme } from "../composables/useTheme.js";
+
+const { isDark } = useTheme();
 
 const email = ref("");
 const password = ref("");
@@ -16,8 +19,7 @@ const handleLogin = async () => {
   error.value = "";
 
   if (!email.value || !password.value) {
-    error.value =
-      "Email and password are required.";
+    error.value = "Email and password are required.";
 
     return;
   }
@@ -33,65 +35,34 @@ const handleLogin = async () => {
     if (response.success) {
       message.value = response.message;
 
-      localStorage.setItem(
-        "token",
-        response.token
-      );
+      localStorage.setItem("token", response.token);
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(response.user)
-      );
+      localStorage.setItem("user", JSON.stringify(response.user));
 
-      localStorage.setItem(
-        "stokvel",
-        JSON.stringify(response.stokvel)
-      );
+      localStorage.setItem("stokvel", JSON.stringify(response.stokvel));
 
-      console.log(
-        "Logged in user:",
-        response.user
-      );
+      console.log("Logged in user:", response.user);
 
-      console.log(
-        "User Stokvel:",
-        response.stokvel
-      );
-
+      console.log("User Stokvel:", response.stokvel);
     } else {
       error.value = response.message;
     }
-
   } catch (err) {
-
-    console.error(
-      "Login error:",
-      err
-    );
+    console.error("Login error:", err);
 
     if (err.response?.data?.message) {
-
-      error.value =
-        err.response.data.message;
-
+      error.value = err.response.data.message;
     } else {
-
-      error.value =
-        "Unable to connect to the server.";
+      error.value = "Unable to connect to the server.";
     }
-
   } finally {
-
     loading.value = false;
   }
 };
 </script>
 
-
 <template>
-
   <main class="login-page">
-
     <!-- Background -->
     <div class="background-orb orb-one"></div>
     <div class="background-orb orb-two"></div>
@@ -99,18 +70,14 @@ const handleLogin = async () => {
 
     <div class="page-grain"></div>
 
-
     <!-- Branding -->
     <header class="page-brand">
-
       <div class="brand-mark">
-
         <svg
           viewBox="0 0 64 64"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
         >
-
           <path
             d="M8 27.5
                L17 18.5
@@ -167,46 +134,25 @@ const handleLogin = async () => {
             stroke-width="4"
             stroke-linecap="round"
           />
-
         </svg>
-
       </div>
 
-      <span>
-        LOGIN to StockWell
-      </span>
-
+      <span> LOGIN to StockWell </span>
     </header>
-
 
     <!-- Glass Login Card -->
 
-    <GlassCard variant="light">
-
+    <GlassCard :variant="isDark ? 'dark' : 'light'">
       <div class="login-content">
+        <span class="eyebrow"> Welcome back </span>
 
-        <span class="eyebrow">
-          Welcome back
-        </span>
+        <h1>Login</h1>
 
-        <h1>
-          Login
-        </h1>
+        <p class="intro">Continue your StockWell journey.</p>
 
-        <p class="intro">
-          Continue your StockWell journey.
-        </p>
-
-
-        <form
-          @submit.prevent="handleLogin"
-        >
-
+        <form @submit.prevent="handleLogin">
           <div class="field">
-
-            <label for="email">
-              Email
-            </label>
+            <label for="email"> Email </label>
 
             <input
               id="email"
@@ -216,15 +162,10 @@ const handleLogin = async () => {
               autocomplete="email"
               required
             />
-
           </div>
 
-
           <div class="field">
-
-            <label for="password">
-              Password
-            </label>
+            <label for="password"> Password </label>
 
             <input
               id="password"
@@ -234,89 +175,47 @@ const handleLogin = async () => {
               autocomplete="current-password"
               required
             />
-
           </div>
-
 
           <div class="forgot">
-
-            <router-link
-              to="/forgot-password"
-            >
+            <router-link to="/forgot-password">
               Forgot your password?
             </router-link>
-
           </div>
 
+          <button type="submit" :disabled="loading">
+            <span v-if="!loading"> Login </span>
 
-          <button
-            type="submit"
-            :disabled="loading"
-          >
-
-            <span v-if="!loading">
-              Login
-            </span>
-
-            <span v-else>
-              Logging in...
-            </span>
-
+            <span v-else> Logging in... </span>
           </button>
-
         </form>
 
-
-        <p
-          v-if="message"
-          class="success-message"
-        >
+        <p v-if="message" class="success-message">
           {{ message }}
         </p>
 
-
-        <p
-          v-if="error"
-          class="error-message"
-        >
+        <p v-if="error" class="error-message">
           {{ error }}
         </p>
 
-
         <div class="bottom-link">
+          <span> Don't have an account? </span>
 
-          <span>
-            Don't have an account?
-          </span>
-
-          <router-link to="/signup">
-            Sign up
-          </router-link>
-
+          <router-link to="/signup"> Sign up </router-link>
         </div>
-
       </div>
-
     </GlassCard>
 
-
-    <footer>
-      Save · Grow · Together
-    </footer>
-
+    <footer>Save · Grow · Together</footer>
   </main>
-
 </template>
 
-
 <style scoped>
-
 /* ========================================
    PAGE
    ======================================== */
 
 .login-page {
-
   position: relative;
 
   min-height: 100vh;
@@ -330,28 +229,18 @@ const handleLogin = async () => {
 
   padding: 80px 20px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #312b50,
-      #795d89,
-      #c2583d
-    );
+  background: linear-gradient(135deg, #312b50, #795d89, #c2583d);
 
   color: white;
 
-  font-family:
-    "DM Mono",
-    monospace;
+  font-family: "DM Mono", monospace;
 }
-
 
 /* ========================================
    BRAND
    ======================================== */
 
 .page-brand {
-
   position: absolute;
 
   top: 28px;
@@ -371,7 +260,6 @@ const handleLogin = async () => {
 }
 
 .brand-mark {
-
   width: 30px;
   height: 30px;
 
@@ -382,18 +270,15 @@ const handleLogin = async () => {
 }
 
 .brand-mark svg {
-
   width: 100%;
   height: 100%;
 }
-
 
 /* ========================================
    ORBS
    ======================================== */
 
 .background-orb {
-
   position: absolute;
 
   border-radius: 50%;
@@ -406,7 +291,6 @@ const handleLogin = async () => {
 }
 
 .orb-one {
-
   width: 45vw;
   height: 45vw;
 
@@ -415,15 +299,10 @@ const handleLogin = async () => {
 
   background: #c8b019;
 
-  animation:
-    loginOrbOne
-    16s
-    ease-in-out
-    infinite;
+  animation: loginOrbOne 16s ease-in-out infinite;
 }
 
 .orb-two {
-
   width: 38vw;
   height: 38vw;
 
@@ -432,15 +311,10 @@ const handleLogin = async () => {
 
   background: #c2583d;
 
-  animation:
-    loginOrbTwo
-    19s
-    ease-in-out
-    infinite;
+  animation: loginOrbTwo 19s ease-in-out infinite;
 }
 
 .orb-three {
-
   width: 40vw;
   height: 40vw;
 
@@ -449,20 +323,14 @@ const handleLogin = async () => {
 
   background: #795d89;
 
-  animation:
-    loginOrbThree
-    21s
-    ease-in-out
-    infinite;
+  animation: loginOrbThree 21s ease-in-out infinite;
 }
-
 
 /* ========================================
    GRAIN
    ======================================== */
 
 .page-grain {
-
   position: absolute;
 
   inset: 0;
@@ -471,25 +339,21 @@ const handleLogin = async () => {
 
   opacity: 0.1;
 
-  background-image:
-
-    radial-gradient(
-      rgba(255, 255, 255, 0.9) 0.7px,
-      transparent 0.7px
-    );
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.9) 0.7px,
+    transparent 0.7px
+  );
 
   background-size: 5px 5px;
 
   mix-blend-mode: soft-light;
 }
 
-
 /* ========================================
    CONTENT
    ======================================== */
 
 .login-content {
-
   display: flex;
 
   flex-direction: column;
@@ -498,7 +362,6 @@ const handleLogin = async () => {
 }
 
 .eyebrow {
-
   margin-bottom: 10px;
 
   font-size: 0.68rem;
@@ -511,7 +374,6 @@ const handleLogin = async () => {
 }
 
 h1 {
-
   margin: 0;
 
   font-size: 3.5rem;
@@ -522,7 +384,6 @@ h1 {
 }
 
 .intro {
-
   margin-top: 10px;
 
   margin-bottom: 35px;
@@ -534,18 +395,15 @@ h1 {
   line-height: 1.7;
 }
 
-
 /* ========================================
    FIELDS
    ======================================== */
 
 .field {
-
   margin-bottom: 20px;
 }
 
 .field label {
-
   display: block;
 
   margin-bottom: 8px;
@@ -560,22 +418,19 @@ h1 {
 }
 
 .field input {
-
   width: 100%;
 
   box-sizing: border-box;
 
   padding: 14px 16px;
 
-  border: 1px solid
-    rgba(49, 43, 80, 0.16);
+  border: 1px solid rgba(49, 43, 80, 0.16);
 
   border-radius: 12px;
 
   outline: none;
 
-  background:
-    rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.3);
 
   color: #312b50;
 
@@ -590,31 +445,22 @@ h1 {
 }
 
 .field input::placeholder {
-
-  color:
-    rgba(49, 43, 80, 0.4);
+  color: rgba(49, 43, 80, 0.4);
 }
 
 .field input:focus {
+  border-color: rgba(121, 93, 137, 0.7);
 
-  border-color:
-    rgba(121, 93, 137, 0.7);
+  background: rgba(255, 255, 255, 0.5);
 
-  background:
-    rgba(255, 255, 255, 0.5);
-
-  box-shadow:
-    0 0 0 4px
-    rgba(121, 93, 137, 0.1);
+  box-shadow: 0 0 0 4px rgba(121, 93, 137, 0.1);
 }
-
 
 /* ========================================
    FORGOT
    ======================================== */
 
 .forgot {
-
   margin-top: -6px;
 
   margin-bottom: 25px;
@@ -623,7 +469,6 @@ h1 {
 }
 
 .forgot a {
-
   font-size: 0.68rem;
 
   color: #795d89;
@@ -632,17 +477,14 @@ h1 {
 }
 
 .forgot a:hover {
-
   text-decoration: underline;
 }
-
 
 /* ========================================
    BUTTON
    ======================================== */
 
 button {
-
   width: 100%;
 
   padding: 15px;
@@ -651,14 +493,7 @@ button {
 
   border-radius: 999px;
 
-  background:
-
-    linear-gradient(
-      90deg,
-      #312b50,
-      #795d89,
-      #c2583d
-    );
+  background: linear-gradient(90deg, #312b50, #795d89, #c2583d);
 
   color: white;
 
@@ -678,29 +513,22 @@ button {
 }
 
 button:hover:not(:disabled) {
+  transform: translateY(-2px);
 
-  transform:
-    translateY(-2px);
-
-  box-shadow:
-    0 10px 25px
-    rgba(49, 43, 80, 0.2);
+  box-shadow: 0 10px 25px rgba(49, 43, 80, 0.2);
 }
 
 button:disabled {
-
   opacity: 0.6;
 
   cursor: not-allowed;
 }
-
 
 /* ========================================
    MESSAGES
    ======================================== */
 
 .success-message {
-
   margin-top: 18px;
 
   color: #312b50;
@@ -709,7 +537,6 @@ button:disabled {
 }
 
 .error-message {
-
   margin-top: 18px;
 
   color: #a33c2d;
@@ -717,25 +544,21 @@ button:disabled {
   font-size: 0.75rem;
 }
 
-
 /* ========================================
    BOTTOM LINK
    ======================================== */
 
 .bottom-link {
-
   margin-top: 30px;
 
   text-align: center;
 
   font-size: 0.72rem;
 
-  color:
-    rgba(49, 43, 80, 0.65);
+  color: rgba(49, 43, 80, 0.65);
 }
 
 .bottom-link a {
-
   margin-left: 5px;
 
   color: #312b50;
@@ -746,17 +569,14 @@ button:disabled {
 }
 
 .bottom-link a:hover {
-
   text-decoration: underline;
 }
-
 
 /* ========================================
    FOOTER
    ======================================== */
 
 footer {
-
   position: absolute;
 
   bottom: 25px;
@@ -769,97 +589,139 @@ footer {
   opacity: 0.55;
 }
 
-
 /* ========================================
    ORB ANIMATIONS
    ======================================== */
 
 @keyframes loginOrbOne {
-
   0%,
   100% {
-    transform:
-      translate(0, 0)
-      scale(1);
+    transform: translate(0, 0) scale(1);
   }
 
   50% {
-    transform:
-      translate(80px, 40px)
-      scale(1.15);
+    transform: translate(80px, 40px) scale(1.15);
   }
 }
 
 @keyframes loginOrbTwo {
-
   0%,
   100% {
-    transform:
-      translate(0, 0)
-      scale(1);
+    transform: translate(0, 0) scale(1);
   }
 
   50% {
-    transform:
-      translate(-70px, 60px)
-      scale(1.12);
+    transform: translate(-70px, 60px) scale(1.12);
   }
 }
 
 @keyframes loginOrbThree {
-
   0%,
   100% {
-    transform:
-      translate(0, 0)
-      scale(1);
+    transform: translate(0, 0) scale(1);
   }
 
   50% {
-    transform:
-      translate(45px, -55px)
-      scale(1.1);
+    transform: translate(45px, -55px) scale(1.1);
   }
 }
-
 
 /* ========================================
    MOBILE
    ======================================== */
 
 @media (max-width: 768px) {
-
   .login-page {
     padding: 80px 16px;
   }
 
   .page-brand {
-
     top: 20px;
     left: 20px;
   }
 
   h1 {
-
-    font-size:
-      clamp(
-        2.6rem,
-        12vw,
-        3.5rem
-      );
+    font-size: clamp(2.6rem, 12vw, 3.5rem);
   }
 
   footer {
-
     left: 20px;
 
     bottom: 18px;
   }
 
   .background-orb {
-
     filter: blur(60px);
   }
 }
 
+/* ========================================
+   DARK MODE
+   ======================================== */
+
+:global(html.dark-mode) .login-page {
+  background: linear-gradient(135deg, #111019 0%, #292137 48%, #4a2119 100%);
+
+  color: #f7f5f1;
+}
+
+:global(html.dark-mode) .page-grain {
+  opacity: 0.14;
+}
+
+:global(html.dark-mode) .eyebrow {
+  color: rgba(247, 245, 241, 0.62);
+}
+
+:global(html.dark-mode) h1 {
+  color: #f7f5f1;
+}
+
+:global(html.dark-mode) .intro {
+  color: rgba(247, 245, 241, 0.7);
+}
+
+:global(html.dark-mode) .field label {
+  color: #f7f5f1;
+}
+
+:global(html.dark-mode) .field input {
+  border-color: rgba(255, 255, 255, 0.16);
+
+  background: rgba(255, 255, 255, 0.07);
+
+  color: #f7f5f1;
+}
+
+:global(html.dark-mode) .field input::placeholder {
+  color: rgba(247, 245, 241, 0.4);
+}
+
+:global(html.dark-mode) .field input:focus {
+  border-color: rgba(200, 176, 25, 0.65);
+
+  background: rgba(255, 255, 255, 0.1);
+
+  box-shadow: 0 0 0 4px rgba(200, 176, 25, 0.1);
+}
+
+:global(html.dark-mode) .forgot a {
+  color: #d7c85a;
+}
+
+:global(html.dark-mode) .success-message {
+  color: #f7f5f1;
+}
+
+:global(html.dark-mode) .error-message {
+  color: #ff9b88;
+}
+
+:global(html.dark-mode) .bottom-link {
+  color: rgba(247, 245, 241, 0.62);
+}
+
+:global(html.dark-mode) .bottom-link a {
+  color: #f7f5f1;
+}
 </style>
