@@ -41,20 +41,15 @@ const handleMouseMove = (event) => {
     return;
   }
 
-  mouseX.value =
-    (event.clientX / window.innerWidth) * 100;
+  mouseX.value = (event.clientX / window.innerWidth) * 100;
 
-  mouseY.value =
-    (event.clientY / window.innerHeight) * 100;
+  mouseY.value = (event.clientY / window.innerHeight) * 100;
 };
 
 window.addEventListener("mousemove", handleMouseMove);
 
 onBeforeUnmount(() => {
-  window.removeEventListener(
-    "mousemove",
-    handleMouseMove
-  );
+  window.removeEventListener("mousemove", handleMouseMove);
 });
 </script>
 
@@ -64,31 +59,22 @@ onBeforeUnmount(() => {
     :class="{
       'is-transitioning': transitioning,
       'login-selected': selected === 'login',
-      'signup-selected': selected === 'signup'
+      'signup-selected': selected === 'signup',
     }"
     :style="{
       '--mouse-x': `${mouseX}%`,
-      '--mouse-y': `${mouseY}%`
+      '--mouse-y': `${mouseY}%`,
     }"
   >
-
-    <!-- ========================================
-         BRAND
-         ======================================== -->
+    <!-- BRAND -->
 
     <header class="brand">
-
-      <div
-        class="brand-mark"
-        aria-label="StockWell"
-      >
-
+      <div class="brand-mark" aria-label="StockWell">
         <svg
           viewBox="0 0 64 64"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
         >
-
           <path
             d="M8 27.5
                L17 18.5
@@ -145,156 +131,104 @@ onBeforeUnmount(() => {
             stroke-width="4"
             stroke-linecap="round"
           />
-
         </svg>
-
       </div>
 
-      <span>StockWell</span>
-
+      <span> StockWell </span>
     </header>
 
-
-    <!-- ========================================
-         LOGIN PANEL
-         ======================================== -->
+    <!-- LOGIN PANEL -->
 
     <section
       class="auth-panel login-panel"
       :class="{
         hovered: hovered === 'login',
-        selected: selected === 'login'
+        selected: selected === 'login',
       }"
       @mouseenter="handleEnter('login')"
       @mouseleave="handleLeave"
       @click="selectAuth('login')"
     >
-
       <div class="gradient-orb orb-one"></div>
+
       <div class="gradient-orb orb-two"></div>
+
       <div class="gradient-orb orb-three"></div>
 
       <div class="grain"></div>
 
       <div class="panel-content">
-
-        <span class="panel-kicker">
-          Welcome back
-        </span>
+        <span class="panel-kicker"> Welcome back </span>
 
         <h1>
+          <span class="main-title"> LOGIN </span>
 
-          <span class="main-title">
-            LOGIN
-          </span>
-
-          <span class="sub-title">
-            to StockWell
-          </span>
-
+          <span class="sub-title"> to StockWell </span>
         </h1>
 
         <div class="title-line"></div>
 
-        <p>
-          Continue your StockWell journey
-        </p>
+        <p>Continue your StockWell journey</p>
 
-        <span class="interaction-hint">
-          Enter StockWell
-        </span>
-
+        <span class="interaction-hint"> Enter StockWell </span>
       </div>
-
     </section>
 
-
-    <!-- ========================================
-         SIGNUP PANEL
-         ======================================== -->
+    <!-- SIGNUP PANEL -->
 
     <section
       class="auth-panel signup-panel"
       :class="{
         hovered: hovered === 'signup',
-        selected: selected === 'signup'
+        selected: selected === 'signup',
       }"
       :style="{
         '--light-x': `${mouseX}%`,
-        '--light-y': `${mouseY}%`
+        '--light-y': `${mouseY}%`,
       }"
       @mouseenter="handleEnter('signup')"
       @mouseleave="handleLeave"
       @click="selectAuth('signup')"
     >
-
       <div class="signup-light light-one"></div>
+
       <div class="signup-light light-two"></div>
+
       <div class="signup-light light-three"></div>
+
       <div class="signup-light light-four"></div>
 
       <div class="grain"></div>
 
       <div class="panel-content">
-
-        <span class="panel-kicker">
-          Start today
-        </span>
+        <span class="panel-kicker"> Start today </span>
 
         <h1>
+          <span class="main-title"> SIGN UP </span>
 
-          <span class="main-title">
-            SIGN UP
-          </span>
-
-          <span class="sub-title">
-            to StockWell
-          </span>
-
+          <span class="sub-title"> to StockWell </span>
         </h1>
 
         <div class="title-line"></div>
 
-        <p>
-          Join your StockWell community
-        </p>
+        <p>Join your StockWell community</p>
 
-        <span class="interaction-hint">
-          Create your account
-        </span>
-
+        <span class="interaction-hint"> Create your account </span>
       </div>
-
     </section>
 
+    <!-- FOOTER -->
 
-    <!-- ========================================
-         FOOTER
-         ======================================== -->
-
-    <footer class="tagline">
-      Save · Grow · Together
-    </footer>
-
+    <footer class="tagline">Save · Grow · Together</footer>
   </main>
 </template>
 
-
 <style scoped>
-
 /* ==================================================
    ROOT
    ================================================== */
 
 .auth-selector {
-
-  --light-bg: #f7f5f1;
-
-  --color-gold: #c8b019;
-  --color-coral: #c2583d;
-  --color-purple-dark: #312b50;
-  --color-purple-light: #795d89;
-
   position: relative;
 
   width: 100%;
@@ -304,22 +238,26 @@ onBeforeUnmount(() => {
 
   display: grid;
 
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns:
+    1fr
+    1fr;
 
-  background: var(--light-bg);
+  background: var(--sw-off-white);
 
-  color: var(--color-purple-dark);
+  color: var(--sw-purple-900);
 
-  font-family: "DM Mono", monospace;
+  font-family: var(--sw-font-body);
+
+  transition:
+    background var(--sw-transition-slow),
+    color var(--sw-transition-slow);
 }
-
 
 /* ==================================================
    BRAND
    ================================================== */
 
 .brand {
-
   position: absolute;
 
   top: 28px;
@@ -336,10 +274,13 @@ onBeforeUnmount(() => {
   font-weight: 700;
 
   font-size: 1rem;
+
+  color: var(--sw-purple-900);
+
+  transition: color var(--sw-transition);
 }
 
 .brand-mark {
-
   width: 32px;
   height: 32px;
 
@@ -354,25 +295,19 @@ onBeforeUnmount(() => {
 }
 
 .brand-mark svg {
-
   width: 100%;
   height: 100%;
 }
 
 .brand:hover .brand-mark {
-
-  transform:
-    translateY(-2px)
-    rotate(-3deg);
+  transform: translateY(-2px) rotate(-3deg);
 }
-
 
 /* ==================================================
    PANELS
    ================================================== */
 
 .auth-panel {
-
   position: relative;
 
   min-width: 0;
@@ -391,51 +326,46 @@ onBeforeUnmount(() => {
     width 900ms cubic-bezier(0.22, 1, 0.36, 1),
     transform 900ms cubic-bezier(0.22, 1, 0.36, 1),
     opacity 600ms ease,
-    filter 500ms ease;
+    filter 500ms ease,
+    background 700ms ease,
+    color 500ms ease;
 }
-
 
 /* ==================================================
    LOGIN BACKGROUND
    ================================================== */
 
 .login-panel {
-
   position: relative;
 
   will-change: background;
 
-  color: white;
+  color: var(--sw-white);
 
   background:
-
     radial-gradient(
       circle at var(--mouse-x) var(--mouse-y),
-      var(--color-gold) 0%,
+      var(--sw-gold-500) 0%,
+
       transparent 28%
     ),
-
     radial-gradient(
-      circle at
-        calc(var(--mouse-x) + 25%)
-        calc(var(--mouse-y) - 10%),
-      var(--color-coral) 0%,
+      circle at calc(var(--mouse-x) + 25%) calc(var(--mouse-y) - 10%),
+      var(--sw-orange-600) 0%,
+
       transparent 38%
     ),
-
     radial-gradient(
-      circle at
-        calc(var(--mouse-x) - 20%)
-        calc(var(--mouse-y) + 25%),
-      var(--color-purple-light) 0%,
+      circle at calc(var(--mouse-x) - 20%) calc(var(--mouse-y) + 25%),
+      var(--sw-purple-700) 0%,
+
       transparent 42%
     ),
-
     linear-gradient(
       135deg,
-      var(--color-purple-dark),
-      var(--color-purple-light),
-      var(--color-coral)
+      var(--sw-purple-900),
+      var(--sw-purple-700),
+      var(--sw-orange-600)
     );
 
   background-size:
@@ -443,32 +373,25 @@ onBeforeUnmount(() => {
     145% 145%,
     150% 150%,
     180% 180%;
-
-  transition:
-    background-position 300ms ease;
 }
-
 
 /* ==================================================
    SIGNUP BACKGROUND
    ================================================== */
 
 .signup-panel {
-
   position: relative;
 
-  background: var(--light-bg);
+  background: var(--sw-off-white);
 
-  color: var(--color-purple-dark);
+  color: var(--sw-purple-900);
 }
-
 
 /* ==================================================
    SIGNUP GRAIN
    ================================================== */
 
 .signup-panel::before {
-
   content: "";
 
   position: absolute;
@@ -479,13 +402,13 @@ onBeforeUnmount(() => {
 
   z-index: 1;
 
-  background:
+  background: radial-gradient(
+    circle at 20% 30%,
 
-    radial-gradient(
-      circle at 20% 30%,
-      rgba(255, 255, 255, 0.5) 0.6px,
-      transparent 0.8px
-    );
+    rgba(255, 255, 255, 0.55) 0.6px,
+
+    transparent 0.8px
+  );
 
   background-size: 6px 6px;
 
@@ -494,13 +417,11 @@ onBeforeUnmount(() => {
   mix-blend-mode: soft-light;
 }
 
-
 /* ==================================================
    SIGNUP MOUSE LIGHT
    ================================================== */
 
 .signup-panel::after {
-
   content: "";
 
   position: absolute;
@@ -511,27 +432,20 @@ onBeforeUnmount(() => {
 
   z-index: 0;
 
-  background:
+  background: radial-gradient(
+    circle at var(--light-x) var(--light-y),
+    rgba(121, 93, 137, 0.1),
+    transparent 25%
+  );
 
-    radial-gradient(
-      circle at var(--light-x) var(--light-y),
-      rgba(121, 93, 137, 0.08),
-      transparent 25%
-    );
-
-  transition:
-    background-position
-    700ms
-    cubic-bezier(0.22, 1, 0.36, 1);
+  transition: background-position 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-
 
 /* ==================================================
    LOGIN ORBS
    ================================================== */
 
 .gradient-orb {
-
   position: absolute;
 
   width: 40vw;
@@ -545,61 +459,41 @@ onBeforeUnmount(() => {
 
   pointer-events: none;
 
-  transition:
-    transform
-    1.2s
-    cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .orb-one {
-
   top: -20%;
   left: -20%;
 
-  background: var(--color-gold);
+  background: var(--sw-gold-500);
 
-  animation:
-    floatOne
-    14s
-    ease-in-out
-    infinite;
+  animation: floatOne 14s ease-in-out infinite;
 }
 
 .orb-two {
-
   right: -20%;
   top: 20%;
 
-  background: var(--color-coral);
+  background: var(--sw-orange-600);
 
-  animation:
-    floatTwo
-    17s
-    ease-in-out
-    infinite;
+  animation: floatTwo 17s ease-in-out infinite;
 }
 
 .orb-three {
-
   left: 20%;
   bottom: -25%;
 
-  background: var(--color-purple-light);
+  background: var(--sw-purple-700);
 
-  animation:
-    floatThree
-    19s
-    ease-in-out
-    infinite;
+  animation: floatThree 19s ease-in-out infinite;
 }
-
 
 /* ==================================================
    SIGNUP LIGHTS
    ================================================== */
 
 .signup-light {
-
   position: absolute;
 
   border-radius: 50%;
@@ -613,74 +507,61 @@ onBeforeUnmount(() => {
   mix-blend-mode: multiply;
 
   animation:
-    signupFloat
-    15s
-    ease-in-out
-    infinite,
-
-    signupPulse
-    7s
-    ease-in-out
-    infinite;
+    signupFloat 15s ease-in-out infinite,
+    signupPulse 7s ease-in-out infinite;
 }
 
 .light-one {
-
   width: 240px;
   height: 240px;
 
   top: 8%;
   left: 10%;
 
-  background: var(--color-gold);
+  background: var(--sw-gold-500);
 }
 
 .light-two {
-
   width: 190px;
   height: 190px;
 
   top: 25%;
   right: 8%;
 
-  background: var(--color-coral);
+  background: var(--sw-orange-600);
 
   animation-delay: -4s;
 }
 
 .light-three {
-
   width: 220px;
   height: 220px;
 
   bottom: 5%;
   left: 25%;
 
-  background: var(--color-purple-light);
+  background: var(--sw-purple-700);
 
   animation-delay: -7s;
 }
 
 .light-four {
-
   width: 150px;
   height: 150px;
 
   bottom: 20%;
   right: 15%;
 
-  background: var(--color-purple-dark);
+  background: var(--sw-purple-900);
 
   animation-delay: -11s;
 }
-
 
 /* ==================================================
    GRAIN
    ================================================== */
 
 .grain {
-
   position: absolute;
 
   inset: 0;
@@ -689,27 +570,24 @@ onBeforeUnmount(() => {
 
   pointer-events: none;
 
-  opacity: 0.12;
+  opacity: var(--sw-grain-opacity);
 
-  background-image:
+  background-image: radial-gradient(
+    var(--sw-grain-dot) 0.7px,
 
-    radial-gradient(
-      rgba(255, 255, 255, 0.9) 0.7px,
-      transparent 0.7px
-    );
+    transparent 0.7px
+  );
 
   background-size: 5px 5px;
 
   mix-blend-mode: soft-light;
 }
 
-
 /* ==================================================
    CONTENT
    ================================================== */
 
 .panel-content {
-
   position: relative;
 
   z-index: 10;
@@ -719,22 +597,16 @@ onBeforeUnmount(() => {
   text-align: center;
 
   transition:
-    transform
-    900ms
-    cubic-bezier(0.22, 1, 0.36, 1),
-
-    opacity
-    500ms
-    ease;
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 500ms ease;
 }
 
 .panel-kicker {
-
   display: block;
 
   margin-bottom: 20px;
 
-  font-size: 0.72rem;
+  font-size: var(--sw-text-md);
 
   letter-spacing: 0.18em;
 
@@ -744,7 +616,6 @@ onBeforeUnmount(() => {
 }
 
 h1 {
-
   margin: 0;
 
   display: flex;
@@ -761,566 +632,441 @@ h1 {
 }
 
 .main-title {
-
   display: block;
 
-  font-size: clamp(
-    3rem,
-    6vw,
-    6rem
-  );
+  font-size: clamp(3rem, 6vw, 6rem);
 
   transition:
-    font-size
-    900ms
-    cubic-bezier(0.22, 1, 0.36, 1),
-
-    transform
-    900ms
-    cubic-bezier(0.22, 1, 0.36, 1),
-
-    letter-spacing
-    900ms
-    cubic-bezier(0.22, 1, 0.36, 1);
+    font-size 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .sub-title {
-
   display: block;
 
-  margin-top: 10px;
+  margin-top: 12px;
 
-  font-size: 0.95rem;
+  font-size: clamp(1rem, 2vw, 1.45rem);
 
-  letter-spacing: 0.08em;
+  font-weight: 400;
 
-  opacity: 0;
+  letter-spacing: -0.03em;
 
-  transform: translateY(12px);
+  opacity: 0.8;
 
   transition:
-    opacity
-    500ms
-    ease
-    250ms,
-
-    transform
-    700ms
-    cubic-bezier(0.22, 1, 0.36, 1)
-    250ms;
-}
-
-.login-panel h1 {
-
-  color: white;
-}
-
-.signup-panel h1 {
-
-  color: var(--color-purple-dark);
+    font-size 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .title-line {
-
-  width: 60px;
+  width: 90px;
 
   height: 2px;
 
-  margin: 24px auto 0;
+  margin: 24px auto;
+
+  border-radius: var(--sw-radius-pill);
 
   background: currentColor;
 
-  opacity: 0.65;
+  opacity: 0.55;
 
   transition:
-    width 500ms ease,
-    opacity 500ms ease;
+    width 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 400ms ease;
 }
 
 .panel-content p {
+  margin: 0;
 
-  margin-top: 22px;
+  font-size: var(--sw-text-base);
 
-  font-size: 0.84rem;
+  letter-spacing: 0.04em;
 
-  line-height: 1.7;
-
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
 .interaction-hint {
-
   display: inline-block;
 
   margin-top: 28px;
 
-  font-size: 0.68rem;
+  padding: 8px 14px;
 
-  letter-spacing: 0.12em;
+  border: 1px solid currentColor;
+
+  border-radius: var(--sw-radius-pill);
+
+  font-size: var(--sw-text-sm);
+
+  letter-spacing: 0.08em;
 
   text-transform: uppercase;
 
-  opacity: 0.5;
+  opacity: 0.55;
 
   transition:
-    transform 400ms ease,
-    opacity 400ms ease;
+    transform 300ms ease,
+    opacity 300ms ease;
 }
 
-
-/* ==================================================
-   HOVER
-   ================================================== */
-
-.auth-panel.hovered
-.panel-content {
-
-  transform: scale(1.035);
-}
-
-.login-panel.hovered {
-
-  filter: brightness(1.08);
-}
-
-.signup-panel.hovered {
-
-  filter: brightness(1.02);
-}
-
-.auth-panel.hovered h1 {
-
-  text-shadow:
-    0 0 24px
-    rgba(255, 255, 255, 0.22);
-}
-
-.signup-panel.hovered h1 {
-
-  text-shadow:
-    0 0 24px
-    rgba(121, 93, 137, 0.25);
-}
-
-.auth-panel.hovered
-.title-line {
-
-  width: 100px;
-}
-
-.auth-panel.hovered
-.interaction-hint {
-
-  opacity: 0.8;
-
+.auth-panel:hover .interaction-hint,
+.auth-panel.hovered .interaction-hint {
   transform: translateY(-2px);
+
+  opacity: 0.9;
 }
 
+.auth-panel:hover .title-line,
+.auth-panel.hovered .title-line {
+  width: 130px;
+
+  opacity: 0.85;
+}
 
 /* ==================================================
-   SELECTED LOGIN
-   ================================================== */
-
-.auth-selector.login-selected
-.signup-panel {
-
-  opacity: 0;
-
-  transform: translateX(40%);
-}
-
-.auth-selector.login-selected
-.login-panel {
-
-  grid-column: 1 / 3;
-
-  transform: scale(1.03);
-}
-
-.auth-selector.login-selected
-.login-panel
-.panel-content {
-
-  transform: translateY(-10px);
-}
-
-
-/* ==================================================
-   SELECTED SIGNUP
-   ================================================== */
-
-.auth-selector.signup-selected
-.login-panel {
-
-  opacity: 0;
-
-  transform: translateX(-40%);
-}
-
-.auth-selector.signup-selected
-.signup-panel {
-
-  grid-column: 1 / 3;
-
-  transform: scale(1.03);
-}
-
-.auth-selector.signup-selected
-.signup-panel
-.panel-content {
-
-  transform: translateY(-10px);
-}
-
-
-/* ==================================================
-   SELECTED CONTENT
-   ================================================== */
-
-.auth-selector.login-selected
-.login-panel
-.panel-kicker,
-
-.auth-selector.signup-selected
-.signup-panel
-.panel-kicker {
-
-  opacity: 0;
-
-  transform: translateY(-12px);
-
-  transition:
-    opacity 300ms ease,
-    transform 500ms ease;
-}
-
-.auth-selector.login-selected
-.login-panel p,
-
-.auth-selector.signup-selected
-.signup-panel p {
-
-  opacity: 0;
-
-  transform: translateY(15px);
-
-  transition:
-    opacity 300ms ease,
-    transform 500ms ease;
-}
-
-.auth-selector.login-selected
-.login-panel
-.interaction-hint,
-
-.auth-selector.signup-selected
-.signup-panel
-.interaction-hint {
-
-  opacity: 0;
-
-  transform: translateY(15px);
-
-  transition:
-    opacity 250ms ease,
-    transform 400ms ease;
-}
-
-.auth-selector.login-selected
-.login-panel
-.title-line,
-
-.auth-selector.signup-selected
-.signup-panel
-.title-line {
-
-  width: 40px;
-
-  opacity: 0.5;
-}
-
-
-/* ==================================================
-   TITLE TRANSITION
-   ================================================== */
-
-.auth-selector.login-selected
-.login-panel
-.main-title,
-
-.auth-selector.signup-selected
-.signup-panel
-.main-title {
-
-  font-size:
-    clamp(
-      2rem,
-      4vw,
-      3.5rem
-    );
-
-  letter-spacing: -0.04em;
-
-  transform: translateY(-5px);
-}
-
-.auth-selector.login-selected
-.login-panel
-.sub-title,
-
-.auth-selector.signup-selected
-.signup-panel
-.sub-title {
-
-  opacity: 1;
-
-  transform: translateY(0);
-}
-
-
-/* ==================================================
-   SELECTED SCREEN GLOW
-   ================================================== */
-
-.auth-selector.login-selected
-.login-panel::after,
-
-.auth-selector.signup-selected
-.signup-panel::after {
-
-  content: "";
-
-  position: absolute;
-
-  inset: 0;
-
-  pointer-events: none;
-
-  background:
-
-    radial-gradient(
-      circle at 50% 45%,
-      rgba(255, 255, 255, 0.08),
-      transparent 35%
-    );
-
-  opacity: 1;
-}
-
-
-/* ==================================================
-   FOOTER
+   TAGLINE
    ================================================== */
 
 .tagline {
-
   position: absolute;
+
+  left: 32px;
+  bottom: 22px;
 
   z-index: 50;
 
-  left: 32px;
-  bottom: 28px;
+  font-size: var(--sw-text-xs);
 
-  font-size: 0.68rem;
+  letter-spacing: 0.16em;
 
-  letter-spacing: 0.12em;
+  text-transform: uppercase;
 
-  opacity: 0.58;
+  color: var(--sw-purple-900);
+
+  opacity: 0.55;
+
+  transition:
+    color var(--sw-transition),
+    opacity var(--sw-transition);
 
   pointer-events: none;
 }
 
-
 /* ==================================================
-   ANIMATIONS
+   HOVER STATES
    ================================================== */
 
-@keyframes floatOne {
-
-  0%,
-  100% {
-
-    transform:
-      translate(0, 0)
-      scale(1);
-  }
-
-  50% {
-
-    transform:
-      translate(80px, 30px)
-      scale(1.15);
-  }
+.auth-selector:not(.is-transitioning) .login-panel:hover {
+  transform: scale(1.015);
 }
 
-@keyframes floatTwo {
-
-  0%,
-  100% {
-
-    transform:
-      translate(0, 0)
-      scale(1);
-  }
-
-  50% {
-
-    transform:
-      translate(-70px, 60px)
-      scale(1.2);
-  }
+.auth-selector:not(.is-transitioning) .signup-panel:hover {
+  transform: scale(1.015);
 }
 
-@keyframes floatThree {
-
-  0%,
-  100% {
-
-    transform:
-      translate(0, 0)
-      scale(1);
-  }
-
-  50% {
-
-    transform:
-      translate(50px, -50px)
-      scale(1.1);
-  }
+.auth-selector:not(.is-transitioning) .login-panel:hover .panel-content {
+  transform: translateY(-4px);
 }
 
-@keyframes signupFloat {
-
-  0%,
-  100% {
-
-    transform:
-      translate(0, 0)
-      scale(1);
-  }
-
-  35% {
-
-    transform:
-      translate(30px, -20px)
-      scale(1.08);
-  }
-
-  70% {
-
-    transform:
-      translate(-20px, 35px)
-      scale(0.94);
-  }
+.auth-selector:not(.is-transitioning) .signup-panel:hover .panel-content {
+  transform: translateY(-4px);
 }
-
-@keyframes signupPulse {
-
-  0%,
-  100% {
-
-    opacity: 0.18;
-  }
-
-  50% {
-
-    opacity: 0.38;
-  }
-}
-
 
 /* ==================================================
-   MOBILE
+   SELECTION TRANSITION
    ================================================== */
 
-@media (max-width: 768px) {
+.login-selected .login-panel {
+  z-index: 20;
 
+  transform: scale(1.06);
+}
+
+.signup-selected .signup-panel {
+  z-index: 20;
+
+  transform: scale(1.06);
+}
+
+.login-selected .signup-panel {
+  transform: translateX(100%);
+
+  opacity: 0;
+
+  filter: blur(12px);
+}
+
+.signup-selected .login-panel {
+  transform: translateX(-100%);
+
+  opacity: 0;
+
+  filter: blur(12px);
+}
+
+.login-selected .login-panel .panel-content,
+.signup-selected .signup-panel .panel-content {
+  transform: scale(1.05);
+}
+
+.login-selected .brand,
+.signup-selected .brand,
+.login-selected .tagline,
+.signup-selected .tagline {
+  opacity: 0;
+
+  pointer-events: none;
+}
+
+/* ==================================================
+   DARK THEME
+   ================================================== */
+
+:global(html.dark-mode) .auth-selector {
+  background: #111019;
+
+  color: var(--sw-off-white);
+}
+
+:global(html.dark-mode) .brand {
+  color: var(--sw-off-white);
+}
+
+:global(html.dark-mode) .signup-panel {
+  background:
+    radial-gradient(
+      circle at var(--light-x) var(--light-y),
+      rgba(155, 134, 167, 0.12),
+      transparent 30%
+    ),
+    linear-gradient(135deg, #17131f 0%, #1f1828 48%, #25181a 100%);
+
+  color: var(--sw-off-white);
+}
+
+:global(html.dark-mode) .signup-panel::before {
+  opacity: 0.14;
+}
+
+:global(html.dark-mode) .signup-panel::after {
+  background: radial-gradient(
+    circle at var(--light-x) var(--light-y),
+    rgba(200, 176, 25, 0.12),
+    transparent 28%
+  );
+}
+
+:global(html.dark-mode) .signup-light {
+  opacity: 0.2;
+
+  mix-blend-mode: screen;
+}
+
+:global(html.dark-mode) .tagline {
+  color: var(--sw-off-white);
+}
+
+:global(html.dark-mode) .login-panel {
+  background:
+    radial-gradient(
+      circle at var(--mouse-x) var(--mouse-y),
+      var(--sw-gold-500) 0%,
+
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at calc(var(--mouse-x) + 25%) calc(var(--mouse-y) - 10%),
+      var(--sw-orange-600) 0%,
+
+      transparent 36%
+    ),
+    radial-gradient(
+      circle at calc(var(--mouse-x) - 20%) calc(var(--mouse-y) + 25%),
+      #4b3d61 0%,
+
+      transparent 42%
+    ),
+    linear-gradient(135deg, #111019, #292137, #4a2119);
+}
+
+/* ==================================================
+   RESPONSIVE
+   ================================================== */
+
+@media (max-width: 850px) {
   .auth-selector {
-
     grid-template-columns: 1fr;
 
     grid-template-rows:
       1fr
       1fr;
+
+    height: 100dvh;
   }
 
   .auth-panel {
-
-    min-height: 50vh;
+    min-height: 50dvh;
   }
 
   .brand {
-
-    top: 20px;
+    top: 18px;
     left: 20px;
   }
 
   .tagline {
-
     left: 20px;
-    bottom: 18px;
+    bottom: 12px;
   }
 
   .panel-content {
-
-    width: 85%;
+    width: min(520px, 84%);
   }
 
-  .gradient-orb {
-
-    width: 70vw;
-    height: 70vw;
-  }
-
-  .signup-light {
-
-    transform: scale(0.75);
-  }
-
-  .auth-selector.login-selected
-  .login-panel
-  .main-title,
-
-  .auth-selector.signup-selected
-  .signup-panel
   .main-title {
-
-    font-size:
-      clamp(
-        2rem,
-        11vw,
-        3rem
-      );
+    font-size: clamp(2.8rem, 13vw, 5rem);
   }
 
-  .sub-title {
+  .login-selected .signup-panel {
+    transform: translateY(100%);
+  }
 
-    font-size: 0.75rem;
+  .signup-selected .login-panel {
+    transform: translateY(-100%);
   }
 }
 
+@media (max-width: 520px) {
+  .brand {
+    font-size: 0.9rem;
+  }
+
+  .brand-mark {
+    width: 28px;
+
+    height: 28px;
+  }
+
+  .panel-kicker {
+    margin-bottom: 14px;
+
+    font-size: 0.62rem;
+  }
+
+  .sub-title {
+    margin-top: 9px;
+
+    font-size: 1rem;
+  }
+
+  .title-line {
+    margin: 18px auto;
+  }
+
+  .panel-content p {
+    font-size: 0.68rem;
+  }
+
+  .interaction-hint {
+    margin-top: 20px;
+
+    font-size: 0.6rem;
+  }
+
+  .tagline {
+    left: 14px;
+
+    bottom: 10px;
+
+    max-width: 48%;
+
+    font-size: 0.52rem;
+
+    letter-spacing: 0.1em;
+  }
+}
 
 /* ==================================================
    REDUCED MOTION
    ================================================== */
 
 @media (prefers-reduced-motion: reduce) {
-
   .auth-panel,
   .panel-content,
-  h1,
+  .main-title,
+  .sub-title,
   .title-line,
-  .interaction-hint {
-
-    transition: none;
+  .interaction-hint,
+  .brand-mark,
+  .auth-selector,
+  .brand,
+  .tagline {
+    transition: none !important;
   }
 
-  .login-panel,
   .gradient-orb,
   .signup-light {
-
-    animation: none;
+    animation: none !important;
   }
 }
 
+/* ==================================================
+   ANIMATIONS
+   ================================================== */
+
+@keyframes floatOne {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(8%, 5%, 0) scale(1.06);
+  }
+}
+
+@keyframes floatTwo {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(-7%, 8%, 0) scale(1.08);
+  }
+}
+
+@keyframes floatThree {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(5%, -7%, 0) scale(1.05);
+  }
+}
+
+@keyframes signupFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(2%, -4%, 0) scale(1.08);
+  }
+}
+
+@keyframes signupPulse {
+  0%,
+  100% {
+    opacity: 0.22;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
 </style>

@@ -1,17 +1,22 @@
 <script setup>
 import { onMounted, reactive, ref } from "vue";
+import { useRouter } from "vue-router";
 import { getStokvels, signup } from "../services/api.js";
 import GlassCard from "../components/GlassCard.vue";
 import PageBackground from "../components/PageBackground.vue";
 import { useTheme } from "../composables/useTheme.js";
 
+const router = useRouter();
 const { isDark } = useTheme();
 
 const stokvels = ref([]);
 const loadingStokvels = ref(false);
 const submitting = ref(false);
+
 const successMessage = ref("");
 const errorMessage = ref("");
+
+const leaving = ref(false);
 
 const form = reactive({
   full_name: "",
@@ -36,8 +41,7 @@ const loadStokvels = async () => {
   } catch (error) {
     console.error("Failed to load stokvels:", error);
 
-    errorMessage.value =
-      "Could not connect to the server.";
+    errorMessage.value = "Could not connect to the server.";
   } finally {
     loadingStokvels.value = false;
   }
@@ -66,22 +70,31 @@ const handleSubmit = async () => {
       form.phone_number = "";
       form.stokvel_name = "";
     } else {
-      errorMessage.value =
-        data.message || "Signup failed.";
+      errorMessage.value = data.message || "Signup failed.";
     }
   } catch (error) {
     console.error("Signup request failed:", error);
 
     if (error.response?.data?.message) {
-      errorMessage.value =
-        error.response.data.message;
+      errorMessage.value = error.response.data.message;
     } else {
-      errorMessage.value =
-        "Could not connect to the server.";
+      errorMessage.value = "Could not connect to the server.";
     }
   } finally {
     submitting.value = false;
   }
+};
+
+const goBackToAuth = () => {
+  if (leaving.value) {
+    return;
+  }
+
+  leaving.value = true;
+
+  setTimeout(() => {
+    router.push("/");
+  }, 450);
 };
 
 onMounted(() => {
@@ -90,8 +103,27 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="signup-page">
+  <main
+    class="signup-page"
+    :class="{
+      'signup-page-dark': isDark,
+      'is-leaving': leaving,
+    }"
+  >
     <PageBackground />
+
+    <!-- Back to Auth -->
+    <button
+      type="button"
+      class="back-auth-button"
+      :disabled="leaving"
+      aria-label="Back to authentication selection"
+      @click="goBackToAuth"
+    >
+      <span class="back-arrow" aria-hidden="true"> ← </span>
+
+      <span> Back to Auth </span>
+    </button>
 
     <!-- StockWell branding -->
     <header class="page-brand">
@@ -117,19 +149,9 @@ onMounted(() => {
             stroke-linecap="round"
           />
 
-          <circle
-            cx="29"
-            cy="11"
-            r="2.5"
-            fill="currentColor"
-          />
+          <circle cx="29" cy="11" r="2.5" fill="currentColor" />
 
-          <circle
-            cx="11"
-            cy="29"
-            r="2.5"
-            fill="currentColor"
-          />
+          <circle cx="11" cy="29" r="2.5" fill="currentColor" />
         </svg>
       </div>
 
@@ -139,25 +161,18 @@ onMounted(() => {
     <!-- Signup glass card -->
     <GlassCard :variant="isDark ? 'dark' : 'light'">
       <div class="signup-content">
-        <p class="eyebrow">
-          Join the community
-        </p>
+        <p class="eyebrow">Join the community</p>
 
-        <h1>
-          Create Your Account
-        </h1>
+        <h1>Create Your Account</h1>
 
         <p class="intro">
-          Start your StockWell journey and choose
-          the stokvel that fits you.
+          Start your StockWell journey and choose the stokvel that fits you.
         </p>
 
         <form @submit.prevent="handleSubmit">
           <!-- Full Name -->
           <div class="field">
-            <label for="full_name">
-              Full Name
-            </label>
+            <label for="full_name"> Full Name </label>
 
             <input
               id="full_name"
@@ -171,9 +186,7 @@ onMounted(() => {
 
           <!-- Email -->
           <div class="field">
-            <label for="email">
-              Email
-            </label>
+            <label for="email"> Email </label>
 
             <input
               id="email"
@@ -187,9 +200,7 @@ onMounted(() => {
 
           <!-- Password -->
           <div class="field">
-            <label for="password">
-              Password
-            </label>
+            <label for="password"> Password </label>
 
             <input
               id="password"
@@ -204,9 +215,7 @@ onMounted(() => {
 
           <!-- Phone Number -->
           <div class="field">
-            <label for="phone_number">
-              Phone Number
-            </label>
+            <label for="phone_number"> Phone Number </label>
 
             <input
               id="phone_number"
@@ -219,9 +228,7 @@ onMounted(() => {
 
           <!-- Stokvel -->
           <div class="field">
-            <label for="stokvel_name">
-              Choose Your Stokvel
-            </label>
+            <label for="stokvel_name"> Choose Your Stokvel </label>
 
             <select
               id="stokvel_name"
@@ -229,14 +236,9 @@ onMounted(() => {
               required
               :disabled="loadingStokvels"
             >
-              <option
-                value=""
-                disabled
-              >
+              <option value="" disabled>
                 {{
-                  loadingStokvels
-                    ? "Loading stokvels..."
-                    : "Select a stokvel"
+                  loadingStokvels ? "Loading stokvels..." : "Select a stokvel"
                 }}
               </option>
 
@@ -253,32 +255,22 @@ onMounted(() => {
           <!-- Submit -->
           <button
             type="submit"
-            :disabled="
-              submitting ||
-              loadingStokvels
-            "
+            class="signup-submit"
+            :disabled="submitting || loadingStokvels"
           >
             {{
-              submitting
-                ? "Creating Account..."
-                : "Create StockWell Account"
+              submitting ? "Creating Account..." : "Create StockWell Account"
             }}
           </button>
         </form>
 
         <!-- Success -->
-        <p
-          v-if="successMessage"
-          class="status-message success-message"
-        >
+        <p v-if="successMessage" class="status-message success-message">
           {{ successMessage }}
         </p>
 
         <!-- Error -->
-        <p
-          v-if="errorMessage"
-          class="status-message error-message"
-        >
+        <p v-if="errorMessage" class="status-message error-message">
           {{ errorMessage }}
         </p>
 
@@ -286,17 +278,13 @@ onMounted(() => {
         <p class="bottom-link">
           Already have an account?
 
-          <router-link to="/login">
-            Login
-          </router-link>
+          <router-link to="/login"> Login </router-link>
         </p>
       </div>
     </GlassCard>
 
     <!-- Footer -->
-    <footer class="page-footer">
-      Save · Grow · Together
-    </footer>
+    <footer class="page-footer">Save · Grow · Together</footer>
   </main>
 </template>
 
@@ -317,19 +305,185 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
 
-  padding:
-    var(--sw-space-14)
-    var(--sw-space-7);
+  padding: var(--sw-space-14) var(--sw-space-7);
 
-  background: var(--sw-page-gradient);
+  background: linear-gradient(135deg, #f7f5f1 0%, #f3eee8 48%, #f0e8e2 100%);
 
-  color: var(--sw-white);
+  color: var(--sw-purple-900);
 
   font-family: var(--sw-font-body);
 
   box-sizing: border-box;
+
+  isolation: isolate;
+
+  transition:
+    background var(--sw-transition-slow),
+    color var(--sw-transition-slow),
+    opacity 450ms ease,
+    transform 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 450ms ease;
 }
 
+.signup-page.is-leaving {
+  opacity: 0;
+
+  transform: translateY(24px) scale(0.98);
+
+  filter: blur(8px);
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   SIGNUP BACKGROUND SYSTEM
+   ========================================================= */
+
+.signup-page :deep(.page-background) {
+  z-index: 0;
+}
+
+.signup-page :deep(.background-orb) {
+  opacity: 0.28;
+
+  filter: blur(90px);
+
+  transition:
+    opacity var(--sw-transition-slow),
+    filter var(--sw-transition-slow);
+}
+
+.signup-page :deep(.orb-gold) {
+  width: 34vw;
+  height: 34vw;
+
+  top: -10%;
+  left: -8%;
+
+  background: var(--sw-gold-500);
+}
+
+.signup-page :deep(.orb-orange) {
+  width: 30vw;
+  height: 30vw;
+
+  top: 12%;
+  right: -8%;
+
+  background: var(--sw-orange-600);
+}
+
+.signup-page :deep(.orb-purple) {
+  width: 38vw;
+  height: 38vw;
+
+  bottom: -18%;
+  left: 18%;
+
+  background: var(--sw-purple-700);
+}
+
+.signup-page :deep(.orb-lavender) {
+  width: 25vw;
+  height: 25vw;
+
+  bottom: 6%;
+  right: 16%;
+
+  background: var(--sw-lavender-500);
+}
+
+.signup-page :deep(.page-grain) {
+  opacity: 0.07;
+
+  mix-blend-mode: soft-light;
+}
+
+/* =========================================================
+   BACK TO AUTH
+   ========================================================= */
+
+.back-auth-button {
+  position: absolute;
+
+  right: var(--sw-space-11);
+  bottom: var(--sw-space-6);
+
+  z-index: 30;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: var(--sw-space-2);
+
+  padding: var(--sw-space-3) var(--sw-space-5);
+
+  border: 1px solid var(--sw-input-border);
+
+  border-radius: var(--sw-radius-pill);
+
+  background: rgba(255, 255, 255, 0.3);
+
+  color: var(--sw-purple-900);
+
+  box-shadow:
+    0 12px 30px rgba(49, 43, 80, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.45);
+
+  backdrop-filter: blur(var(--sw-glass-blur))
+    saturate(var(--sw-glass-saturation));
+
+  -webkit-backdrop-filter: blur(var(--sw-glass-blur))
+    saturate(var(--sw-glass-saturation));
+
+  font-family: inherit;
+
+  font-size: var(--sw-text-sm);
+
+  font-weight: 700;
+
+  letter-spacing: 0.04em;
+
+  cursor: pointer;
+
+  transition:
+    transform 300ms ease,
+    background 300ms ease,
+    box-shadow 300ms ease,
+    color 300ms ease,
+    opacity 300ms ease;
+}
+
+.back-auth-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+
+  background: rgba(255, 255, 255, 0.46);
+
+  box-shadow:
+    0 18px 40px rgba(49, 43, 80, 0.14),
+    inset 0 1px 1px rgba(255, 255, 255, 0.55);
+}
+
+.back-auth-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.back-auth-button:disabled {
+  cursor: default;
+
+  opacity: 0.55;
+}
+
+.back-arrow {
+  font-size: 1rem;
+
+  transition: transform 300ms ease;
+}
+
+.back-auth-button:hover:not(:disabled) .back-arrow {
+  transform: translateX(-3px);
+}
 
 /* =========================================================
    BRAND
@@ -354,6 +508,10 @@ onMounted(() => {
   font-weight: 700;
 
   letter-spacing: 0.02em;
+
+  color: var(--sw-purple-900);
+
+  transition: color var(--sw-transition);
 }
 
 .brand-mark {
@@ -371,7 +529,6 @@ onMounted(() => {
   height: 100%;
 }
 
-
 /* =========================================================
    CONTENT
    ========================================================= */
@@ -383,9 +540,7 @@ onMounted(() => {
 }
 
 .eyebrow {
-  margin:
-    0 0
-    var(--sw-space-3);
+  margin: 0 0 var(--sw-space-3);
 
   font-size: var(--sw-text-sm);
 
@@ -408,21 +563,21 @@ h1 {
   line-height: 1;
 
   letter-spacing: -0.06em;
+
+  transition: color var(--sw-transition);
 }
 
 .intro {
-  margin:
-    var(--sw-space-3)
-    0
-    var(--sw-space-10);
+  margin: var(--sw-space-3) 0 var(--sw-space-10);
 
   color: var(--sw-page-text-soft);
 
   font-size: var(--sw-text-lg);
 
   line-height: 1.7;
-}
 
+  transition: color var(--sw-transition);
+}
 
 /* =========================================================
    FORM FIELDS
@@ -444,6 +599,8 @@ h1 {
   font-weight: 700;
 
   letter-spacing: 0.08em;
+
+  transition: color var(--sw-transition);
 }
 
 .field input,
@@ -452,13 +609,9 @@ h1 {
 
   box-sizing: border-box;
 
-  padding:
-    var(--sw-space-4)
-    var(--sw-space-5);
+  padding: var(--sw-space-4) var(--sw-space-5);
 
-  border:
-    1px solid
-    var(--sw-input-border);
+  border: 1px solid var(--sw-input-border);
 
   border-radius: var(--sw-radius-md);
 
@@ -476,13 +629,13 @@ h1 {
     border-color var(--sw-transition),
     background var(--sw-transition),
     box-shadow var(--sw-transition),
-    transform var(--sw-transition);
+    transform var(--sw-transition),
+    color var(--sw-transition);
 }
 
 .field input::placeholder {
   color: var(--sw-placeholder);
 }
-
 
 /* =========================================================
    SELECT
@@ -494,16 +647,8 @@ h1 {
   appearance: none;
 
   background-image:
-    linear-gradient(
-      45deg,
-      transparent 50%,
-      var(--sw-page-text) 50%
-    ),
-    linear-gradient(
-      135deg,
-      var(--sw-page-text) 50%,
-      transparent 50%
-    );
+    linear-gradient(45deg, transparent 50%, var(--sw-page-text) 50%),
+    linear-gradient(135deg, var(--sw-page-text) 50%, transparent 50%);
 
   background-position:
     calc(100% - 18px) 50%,
@@ -524,9 +669,7 @@ h1 {
 
   background: var(--sw-input-background-focus);
 
-  box-shadow:
-    0 0 0 4px
-    var(--sw-focus-ring);
+  box-shadow: 0 0 0 4px var(--sw-focus-ring);
 
   transform: translateY(-1px);
 }
@@ -537,12 +680,11 @@ h1 {
   opacity: 0.65;
 }
 
-
 /* =========================================================
    BUTTON
    ========================================================= */
 
-button {
+.signup-submit {
   width: 100%;
 
   margin-top: var(--sw-space-1);
@@ -573,33 +715,28 @@ button {
     opacity var(--sw-transition);
 }
 
-button:hover:not(:disabled) {
+.signup-submit:hover:not(:disabled) {
   transform: translateY(-2px);
 
-  box-shadow:
-    var(--sw-button-shadow);
+  box-shadow: var(--sw-button-shadow);
 }
 
-button:active:not(:disabled) {
+.signup-submit:active:not(:disabled) {
   transform: translateY(0);
 }
 
-button:disabled {
+.signup-submit:disabled {
   cursor: not-allowed;
 
   opacity: 0.6;
 }
-
 
 /* =========================================================
    STATUS MESSAGES
    ========================================================= */
 
 .status-message {
-  margin:
-    var(--sw-space-6)
-    0
-    0;
+  margin: var(--sw-space-6) 0 0;
 
   font-size: var(--sw-text-base);
 
@@ -614,22 +751,20 @@ button:disabled {
   color: var(--sw-red-600);
 }
 
-
 /* =========================================================
    LOGIN LINK
    ========================================================= */
 
 .bottom-link {
-  margin:
-    var(--sw-space-10)
-    0
-    0;
+  margin: var(--sw-space-10) 0 0;
 
   text-align: center;
 
   color: var(--sw-page-text-muted);
 
   font-size: var(--sw-text-md);
+
+  transition: color var(--sw-transition);
 }
 
 .bottom-link a {
@@ -646,7 +781,6 @@ button:disabled {
   text-decoration: underline;
 }
 
-
 /* =========================================================
    FOOTER
    ========================================================= */
@@ -654,16 +788,69 @@ button:disabled {
 .page-footer {
   position: absolute;
 
-  bottom: 25px;
   left: var(--sw-space-11);
+  bottom: var(--sw-space-6);
+
+  color: var(--sw-page-text);
 
   font-size: var(--sw-text-xs);
 
   letter-spacing: 0.12em;
 
   opacity: 0.55;
+
+  transition: color var(--sw-transition);
 }
 
+/* =========================================================
+   DARK MODE
+   ========================================================= */
+
+.signup-page-dark {
+  background: linear-gradient(135deg, #15121b 0%, #1d1825 48%, #24191b 100%);
+
+  color: var(--sw-off-white);
+}
+
+.signup-page-dark :deep(.background-orb) {
+  opacity: 0.2;
+
+  filter: blur(100px);
+}
+
+.signup-page-dark :deep(.orb-gold) {
+  opacity: 0.18;
+}
+
+.signup-page-dark :deep(.orb-orange) {
+  opacity: 0.2;
+}
+
+.signup-page-dark :deep(.orb-purple) {
+  opacity: 0.24;
+}
+
+.signup-page-dark :deep(.orb-lavender) {
+  opacity: 0.18;
+}
+
+.signup-page-dark :deep(.page-grain) {
+  opacity: 0.12;
+}
+
+:global(html.dark-mode) .back-auth-button {
+  border-color: var(--sw-glass-dark-border);
+
+  background: var(--sw-glass-dark);
+
+  color: var(--sw-glass-dark-text);
+
+  box-shadow: var(--sw-glass-shadow-dark);
+}
+
+:global(html.dark-mode) .back-auth-button:hover:not(:disabled) {
+  box-shadow: var(--sw-glass-shadow-dark-hover);
+}
 
 /* =========================================================
    MOBILE
@@ -671,9 +858,7 @@ button:disabled {
 
 @media (max-width: 768px) {
   .signup-page {
-    padding:
-      var(--sw-space-14)
-      var(--sw-space-5);
+    padding: var(--sw-space-14) var(--sw-space-5);
   }
 
   .page-brand {
@@ -682,19 +867,48 @@ button:disabled {
     left: var(--sw-space-7);
   }
 
+  .back-auth-button {
+    right: var(--sw-space-7);
+    bottom: var(--sw-space-6);
+
+    padding: var(--sw-space-2) var(--sw-space-4);
+
+    font-size: 0.62rem;
+  }
+
   h1 {
-    font-size:
-      clamp(
-        2.4rem,
-        11vw,
-        var(--sw-heading-lg)
-      );
+    font-size: clamp(2.4rem, 11vw, var(--sw-heading-lg));
   }
 
   .page-footer {
     left: var(--sw-space-7);
-
     bottom: var(--sw-space-6);
+
+    max-width: 45%;
+  }
+
+  .signup-page :deep(.background-orb) {
+    filter: blur(65px);
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .signup-page,
+  .back-auth-button,
+  .back-arrow,
+  h1,
+  .intro,
+  .field label,
+  .field input,
+  .field select,
+  .bottom-link,
+  .page-footer,
+  .signup-page :deep(.background-orb) {
+    transition: none !important;
   }
 }
 </style>

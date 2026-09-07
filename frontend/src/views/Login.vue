@@ -1,10 +1,12 @@
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import GlassCard from "../components/GlassCard.vue";
 import PageBackground from "../components/PageBackground.vue";
 import { login } from "../services/api.js";
 import { useTheme } from "../composables/useTheme.js";
 
+const router = useRouter();
 const { isDark } = useTheme();
 
 const email = ref("");
@@ -14,6 +16,7 @@ const message = ref("");
 const error = ref("");
 
 const loading = ref(false);
+const leaving = ref(false);
 
 const handleLogin = async () => {
   message.value = "";
@@ -38,18 +41,11 @@ const handleLogin = async () => {
 
       localStorage.setItem("token", response.token);
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(response.user)
-      );
+      localStorage.setItem("user", JSON.stringify(response.user));
 
-      localStorage.setItem(
-        "stokvel",
-        JSON.stringify(response.stokvel)
-      );
+      localStorage.setItem("stokvel", JSON.stringify(response.stokvel));
 
       console.log("Logged in user:", response.user);
-
       console.log("User Stokvel:", response.stokvel);
     } else {
       error.value = response.message;
@@ -66,11 +62,36 @@ const handleLogin = async () => {
     loading.value = false;
   }
 };
+
+const goBackToAuth = () => {
+  if (leaving.value) {
+    return;
+  }
+
+  leaving.value = true;
+
+  setTimeout(() => {
+    router.push("/");
+  }, 450);
+};
 </script>
 
 <template>
-  <main class="login-page">
+  <main class="login-page" :class="{ 'is-leaving': leaving }">
     <PageBackground />
+
+    <!-- Back to Auth -->
+    <button
+      type="button"
+      class="back-auth-button"
+      :disabled="leaving"
+      aria-label="Back to authentication selection"
+      @click="goBackToAuth"
+    >
+      <span class="back-arrow" aria-hidden="true"> ← </span>
+
+      <span> Back to Auth </span>
+    </button>
 
     <!-- Branding -->
     <header class="page-brand">
@@ -145,21 +166,15 @@ const handleLogin = async () => {
     <!-- Glass Login Card -->
     <GlassCard :variant="isDark ? 'dark' : 'light'">
       <div class="login-content">
-        <span class="eyebrow">
-          Welcome back
-        </span>
+        <span class="eyebrow"> Welcome back </span>
 
         <h1>Login</h1>
 
-        <p class="intro">
-          Continue your StockWell journey.
-        </p>
+        <p class="intro">Continue your StockWell journey.</p>
 
         <form @submit.prevent="handleLogin">
           <div class="field">
-            <label for="email">
-              Email
-            </label>
+            <label for="email"> Email </label>
 
             <input
               id="email"
@@ -172,9 +187,7 @@ const handleLogin = async () => {
           </div>
 
           <div class="field">
-            <label for="password">
-              Password
-            </label>
+            <label for="password"> Password </label>
 
             <input
               id="password"
@@ -192,49 +205,30 @@ const handleLogin = async () => {
             </router-link>
           </div>
 
-          <button
-            type="submit"
-            :disabled="loading"
-          >
-            <span v-if="!loading">
-              Login
-            </span>
+          <button type="submit" :disabled="loading" class="login-submit">
+            <span v-if="!loading"> Login </span>
 
-            <span v-else>
-              Logging in...
-            </span>
+            <span v-else> Logging in... </span>
           </button>
         </form>
 
-        <p
-          v-if="message"
-          class="success-message"
-        >
+        <p v-if="message" class="success-message">
           {{ message }}
         </p>
 
-        <p
-          v-if="error"
-          class="error-message"
-        >
+        <p v-if="error" class="error-message">
           {{ error }}
         </p>
 
         <div class="bottom-link">
-          <span>
-            Don't have an account?
-          </span>
+          <span> Don't have an account? </span>
 
-          <router-link to="/signup">
-            Sign up
-          </router-link>
+          <router-link to="/signup"> Sign up </router-link>
         </div>
       </div>
     </GlassCard>
 
-    <footer>
-      Save · Grow · Together
-    </footer>
+    <footer>Save · Grow · Together</footer>
   </main>
 </template>
 
@@ -255,9 +249,7 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
 
-  padding:
-    var(--sw-space-14)
-    var(--sw-space-7);
+  padding: var(--sw-space-14) var(--sw-space-7);
 
   background: var(--sw-page-gradient);
 
@@ -266,8 +258,101 @@ const handleLogin = async () => {
   font-family: var(--sw-font-body);
 
   box-sizing: border-box;
+
+  transition:
+    opacity 450ms ease,
+    transform 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 450ms ease;
 }
 
+.login-page.is-leaving {
+  opacity: 0;
+
+  transform: translateY(24px) scale(0.98);
+
+  filter: blur(8px);
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   BACK TO AUTH
+   ========================================================= */
+
+.back-auth-button {
+  position: absolute;
+
+  right: var(--sw-space-11);
+  bottom: var(--sw-space-6);
+
+  z-index: 30;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: var(--sw-space-2);
+
+  padding: var(--sw-space-3) var(--sw-space-5);
+
+  border: 1px solid var(--sw-glass-light-border);
+
+  border-radius: var(--sw-radius-pill);
+
+  background: var(--sw-glass-light);
+
+  color: var(--sw-white);
+
+  box-shadow: var(--sw-glass-shadow-light);
+
+  backdrop-filter: blur(var(--sw-glass-blur))
+    saturate(var(--sw-glass-saturation));
+
+  -webkit-backdrop-filter: blur(var(--sw-glass-blur))
+    saturate(var(--sw-glass-saturation));
+
+  font-family: inherit;
+
+  font-size: var(--sw-text-sm);
+
+  font-weight: 700;
+
+  letter-spacing: 0.04em;
+
+  cursor: pointer;
+
+  transition:
+    transform 300ms ease,
+    background 300ms ease,
+    box-shadow 300ms ease,
+    opacity 300ms ease;
+}
+
+.back-auth-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+
+  box-shadow: var(--sw-glass-shadow-light-hover);
+}
+
+.back-auth-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.back-auth-button:disabled {
+  cursor: default;
+
+  opacity: 0.55;
+}
+
+.back-arrow {
+  font-size: 1rem;
+
+  transition: transform 300ms ease;
+}
+
+.back-auth-button:hover:not(:disabled) .back-arrow {
+  transform: translateX(-3px);
+}
 
 /* =========================================================
    BRAND
@@ -309,7 +394,6 @@ const handleLogin = async () => {
   height: 100%;
 }
 
-
 /* =========================================================
    CONTENT
    ========================================================= */
@@ -323,9 +407,7 @@ const handleLogin = async () => {
 }
 
 .eyebrow {
-  margin:
-    0 0
-    var(--sw-space-3);
+  margin: 0 0 var(--sw-space-3);
 
   font-size: var(--sw-text-sm);
 
@@ -349,10 +431,7 @@ h1 {
 }
 
 .intro {
-  margin:
-    var(--sw-space-3)
-    0
-    var(--sw-space-12);
+  margin: var(--sw-space-3) 0 var(--sw-space-12);
 
   color: var(--sw-page-text-soft);
 
@@ -360,7 +439,6 @@ h1 {
 
   line-height: 1.7;
 }
-
 
 /* =========================================================
    FIELDS
@@ -389,13 +467,9 @@ h1 {
 
   box-sizing: border-box;
 
-  padding:
-    var(--sw-space-4)
-    var(--sw-space-5);
+  padding: var(--sw-space-4) var(--sw-space-5);
 
-  border:
-    1px solid
-    var(--sw-input-border);
+  border: 1px solid var(--sw-input-border);
 
   border-radius: var(--sw-radius-md);
 
@@ -425,13 +499,10 @@ h1 {
 
   background: var(--sw-input-background-focus);
 
-  box-shadow:
-    0 0 0 4px
-    var(--sw-focus-ring);
+  box-shadow: 0 0 0 4px var(--sw-focus-ring);
 
   transform: translateY(-1px);
 }
-
 
 /* =========================================================
    FORGOT PASSWORD
@@ -457,12 +528,11 @@ h1 {
   text-decoration: underline;
 }
 
-
 /* =========================================================
    BUTTON
    ========================================================= */
 
-button {
+.login-submit {
   width: 100%;
 
   padding: 15px;
@@ -491,23 +561,21 @@ button {
     opacity var(--sw-transition);
 }
 
-button:hover:not(:disabled) {
+.login-submit:hover:not(:disabled) {
   transform: translateY(-2px);
 
-  box-shadow:
-    var(--sw-button-shadow);
+  box-shadow: var(--sw-button-shadow);
 }
 
-button:active:not(:disabled) {
+.login-submit:active:not(:disabled) {
   transform: translateY(0);
 }
 
-button:disabled {
+.login-submit:disabled {
   opacity: 0.6;
 
   cursor: not-allowed;
 }
-
 
 /* =========================================================
    MESSAGES
@@ -528,7 +596,6 @@ button:disabled {
 
   font-size: var(--sw-text-base);
 }
-
 
 /* =========================================================
    BOTTOM LINK
@@ -558,7 +625,6 @@ button:disabled {
   text-decoration: underline;
 }
 
-
 /* =========================================================
    FOOTER
    ========================================================= */
@@ -566,8 +632,10 @@ button:disabled {
 footer {
   position: absolute;
 
-  bottom: 25px;
   left: var(--sw-space-11);
+  bottom: var(--sw-space-6);
+
+  color: var(--sw-white);
 
   font-size: var(--sw-text-xs);
 
@@ -576,6 +644,23 @@ footer {
   opacity: 0.55;
 }
 
+/* =========================================================
+   DARK MODE
+   ========================================================= */
+
+:global(html.dark-mode) .back-auth-button {
+  border-color: var(--sw-glass-dark-border);
+
+  background: var(--sw-glass-dark);
+
+  color: var(--sw-glass-dark-text);
+
+  box-shadow: var(--sw-glass-shadow-dark);
+}
+
+:global(html.dark-mode) .back-auth-button:hover:not(:disabled) {
+  box-shadow: var(--sw-glass-shadow-dark-hover);
+}
 
 /* =========================================================
    MOBILE
@@ -583,30 +668,44 @@ footer {
 
 @media (max-width: 768px) {
   .login-page {
-    padding:
-      var(--sw-space-14)
-      var(--sw-space-5);
+    padding: var(--sw-space-14) var(--sw-space-5);
   }
 
   .page-brand {
     top: var(--sw-space-7);
-
     left: var(--sw-space-7);
   }
 
+  .back-auth-button {
+    right: var(--sw-space-7);
+    bottom: var(--sw-space-6);
+
+    padding: var(--sw-space-2) var(--sw-space-4);
+
+    font-size: 0.62rem;
+  }
+
   h1 {
-    font-size:
-      clamp(
-        2.6rem,
-        12vw,
-        var(--sw-heading-xl)
-      );
+    font-size: clamp(2.6rem, 12vw, var(--sw-heading-xl));
   }
 
   footer {
     left: var(--sw-space-7);
-
     bottom: var(--sw-space-6);
+
+    max-width: 45%;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .login-page,
+  .back-auth-button,
+  .back-arrow {
+    transition: none !important;
   }
 }
 </style>
