@@ -1,15 +1,20 @@
 <script setup>
 import { onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+
 import { getStokvels, signup } from "../services/api.js";
+
 import GlassCard from "../components/GlassCard.vue";
 import PageBackground from "../components/PageBackground.vue";
+
 import { useTheme } from "../composables/useTheme.js";
 
 const router = useRouter();
+
 const { isDark } = useTheme();
 
 const stokvels = ref([]);
+
 const loadingStokvels = ref(false);
 const submitting = ref(false);
 
@@ -17,6 +22,8 @@ const successMessage = ref("");
 const errorMessage = ref("");
 
 const leaving = ref(false);
+
+const showPassword = ref(false);
 
 const form = reactive({
   full_name: "",
@@ -28,6 +35,7 @@ const form = reactive({
 
 const loadStokvels = async () => {
   loadingStokvels.value = true;
+
   errorMessage.value = "";
 
   try {
@@ -50,14 +58,19 @@ const loadStokvels = async () => {
 const handleSubmit = async () => {
   successMessage.value = "";
   errorMessage.value = "";
+
   submitting.value = true;
 
   try {
     const data = await signup({
       full_name: form.full_name,
+
       email: form.email,
+
       password: form.password,
+
       phone_number: form.phone_number,
+
       stokvel_name: form.stokvel_name,
     });
 
@@ -69,6 +82,8 @@ const handleSubmit = async () => {
       form.password = "";
       form.phone_number = "";
       form.stokvel_name = "";
+
+      showPassword.value = false;
     } else {
       errorMessage.value = data.message || "Signup failed.";
     }
@@ -112,7 +127,10 @@ onMounted(() => {
   >
     <PageBackground />
 
-    <!-- Back to Auth -->
+    <!-- ==================================================
+         BACK TO AUTH
+         ================================================== -->
+
     <button
       type="button"
       class="back-auth-button"
@@ -125,40 +143,22 @@ onMounted(() => {
       <span> Back to Auth </span>
     </button>
 
-    <!-- StockWell branding -->
+    <!-- ==================================================
+         BRANDING
+         ================================================== -->
+
     <header class="page-brand">
       <div class="brand-mark">
-        <svg
-          viewBox="0 0 40 40"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M11 20.5C11 15.253 15.253 11 20.5 11H29"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3.5"
-            stroke-linecap="round"
-          />
-
-          <path
-            d="M29 19.5C29 24.747 24.747 29 19.5 29H11"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3.5"
-            stroke-linecap="round"
-          />
-
-          <circle cx="29" cy="11" r="2.5" fill="currentColor" />
-
-          <circle cx="11" cy="29" r="2.5" fill="currentColor" />
-        </svg>
+        <span class="brand-handshake" aria-hidden="true"> 🤝 </span>
       </div>
 
-      <span>StockWell</span>
+      <span> SIGN UP to StockWell </span>
     </header>
 
-    <!-- Signup glass card -->
+    <!-- ==================================================
+         SIGNUP GLASS CARD
+         ================================================== -->
+
     <GlassCard :variant="isDark ? 'dark' : 'light'">
       <div class="signup-content">
         <p class="eyebrow">Join the community</p>
@@ -170,7 +170,8 @@ onMounted(() => {
         </p>
 
         <form @submit.prevent="handleSubmit">
-          <!-- Full Name -->
+          <!-- FULL NAME -->
+
           <div class="field">
             <label for="full_name"> Full Name </label>
 
@@ -184,7 +185,8 @@ onMounted(() => {
             />
           </div>
 
-          <!-- Email -->
+          <!-- EMAIL -->
+
           <div class="field">
             <label for="email"> Email </label>
 
@@ -198,22 +200,111 @@ onMounted(() => {
             />
           </div>
 
-          <!-- Password -->
+          <!-- PASSWORD -->
+
           <div class="field">
             <label for="password"> Password </label>
 
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              minlength="8"
-              autocomplete="new-password"
-              required
-              placeholder="Minimum 8 characters"
-            />
+            <div class="password-input-wrapper">
+              <input
+                id="password"
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                minlength="8"
+                autocomplete="new-password"
+                required
+                placeholder="Minimum 8 characters"
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                :title="showPassword ? 'Hide password' : 'Show password'"
+                @click="showPassword = !showPassword"
+              >
+                <!-- CLOSED EYE -->
+
+                <svg
+                  v-if="!showPassword"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="
+                      M2 12
+                      C4.5 8
+                      8 6
+                      12 6
+                      C16 6
+                      19.5 8
+                      22 12
+                      C19.5 16
+                      16 18
+                      12 18
+                      C8 18
+                      4.5 16
+                      2 12
+                      Z
+                    "
+                  />
+
+                  <circle cx="12" cy="12" r="2.5" />
+                </svg>
+
+                <!-- OPEN / HIDDEN EYE -->
+
+                <svg v-else viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 3l18 18" />
+
+                  <path
+                    d="
+                      M10.6 6.2
+                      C11.05 6.07
+                      11.52 6
+                      12 6
+                      C16 6
+                      19.5 8
+                      22 12
+                      C21.25 13.2
+                      20.35 14.25
+                      19.25 15.15
+                    "
+                  />
+
+                  <path
+                    d="
+                      M6.1 6.1
+                      C3.7 7.6
+                      2.5 9.7
+                      2 12
+                      C4.5 16
+                      8 18
+                      12 18
+                      C13.65 18
+                      15.2 17.6
+                      16.6 17
+                    "
+                  />
+
+                  <path
+                    d="
+                      M9.9 9.9
+                      C8.75 11.05
+                      8.75 12.95
+                      9.9 14.1
+                      C11.05 15.25
+                      12.95 15.25
+                      14.1 14.1
+                    "
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
 
-          <!-- Phone Number -->
+          <!-- PHONE -->
+
           <div class="field">
             <label for="phone_number"> Phone Number </label>
 
@@ -226,7 +317,8 @@ onMounted(() => {
             />
           </div>
 
-          <!-- Stokvel -->
+          <!-- STOKVEL -->
+
           <div class="field">
             <label for="stokvel_name"> Choose Your Stokvel </label>
 
@@ -252,7 +344,8 @@ onMounted(() => {
             </select>
           </div>
 
-          <!-- Submit -->
+          <!-- SUBMIT -->
+
           <button
             type="submit"
             class="signup-submit"
@@ -264,17 +357,20 @@ onMounted(() => {
           </button>
         </form>
 
-        <!-- Success -->
+        <!-- SUCCESS -->
+
         <p v-if="successMessage" class="status-message success-message">
           {{ successMessage }}
         </p>
 
-        <!-- Error -->
+        <!-- ERROR -->
+
         <p v-if="errorMessage" class="status-message error-message">
           {{ errorMessage }}
         </p>
 
-        <!-- Login -->
+        <!-- LOGIN -->
+
         <p class="bottom-link">
           Already have an account?
 
@@ -283,7 +379,8 @@ onMounted(() => {
       </div>
     </GlassCard>
 
-    <!-- Footer -->
+    <!-- FOOTER -->
+
     <footer class="page-footer">Save · Grow · Together</footer>
   </main>
 </template>
@@ -303,6 +400,7 @@ onMounted(() => {
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   padding: var(--sw-space-14) var(--sw-space-7);
@@ -336,7 +434,7 @@ onMounted(() => {
 }
 
 /* =========================================================
-   SIGNUP BACKGROUND SYSTEM
+   SIGNUP BACKGROUND
    ========================================================= */
 
 .signup-page :deep(.page-background) {
@@ -355,9 +453,11 @@ onMounted(() => {
 
 .signup-page :deep(.orb-gold) {
   width: 34vw;
+
   height: 34vw;
 
   top: -10%;
+
   left: -8%;
 
   background: var(--sw-gold-500);
@@ -365,9 +465,11 @@ onMounted(() => {
 
 .signup-page :deep(.orb-orange) {
   width: 30vw;
+
   height: 30vw;
 
   top: 12%;
+
   right: -8%;
 
   background: var(--sw-orange-600);
@@ -375,9 +477,11 @@ onMounted(() => {
 
 .signup-page :deep(.orb-purple) {
   width: 38vw;
+
   height: 38vw;
 
   bottom: -18%;
+
   left: 18%;
 
   background: var(--sw-purple-700);
@@ -385,9 +489,11 @@ onMounted(() => {
 
 .signup-page :deep(.orb-lavender) {
   width: 25vw;
+
   height: 25vw;
 
   bottom: 6%;
+
   right: 16%;
 
   background: var(--sw-lavender-500);
@@ -407,6 +513,7 @@ onMounted(() => {
   position: absolute;
 
   right: var(--sw-space-11);
+
   bottom: var(--sw-space-6);
 
   z-index: 30;
@@ -493,6 +600,7 @@ onMounted(() => {
   position: absolute;
 
   top: var(--sw-space-9);
+
   left: var(--sw-space-11);
 
   z-index: 20;
@@ -516,17 +624,40 @@ onMounted(() => {
 
 .brand-mark {
   width: 30px;
+
   height: 30px;
 
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 }
 
-.brand-mark svg {
+.brand-handshake {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
   width: 100%;
+
   height: 100%;
+
+  font-size: 1.55rem;
+
+  line-height: 1;
+
+  transition:
+    transform 300ms ease,
+    filter 300ms ease;
+}
+
+.brand-mark:hover .brand-handshake {
+  transform: scale(1.08) rotate(-3deg);
+
+  filter: drop-shadow(0 3px 5px rgba(49, 43, 80, 0.18));
 }
 
 /* =========================================================
@@ -580,7 +711,7 @@ h1 {
 }
 
 /* =========================================================
-   FORM FIELDS
+   FORM
    ========================================================= */
 
 .field {
@@ -637,6 +768,102 @@ h1 {
   color: var(--sw-placeholder);
 }
 
+.field input:focus,
+.field select:focus {
+  border-color: var(--sw-focus);
+
+  background: var(--sw-input-background-focus);
+
+  box-shadow: 0 0 0 4px var(--sw-focus-ring);
+
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   PASSWORD INPUT
+   ========================================================= */
+
+.password-input-wrapper {
+  position: relative;
+
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 56px;
+}
+
+.password-toggle {
+  position: absolute;
+
+  top: 50%;
+
+  right: 12px;
+
+  width: 34px;
+
+  height: 34px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: var(--sw-page-text-muted);
+
+  transform: translateY(-50%);
+
+  cursor: pointer;
+
+  transition:
+    background 200ms ease,
+    color 200ms ease,
+    transform 200ms ease;
+}
+
+.password-toggle:hover {
+  background: rgba(121, 93, 137, 0.08);
+
+  color: var(--sw-page-text);
+
+  transform: translateY(-50%) scale(1.06);
+}
+
+.password-toggle:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--sw-focus);
+
+  outline-offset: 2px;
+}
+
+.password-toggle svg {
+  width: 19px;
+
+  height: 19px;
+
+  fill: none;
+
+  stroke: currentColor;
+
+  stroke-width: 1.8;
+
+  stroke-linecap: round;
+
+  stroke-linejoin: round;
+}
+
 /* =========================================================
    SELECT
    ========================================================= */
@@ -663,17 +890,6 @@ h1 {
   padding-right: 42px;
 }
 
-.field input:focus,
-.field select:focus {
-  border-color: var(--sw-focus);
-
-  background: var(--sw-input-background-focus);
-
-  box-shadow: 0 0 0 4px var(--sw-focus-ring);
-
-  transform: translateY(-1px);
-}
-
 .field select:disabled {
   cursor: wait;
 
@@ -681,7 +897,7 @@ h1 {
 }
 
 /* =========================================================
-   BUTTON
+   SUBMIT
    ========================================================= */
 
 .signup-submit {
@@ -732,7 +948,7 @@ h1 {
 }
 
 /* =========================================================
-   STATUS MESSAGES
+   STATUS
    ========================================================= */
 
 .status-message {
@@ -752,7 +968,7 @@ h1 {
 }
 
 /* =========================================================
-   LOGIN LINK
+   BOTTOM LINK
    ========================================================= */
 
 .bottom-link {
@@ -789,6 +1005,7 @@ h1 {
   position: absolute;
 
   left: var(--sw-space-11);
+
   bottom: var(--sw-space-6);
 
   color: var(--sw-page-text);
@@ -852,6 +1069,10 @@ h1 {
   box-shadow: var(--sw-glass-shadow-dark-hover);
 }
 
+:global(html.dark-mode) .brand-handshake {
+  filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08));
+}
+
 /* =========================================================
    MOBILE
    ========================================================= */
@@ -869,6 +1090,7 @@ h1 {
 
   .back-auth-button {
     right: var(--sw-space-7);
+
     bottom: var(--sw-space-6);
 
     padding: var(--sw-space-2) var(--sw-space-4);
@@ -882,6 +1104,7 @@ h1 {
 
   .page-footer {
     left: var(--sw-space-7);
+
     bottom: var(--sw-space-6);
 
     max-width: 45%;
@@ -900,14 +1123,8 @@ h1 {
   .signup-page,
   .back-auth-button,
   .back-arrow,
-  h1,
-  .intro,
-  .field label,
-  .field input,
-  .field select,
-  .bottom-link,
-  .page-footer,
-  .signup-page :deep(.background-orb) {
+  .brand-handshake,
+  .password-toggle {
     transition: none !important;
   }
 }

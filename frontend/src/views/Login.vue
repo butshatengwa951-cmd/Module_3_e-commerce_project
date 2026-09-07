@@ -1,16 +1,21 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+
 import GlassCard from "../components/GlassCard.vue";
 import PageBackground from "../components/PageBackground.vue";
+
 import { login } from "../services/api.js";
 import { useTheme } from "../composables/useTheme.js";
 
 const router = useRouter();
+
 const { isDark } = useTheme();
 
 const email = ref("");
 const password = ref("");
+
+const showPassword = ref(false);
 
 const message = ref("");
 const error = ref("");
@@ -46,6 +51,7 @@ const handleLogin = async () => {
       localStorage.setItem("stokvel", JSON.stringify(response.stokvel));
 
       console.log("Logged in user:", response.user);
+
       console.log("User Stokvel:", response.stokvel);
     } else {
       error.value = response.message;
@@ -77,10 +83,18 @@ const goBackToAuth = () => {
 </script>
 
 <template>
-  <main class="login-page" :class="{ 'is-leaving': leaving }">
+  <main
+    class="login-page"
+    :class="{
+      'is-leaving': leaving,
+    }"
+  >
     <PageBackground />
 
-    <!-- Back to Auth -->
+    <!-- ==================================================
+         BACK TO AUTH
+         ================================================== -->
+
     <button
       type="button"
       class="back-auth-button"
@@ -93,77 +107,22 @@ const goBackToAuth = () => {
       <span> Back to Auth </span>
     </button>
 
-    <!-- Branding -->
+    <!-- ==================================================
+         BRANDING
+         ================================================== -->
+
     <header class="page-brand">
       <div class="brand-mark">
-        <svg
-          viewBox="0 0 64 64"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
-          <path
-            d="M8 27.5
-               L17 18.5
-               C20 15.5 24.5 15.5 27.5 18.5
-               L32 23
-               L36.5 18.5
-               C39.5 15.5 44 15.5 47 18.5
-               L56 27.5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-
-          <path
-            d="M10 29
-               L19 38
-               C21 40 24 40 26 38
-               L32 32
-               L38 38
-               C40 40 43 40 45 38
-               L54 29"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-
-          <path
-            d="M26 38
-               L30 42
-               C32 44 35 44 37 42
-               L42 37"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="4"
-            stroke-linecap="round"
-          />
-
-          <path
-            d="M15 25 L24 34"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="4"
-            stroke-linecap="round"
-          />
-
-          <path
-            d="M49 25 L40 34"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="4"
-            stroke-linecap="round"
-          />
-        </svg>
+        <span class="brand-handshake" aria-hidden="true"> 🤝 </span>
       </div>
 
-      <span>LOGIN to StockWell</span>
+      <span> LOGIN to StockWell </span>
     </header>
 
-    <!-- Glass Login Card -->
+    <!-- ==================================================
+         GLASS LOGIN CARD
+         ================================================== -->
+
     <GlassCard :variant="isDark ? 'dark' : 'light'">
       <div class="login-content">
         <span class="eyebrow"> Welcome back </span>
@@ -173,6 +132,8 @@ const goBackToAuth = () => {
         <p class="intro">Continue your StockWell journey.</p>
 
         <form @submit.prevent="handleLogin">
+          <!-- EMAIL -->
+
           <div class="field">
             <label for="email"> Email </label>
 
@@ -186,24 +147,117 @@ const goBackToAuth = () => {
             />
           </div>
 
+          <!-- PASSWORD -->
+
           <div class="field">
             <label for="password"> Password </label>
 
-            <input
-              id="password"
-              v-model="password"
-              type="password"
-              placeholder="Enter your password"
-              autocomplete="current-password"
-              required
-            />
+            <div class="password-input-wrapper">
+              <input
+                id="password"
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                :title="showPassword ? 'Hide password' : 'Show password'"
+                @click="showPassword = !showPassword"
+              >
+                <!-- CLOSED EYE -->
+
+                <svg
+                  v-if="!showPassword"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="
+                      M2 12
+                      C4.5 8
+                      8 6
+                      12 6
+                      C16 6
+                      19.5 8
+                      22 12
+                      C19.5 16
+                      16 18
+                      12 18
+                      C8 18
+                      4.5 16
+                      2 12
+                      Z
+                    "
+                  />
+
+                  <circle cx="12" cy="12" r="2.5" />
+                </svg>
+
+                <!-- OPEN / HIDDEN EYE -->
+
+                <svg v-else viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 3l18 18" />
+
+                  <path
+                    d="
+                      M10.6 6.2
+                      C11.05 6.07
+                      11.52 6
+                      12 6
+                      C16 6
+                      19.5 8
+                      22 12
+                      C21.25 13.2
+                      20.35 14.25
+                      19.25 15.15
+                    "
+                  />
+
+                  <path
+                    d="
+                      M6.1 6.1
+                      C3.7 7.6
+                      2.5 9.7
+                      2 12
+                      C4.5 16
+                      8 18
+                      12 18
+                      C13.65 18
+                      15.2 17.6
+                      16.6 17
+                    "
+                  />
+
+                  <path
+                    d="
+                      M9.9 9.9
+                      C8.75 11.05
+                      8.75 12.95
+                      9.9 14.1
+                      C11.05 15.25
+                      12.95 15.25
+                      14.1 14.1
+                    "
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
+
+          <!-- FORGOT PASSWORD -->
 
           <div class="forgot">
             <router-link to="/forgot-password">
               Forgot your password?
             </router-link>
           </div>
+
+          <!-- LOGIN -->
 
           <button type="submit" :disabled="loading" class="login-submit">
             <span v-if="!loading"> Login </span>
@@ -212,13 +266,19 @@ const goBackToAuth = () => {
           </button>
         </form>
 
+        <!-- SUCCESS -->
+
         <p v-if="message" class="success-message">
           {{ message }}
         </p>
 
+        <!-- ERROR -->
+
         <p v-if="error" class="error-message">
           {{ error }}
         </p>
+
+        <!-- SIGN UP -->
 
         <div class="bottom-link">
           <span> Don't have an account? </span>
@@ -227,6 +287,8 @@ const goBackToAuth = () => {
         </div>
       </div>
     </GlassCard>
+
+    <!-- FOOTER -->
 
     <footer>Save · Grow · Together</footer>
   </main>
@@ -283,6 +345,7 @@ const goBackToAuth = () => {
   position: absolute;
 
   right: var(--sw-space-11);
+
   bottom: var(--sw-space-6);
 
   z-index: 30;
@@ -362,6 +425,7 @@ const goBackToAuth = () => {
   position: absolute;
 
   top: var(--sw-space-9);
+
   left: var(--sw-space-11);
 
   z-index: 20;
@@ -381,17 +445,40 @@ const goBackToAuth = () => {
 
 .brand-mark {
   width: 30px;
+
   height: 30px;
 
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 }
 
-.brand-mark svg {
+.brand-handshake {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
   width: 100%;
+
   height: 100%;
+
+  font-size: 1.55rem;
+
+  line-height: 1;
+
+  transition:
+    transform 300ms ease,
+    filter 300ms ease;
+}
+
+.brand-mark:hover .brand-handshake {
+  transform: scale(1.08) rotate(-3deg);
+
+  filter: drop-shadow(0 3px 5px rgba(49, 43, 80, 0.18));
 }
 
 /* =========================================================
@@ -441,7 +528,7 @@ h1 {
 }
 
 /* =========================================================
-   FIELDS
+   FIELD
    ========================================================= */
 
 .field {
@@ -505,6 +592,93 @@ h1 {
 }
 
 /* =========================================================
+   PASSWORD INPUT
+   ========================================================= */
+
+.password-input-wrapper {
+  position: relative;
+
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 56px;
+}
+
+.password-toggle {
+  position: absolute;
+
+  top: 50%;
+
+  right: 12px;
+
+  width: 34px;
+
+  height: 34px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: var(--sw-page-text-muted);
+
+  transform: translateY(-50%);
+
+  cursor: pointer;
+
+  transition:
+    background 200ms ease,
+    color 200ms ease,
+    transform 200ms ease;
+}
+
+.password-toggle:hover {
+  background: rgba(121, 93, 137, 0.08);
+
+  color: var(--sw-page-text);
+
+  transform: translateY(-50%) scale(1.06);
+}
+
+.password-toggle:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--sw-focus);
+
+  outline-offset: 2px;
+}
+
+.password-toggle svg {
+  width: 19px;
+
+  height: 19px;
+
+  fill: none;
+
+  stroke: currentColor;
+
+  stroke-width: 1.8;
+
+  stroke-linecap: round;
+
+  stroke-linejoin: round;
+
+  transition: opacity 150ms ease;
+}
+
+/* =========================================================
    FORGOT PASSWORD
    ========================================================= */
 
@@ -529,7 +703,7 @@ h1 {
 }
 
 /* =========================================================
-   BUTTON
+   LOGIN BUTTON
    ========================================================= */
 
 .login-submit {
@@ -633,6 +807,7 @@ footer {
   position: absolute;
 
   left: var(--sw-space-11);
+
   bottom: var(--sw-space-6);
 
   color: var(--sw-white);
@@ -662,6 +837,10 @@ footer {
   box-shadow: var(--sw-glass-shadow-dark-hover);
 }
 
+:global(html.dark-mode) .brand-handshake {
+  filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08));
+}
+
 /* =========================================================
    MOBILE
    ========================================================= */
@@ -673,11 +852,13 @@ footer {
 
   .page-brand {
     top: var(--sw-space-7);
+
     left: var(--sw-space-7);
   }
 
   .back-auth-button {
     right: var(--sw-space-7);
+
     bottom: var(--sw-space-6);
 
     padding: var(--sw-space-2) var(--sw-space-4);
@@ -691,9 +872,8 @@ footer {
 
   footer {
     left: var(--sw-space-7);
-    bottom: var(--sw-space-6);
 
-    max-width: 45%;
+    bottom: var(--sw-space-6);
   }
 }
 
@@ -704,7 +884,9 @@ footer {
 @media (prefers-reduced-motion: reduce) {
   .login-page,
   .back-auth-button,
-  .back-arrow {
+  .back-arrow,
+  .brand-handshake,
+  .password-toggle {
     transition: none !important;
   }
 }
