@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref } from "vue";
+import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { getStokvels, signup } from "../services/api.js";
@@ -18,12 +18,18 @@ const stokvels = ref([]);
 const loadingStokvels = ref(false);
 const submitting = ref(false);
 
-const successMessage = ref("");
-const errorMessage = ref("");
-
 const leaving = ref(false);
 
 const showPassword = ref(false);
+
+const notification = ref({
+  visible: false,
+  type: "",
+  title: "",
+  message: "",
+});
+
+let notificationTimer = null;
 
 const form = reactive({
   full_name: "",
@@ -33,10 +39,34 @@ const form = reactive({
   stokvel_name: "",
 });
 
+const showNotification = (type, title, message) => {
+  if (notificationTimer) {
+    clearTimeout(notificationTimer);
+  }
+
+  notification.value = {
+    visible: true,
+    type,
+    title,
+    message,
+  };
+
+  notificationTimer = setTimeout(() => {
+    closeNotification();
+  }, 4500);
+};
+
+const closeNotification = () => {
+  if (notificationTimer) {
+    clearTimeout(notificationTimer);
+    notificationTimer = null;
+  }
+
+  notification.value.visible = false;
+};
+
 const loadStokvels = async () => {
   loadingStokvels.value = true;
-
-  errorMessage.value = "";
 
   try {
     const data = await getStokvels();
@@ -44,20 +74,27 @@ const loadStokvels = async () => {
     if (data.success) {
       stokvels.value = data.stokvels;
     } else {
-      errorMessage.value = "Could not load stokvels.";
+      showNotification(
+        "error",
+        "Unable to load stokvels",
+        data.message || "Could not load the available stokvels.",
+      );
     }
   } catch (error) {
     console.error("Failed to load stokvels:", error);
 
-    errorMessage.value = "Could not connect to the server.";
+    showNotification(
+      "error",
+      "Connection error",
+      "Could not connect to the server.",
+    );
   } finally {
     loadingStokvels.value = false;
   }
 };
 
 const handleSubmit = async () => {
-  successMessage.value = "";
-  errorMessage.value = "";
+  closeNotification();
 
   submitting.value = true;
 
@@ -75,7 +112,11 @@ const handleSubmit = async () => {
     });
 
     if (data.success) {
-      successMessage.value = data.message;
+      showNotification(
+        "success",
+        "Account created",
+        data.message || "Your StockWell account has been created successfully.",
+      );
 
       form.full_name = "";
       form.email = "";
@@ -85,15 +126,27 @@ const handleSubmit = async () => {
 
       showPassword.value = false;
     } else {
-      errorMessage.value = data.message || "Signup failed.";
+      showNotification(
+        "error",
+        "Signup unsuccessful",
+        data.message || "Unable to create your account.",
+      );
     }
   } catch (error) {
     console.error("Signup request failed:", error);
 
     if (error.response?.data?.message) {
-      errorMessage.value = error.response.data.message;
+      showNotification(
+        "error",
+        "Signup unsuccessful",
+        error.response.data.message,
+      );
     } else {
-      errorMessage.value = "Could not connect to the server.";
+      showNotification(
+        "error",
+        "Connection error",
+        "Could not connect to the server.",
+      );
     }
   } finally {
     submitting.value = false;
@@ -115,6 +168,12 @@ const goBackToAuth = () => {
 onMounted(() => {
   loadStokvels();
 });
+
+onBeforeUnmount(() => {
+  if (notificationTimer) {
+    clearTimeout(notificationTimer);
+  }
+});
 </script>
 
 <template>
@@ -126,6 +185,71 @@ onMounted(() => {
     }"
   >
     <PageBackground />
+
+    <!-- ==================================================
+         GLASS NOTIFICATION
+         ================================================== -->
+
+    <Transition name="notification">
+      <div
+        v-if="notification.visible"
+        class="notification"
+        :class="[
+          `notification-${notification.type}`,
+          {
+            'notification-dark': isDark,
+          },
+        ]"
+        role="alert"
+        aria-live="polite"
+      >
+        <div class="notification-icon">
+          <svg
+            v-if="notification.type === 'success'"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+
+            <path d="M7.5 12.5l3 3 6-6" />
+          </svg>
+
+          <svg v-else viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+
+            <path d="M12 8v5" />
+
+            <circle
+              cx="12"
+              cy="16.5"
+              r="0.8"
+              fill="currentColor"
+              stroke="none"
+            />
+          </svg>
+        </div>
+
+        <div class="notification-content">
+          <strong>
+            {{ notification.title }}
+          </strong>
+
+          <span>
+            {{ notification.message }}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          class="notification-close"
+          aria-label="Close notification"
+          title="Close notification"
+          @click="closeNotification"
+        >
+          ×
+        </button>
+      </div>
+    </Transition>
 
     <!-- ==================================================
          BACK TO AUTH
@@ -223,8 +347,6 @@ onMounted(() => {
                 :title="showPassword ? 'Hide password' : 'Show password'"
                 @click="showPassword = !showPassword"
               >
-                <!-- CLOSED EYE -->
-
                 <svg
                   v-if="!showPassword"
                   viewBox="0 0 24 24"
@@ -251,8 +373,6 @@ onMounted(() => {
 
                   <circle cx="12" cy="12" r="2.5" />
                 </svg>
-
-                <!-- OPEN / HIDDEN EYE -->
 
                 <svg v-else viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M3 3l18 18" />
@@ -357,18 +477,6 @@ onMounted(() => {
           </button>
         </form>
 
-        <!-- SUCCESS -->
-
-        <p v-if="successMessage" class="status-message success-message">
-          {{ successMessage }}
-        </p>
-
-        <!-- ERROR -->
-
-        <p v-if="errorMessage" class="status-message error-message">
-          {{ errorMessage }}
-        </p>
-
         <!-- LOGIN -->
 
         <p class="bottom-link">
@@ -434,7 +542,7 @@ onMounted(() => {
 }
 
 /* =========================================================
-   SIGNUP BACKGROUND
+   BACKGROUND
    ========================================================= */
 
 .signup-page :deep(.page-background) {
@@ -503,6 +611,208 @@ onMounted(() => {
   opacity: 0.07;
 
   mix-blend-mode: soft-light;
+}
+
+/* =========================================================
+   NOTIFICATION
+   ========================================================= */
+
+.notification {
+  position: fixed;
+
+  top: 28px;
+
+  right: 28px;
+
+  z-index: 100;
+
+  width: min(420px, calc(100vw - 40px));
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 14px;
+
+  padding: 16px 18px;
+
+  border: 1px solid rgba(255, 255, 255, 0.35);
+
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.14);
+
+  box-shadow:
+    0 18px 55px rgba(49, 43, 80, 0.24),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+
+  backdrop-filter: blur(24px) saturate(145%);
+
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+
+  color: var(--sw-purple-900);
+}
+
+.notification-success {
+  box-shadow:
+    0 18px 55px rgba(49, 43, 80, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.notification-error {
+  box-shadow:
+    0 18px 55px rgba(163, 60, 45, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.notification-icon {
+  width: 38px;
+
+  height: 38px;
+
+  flex: 0 0 38px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 13px;
+
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.notification-success .notification-icon {
+  color: var(--sw-gold-500);
+}
+
+.notification-error .notification-icon {
+  color: var(--sw-red-600);
+}
+
+.notification-icon svg {
+  width: 21px;
+
+  height: 21px;
+
+  fill: none;
+
+  stroke: currentColor;
+
+  stroke-width: 1.8;
+
+  stroke-linecap: round;
+
+  stroke-linejoin: round;
+}
+
+.notification-content {
+  min-width: 0;
+
+  flex: 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  padding-top: 1px;
+}
+
+.notification-content strong {
+  font-size: 0.9rem;
+
+  font-weight: 800;
+
+  letter-spacing: 0.02em;
+}
+
+.notification-content span {
+  font-size: 0.78rem;
+
+  line-height: 1.5;
+
+  opacity: 0.78;
+
+  overflow-wrap: anywhere;
+}
+
+.notification-close {
+  flex: 0 0 28px;
+
+  width: 28px;
+
+  height: 28px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: currentColor;
+
+  font-size: 1.35rem;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  opacity: 0.65;
+
+  transition:
+    transform 200ms ease,
+    opacity 200ms ease,
+    background 200ms ease;
+}
+
+.notification-close:hover {
+  opacity: 1;
+
+  background: rgba(121, 93, 137, 0.1);
+
+  transform: scale(1.06);
+}
+
+.notification-close:active {
+  transform: scale(0.92);
+}
+
+.notification-close:focus-visible {
+  outline: 2px solid currentColor;
+
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   NOTIFICATION TRANSITION
+   ========================================================= */
+
+.notification-enter-active,
+.notification-leave-active {
+  transition:
+    opacity 450ms ease,
+    transform 550ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 450ms ease;
+}
+
+.notification-enter-from,
+.notification-leave-to {
+  opacity: 0;
+
+  transform: translate3d(42px, -12px, 0) scale(0.96);
+
+  filter: blur(8px);
 }
 
 /* =========================================================
@@ -694,8 +1004,6 @@ h1 {
   line-height: 1;
 
   letter-spacing: -0.06em;
-
-  transition: color var(--sw-transition);
 }
 
 .intro {
@@ -706,8 +1014,6 @@ h1 {
   font-size: var(--sw-text-lg);
 
   line-height: 1.7;
-
-  transition: color var(--sw-transition);
 }
 
 /* =========================================================
@@ -730,8 +1036,6 @@ h1 {
   font-weight: 700;
 
   letter-spacing: 0.08em;
-
-  transition: color var(--sw-transition);
 }
 
 .field input,
@@ -948,26 +1252,6 @@ h1 {
 }
 
 /* =========================================================
-   STATUS
-   ========================================================= */
-
-.status-message {
-  margin: var(--sw-space-6) 0 0;
-
-  font-size: var(--sw-text-base);
-
-  line-height: 1.6;
-}
-
-.success-message {
-  color: var(--sw-page-text);
-}
-
-.error-message {
-  color: var(--sw-red-600);
-}
-
-/* =========================================================
    BOTTOM LINK
    ========================================================= */
 
@@ -979,8 +1263,6 @@ h1 {
   color: var(--sw-page-text-muted);
 
   font-size: var(--sw-text-md);
-
-  transition: color var(--sw-transition);
 }
 
 .bottom-link a {
@@ -1015,8 +1297,6 @@ h1 {
   letter-spacing: 0.12em;
 
   opacity: 0.55;
-
-  transition: color var(--sw-transition);
 }
 
 /* =========================================================
@@ -1073,6 +1353,18 @@ h1 {
   filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08));
 }
 
+:global(html.dark-mode) .notification {
+  border-color: rgba(255, 255, 255, 0.16);
+
+  background: rgba(28, 23, 38, 0.58);
+
+  color: var(--sw-off-white);
+
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.42),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
 /* =========================================================
    MOBILE
    ========================================================= */
@@ -1096,6 +1388,18 @@ h1 {
     padding: var(--sw-space-2) var(--sw-space-4);
 
     font-size: 0.62rem;
+  }
+
+  .notification {
+    top: 18px;
+
+    right: 18px;
+
+    width: calc(100vw - 36px);
+
+    padding: 14px 15px;
+
+    border-radius: 18px;
   }
 
   h1 {
@@ -1124,7 +1428,10 @@ h1 {
   .back-auth-button,
   .back-arrow,
   .brand-handshake,
-  .password-toggle {
+  .password-toggle,
+  .notification,
+  .notification-enter-active,
+  .notification-leave-active {
     transition: none !important;
   }
 }

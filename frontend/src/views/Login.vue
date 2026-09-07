@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { onBeforeUnmount, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import GlassCard from "../components/GlassCard.vue";
@@ -17,18 +17,53 @@ const password = ref("");
 
 const showPassword = ref(false);
 
-const message = ref("");
-const error = ref("");
-
 const loading = ref(false);
 const leaving = ref(false);
 
+const notification = ref({
+  visible: false,
+  type: "",
+  title: "",
+  message: "",
+});
+
+let notificationTimer = null;
+
+const showNotification = (type, title, message) => {
+  if (notificationTimer) {
+    clearTimeout(notificationTimer);
+  }
+
+  notification.value = {
+    visible: true,
+    type,
+    title,
+    message,
+  };
+
+  notificationTimer = setTimeout(() => {
+    closeNotification();
+  }, 4500);
+};
+
+const closeNotification = () => {
+  if (notificationTimer) {
+    clearTimeout(notificationTimer);
+    notificationTimer = null;
+  }
+
+  notification.value.visible = false;
+};
+
 const handleLogin = async () => {
-  message.value = "";
-  error.value = "";
+  closeNotification();
 
   if (!email.value || !password.value) {
-    error.value = "Email and password are required.";
+    showNotification(
+      "error",
+      "Login unsuccessful",
+      "Email and password are required.",
+    );
 
     return;
   }
@@ -42,8 +77,6 @@ const handleLogin = async () => {
     });
 
     if (response.success) {
-      message.value = response.message;
-
       localStorage.setItem("token", response.token);
 
       localStorage.setItem("user", JSON.stringify(response.user));
@@ -53,16 +86,34 @@ const handleLogin = async () => {
       console.log("Logged in user:", response.user);
 
       console.log("User Stokvel:", response.stokvel);
+
+      showNotification(
+        "success",
+        "Login successful",
+        response.message || "Welcome back to StockWell.",
+      );
     } else {
-      error.value = response.message;
+      showNotification(
+        "error",
+        "Login unsuccessful",
+        response.message || "Unable to log you in.",
+      );
     }
   } catch (err) {
     console.error("Login error:", err);
 
     if (err.response?.data?.message) {
-      error.value = err.response.data.message;
+      showNotification(
+        "error",
+        "Login unsuccessful",
+        err.response.data.message,
+      );
     } else {
-      error.value = "Unable to connect to the server.";
+      showNotification(
+        "error",
+        "Connection error",
+        "Unable to connect to the server.",
+      );
     }
   } finally {
     loading.value = false;
@@ -80,6 +131,12 @@ const goBackToAuth = () => {
     router.push("/");
   }, 450);
 };
+
+onBeforeUnmount(() => {
+  if (notificationTimer) {
+    clearTimeout(notificationTimer);
+  }
+});
 </script>
 
 <template>
@@ -90,6 +147,71 @@ const goBackToAuth = () => {
     }"
   >
     <PageBackground />
+
+    <!-- ==================================================
+         GLASS NOTIFICATION
+         ================================================== -->
+
+    <Transition name="notification">
+      <div
+        v-if="notification.visible"
+        class="notification"
+        :class="[
+          `notification-${notification.type}`,
+          {
+            'notification-dark': isDark,
+          },
+        ]"
+        role="alert"
+        aria-live="polite"
+      >
+        <div class="notification-icon">
+          <svg
+            v-if="notification.type === 'success'"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+
+            <path d="M7.5 12.5l3 3 6-6" />
+          </svg>
+
+          <svg v-else viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+
+            <path d="M12 8v5" />
+
+            <circle
+              cx="12"
+              cy="16.5"
+              r="0.8"
+              fill="currentColor"
+              stroke="none"
+            />
+          </svg>
+        </div>
+
+        <div class="notification-content">
+          <strong>
+            {{ notification.title }}
+          </strong>
+
+          <span>
+            {{ notification.message }}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          class="notification-close"
+          aria-label="Close notification"
+          title="Close notification"
+          @click="closeNotification"
+        >
+          ×
+        </button>
+      </div>
+    </Transition>
 
     <!-- ==================================================
          BACK TO AUTH
@@ -169,8 +291,6 @@ const goBackToAuth = () => {
                 :title="showPassword ? 'Hide password' : 'Show password'"
                 @click="showPassword = !showPassword"
               >
-                <!-- CLOSED EYE -->
-
                 <svg
                   v-if="!showPassword"
                   viewBox="0 0 24 24"
@@ -197,8 +317,6 @@ const goBackToAuth = () => {
 
                   <circle cx="12" cy="12" r="2.5" />
                 </svg>
-
-                <!-- OPEN / HIDDEN EYE -->
 
                 <svg v-else viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M3 3l18 18" />
@@ -266,18 +384,6 @@ const goBackToAuth = () => {
           </button>
         </form>
 
-        <!-- SUCCESS -->
-
-        <p v-if="message" class="success-message">
-          {{ message }}
-        </p>
-
-        <!-- ERROR -->
-
-        <p v-if="error" class="error-message">
-          {{ error }}
-        </p>
-
         <!-- SIGN UP -->
 
         <div class="bottom-link">
@@ -309,6 +415,7 @@ const goBackToAuth = () => {
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   padding: var(--sw-space-14) var(--sw-space-7);
@@ -335,6 +442,208 @@ const goBackToAuth = () => {
   filter: blur(8px);
 
   pointer-events: none;
+}
+
+/* =========================================================
+   NOTIFICATION
+   ========================================================= */
+
+.notification {
+  position: fixed;
+
+  top: 28px;
+
+  right: 28px;
+
+  z-index: 100;
+
+  width: min(420px, calc(100vw - 40px));
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 14px;
+
+  padding: 16px 18px;
+
+  border: 1px solid rgba(255, 255, 255, 0.35);
+
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.14);
+
+  box-shadow:
+    0 18px 55px rgba(49, 43, 80, 0.24),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+
+  backdrop-filter: blur(24px) saturate(145%);
+
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+
+  color: var(--sw-white);
+}
+
+.notification-success {
+  box-shadow:
+    0 18px 55px rgba(49, 43, 80, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.notification-error {
+  box-shadow:
+    0 18px 55px rgba(163, 60, 45, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.notification-icon {
+  width: 38px;
+
+  height: 38px;
+
+  flex: 0 0 38px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 13px;
+
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.notification-success .notification-icon {
+  color: var(--sw-gold-500);
+}
+
+.notification-error .notification-icon {
+  color: #ffb3a6;
+}
+
+.notification-icon svg {
+  width: 21px;
+
+  height: 21px;
+
+  fill: none;
+
+  stroke: currentColor;
+
+  stroke-width: 1.8;
+
+  stroke-linecap: round;
+
+  stroke-linejoin: round;
+}
+
+.notification-content {
+  min-width: 0;
+
+  flex: 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  padding-top: 1px;
+}
+
+.notification-content strong {
+  font-size: 0.9rem;
+
+  font-weight: 800;
+
+  letter-spacing: 0.02em;
+}
+
+.notification-content span {
+  font-size: 0.78rem;
+
+  line-height: 1.5;
+
+  opacity: 0.82;
+
+  overflow-wrap: anywhere;
+}
+
+.notification-close {
+  flex: 0 0 28px;
+
+  width: 28px;
+
+  height: 28px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: currentColor;
+
+  font-size: 1.35rem;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  opacity: 0.65;
+
+  transition:
+    transform 200ms ease,
+    opacity 200ms ease,
+    background 200ms ease;
+}
+
+.notification-close:hover {
+  opacity: 1;
+
+  background: rgba(255, 255, 255, 0.1);
+
+  transform: scale(1.06);
+}
+
+.notification-close:active {
+  transform: scale(0.92);
+}
+
+.notification-close:focus-visible {
+  outline: 2px solid currentColor;
+
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   NOTIFICATION TRANSITION
+   ========================================================= */
+
+.notification-enter-active,
+.notification-leave-active {
+  transition:
+    opacity 450ms ease,
+    transform 550ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 450ms ease;
+}
+
+.notification-enter-from,
+.notification-leave-to {
+  opacity: 0;
+
+  transform: translate3d(42px, -12px, 0) scale(0.96);
+
+  filter: blur(8px);
 }
 
 /* =========================================================
@@ -528,7 +837,7 @@ h1 {
 }
 
 /* =========================================================
-   FIELD
+   FIELDS
    ========================================================= */
 
 .field {
@@ -674,8 +983,6 @@ h1 {
   stroke-linecap: round;
 
   stroke-linejoin: round;
-
-  transition: opacity 150ms ease;
 }
 
 /* =========================================================
@@ -752,26 +1059,6 @@ h1 {
 }
 
 /* =========================================================
-   MESSAGES
-   ========================================================= */
-
-.success-message {
-  margin-top: var(--sw-space-6);
-
-  color: var(--sw-page-text);
-
-  font-size: var(--sw-text-base);
-}
-
-.error-message {
-  margin-top: var(--sw-space-6);
-
-  color: var(--sw-red-600);
-
-  font-size: var(--sw-text-base);
-}
-
-/* =========================================================
    BOTTOM LINK
    ========================================================= */
 
@@ -841,6 +1128,20 @@ footer {
   filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08));
 }
 
+:global(html.dark-mode) .notification {
+  border-color: rgba(255, 255, 255, 0.16);
+
+  background: rgba(28, 23, 38, 0.58);
+
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.42),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+:global(html.dark-mode) .notification-error .notification-icon {
+  color: #ff9d8c;
+}
+
 /* =========================================================
    MOBILE
    ========================================================= */
@@ -866,6 +1167,18 @@ footer {
     font-size: 0.62rem;
   }
 
+  .notification {
+    top: 18px;
+
+    right: 18px;
+
+    width: calc(100vw - 36px);
+
+    padding: 14px 15px;
+
+    border-radius: 18px;
+  }
+
   h1 {
     font-size: clamp(2.6rem, 12vw, var(--sw-heading-xl));
   }
@@ -886,7 +1199,10 @@ footer {
   .back-auth-button,
   .back-arrow,
   .brand-handshake,
-  .password-toggle {
+  .password-toggle,
+  .notification,
+  .notification-enter-active,
+  .notification-leave-active {
     transition: none !important;
   }
 }
