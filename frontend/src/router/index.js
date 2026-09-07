@@ -1,5 +1,6 @@
-{
-  path: ("/payments", name);
-  ("payments", component);
-  () => import("../views/PaymentView.vue");
-}
+import PaymentView from "../views/PaymentView.vue";
+
+const routes = [
+  { path: "/", component: PaymentView },
+  { path: "/pay", component: PaymentView },
+];

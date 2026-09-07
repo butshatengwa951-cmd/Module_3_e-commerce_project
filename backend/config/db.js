@@ -1,9 +1,7 @@
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
-
 dotenv.config();
 
-// Aiven fix - self-signed cert
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -12,29 +10,20 @@ const pool = mysql.createPool({
   port: parseInt(process.env.DB_PORT || "23586"),
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0,
-  ssl: {
-    rejectUnauthorized: false, // FIX for self-signed certificate in certificate chain
-  },
+  ssl: { rejectUnauthorized: false },
 });
 
 (async () => {
   try {
     const conn = await pool.getConnection();
-    console.log(
-      "✅ Aiven MySQL Connected to",
-      process.env.DB_NAME,
-      "on",
-      process.env.DB_HOST,
+    console.log("✅ Aiven Connected:", process.env.DB_NAME);
+    const [c] = await conn.query(
+      "SELECT card_id, voucher_number, available_amount FROM card_details LIMIT 1",
     );
-    const [rows] = await conn.query(
-      "SELECT card_id, voucher_number, available_amount FROM card_details LIMIT 2",
-    );
-    console.log("✅ card_details sample:", rows);
+    console.log("✅ pot sample:", c[0]);
     conn.release();
-  } catch (err) {
-    console.error("❌ Aiven MySQL Connection Failed:", err.message);
-    console.error("Full error:", err);
+  } catch (e) {
+    console.error("❌ DB fail:", e.message);
   }
 })();
 
