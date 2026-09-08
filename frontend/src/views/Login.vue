@@ -451,13 +451,13 @@ onBeforeUnmount(() => {
 .notification {
   position: fixed;
 
-  top: 28px;
+  top: 82px;
 
-  right: 28px;
+  left: 32px;
 
   z-index: 100;
 
-  width: min(420px, calc(100vw - 40px));
+  width: min(360px, calc(100vw - 64px));
 
   display: flex;
 
@@ -1168,16 +1168,23 @@ footer {
   }
 
   .notification {
-    top: 18px;
+  top: 78px;
 
-    right: 18px;
+  left: 18px;
+  
+  right: 18px;
 
-    width: calc(100vw - 36px);
+  width: auto;
 
-    padding: 14px 15px;
+  max-width: 360px;
 
-    border-radius: 18px;
-  }
+  padding:
+    14px
+    15px;
+
+  border-radius:
+    18px;
+}
 
   h1 {
     font-size: clamp(2.6rem, 12vw, var(--sw-heading-xl));
