@@ -1,12 +1,12 @@
 /* =========================================================
-   StockWell Global Theme
+   STOCKWELL GLOBAL THEME
    ========================================================= */
 
 :root {
   color-scheme: light;
 
   /* -------------------------------------------------------
-     Brand colours
+     BRAND COLOURS
   ------------------------------------------------------- */
 
   --sw-purple-900: #312b50;
@@ -21,7 +21,7 @@
   --sw-black: #111019;
 
   /* -------------------------------------------------------
-     Typography
+     TYPOGRAPHY
   ------------------------------------------------------- */
 
   --sw-font-body: "DM Mono", monospace;
@@ -37,7 +37,7 @@
   --sw-heading-xl: 3.5rem;
 
   /* -------------------------------------------------------
-     Spacing
+     SPACING
   ------------------------------------------------------- */
 
   --sw-space-1: 4px;
@@ -56,7 +56,7 @@
   --sw-space-14: 80px;
 
   /* -------------------------------------------------------
-     Border radius
+     BORDER RADIUS
   ------------------------------------------------------- */
 
   --sw-radius-sm: 8px;
@@ -66,87 +66,84 @@
   --sw-radius-pill: 999px;
 
   /* -------------------------------------------------------
-     Transitions
+     TRANSITIONS
   ------------------------------------------------------- */
 
   --sw-transition-fast: 200ms ease;
+
   --sw-transition: 250ms ease;
+
   --sw-transition-slow: 900ms cubic-bezier(0.22, 1, 0.36, 1);
 
   /* -------------------------------------------------------
-     Page
+     PAGE SURFACE
   ------------------------------------------------------- */
 
-  --sw-page-gradient:
-    linear-gradient(
-      135deg,
-      var(--sw-purple-900) 0%,
-      var(--sw-purple-700) 50%,
-      var(--sw-orange-600) 100%
-    );
+  --sw-page-background: #f7f5f1;
+
+  --sw-page-gradient: linear-gradient(
+    135deg,
+    var(--sw-purple-900) 0%,
+    var(--sw-purple-700) 50%,
+    var(--sw-orange-600) 100%
+  );
+
+  --sw-page-surface: rgba(255, 255, 255, 0.3);
 
   --sw-page-text: var(--sw-purple-900);
+
   --sw-page-text-soft: rgba(49, 43, 80, 0.7);
+
   --sw-page-text-muted: rgba(49, 43, 80, 0.65);
+
   --sw-page-text-faint: rgba(49, 43, 80, 0.45);
 
   /* -------------------------------------------------------
-     Forms
+     FORM CONTROLS
   ------------------------------------------------------- */
 
   --sw-input-border: rgba(49, 43, 80, 0.16);
+
   --sw-input-background: rgba(255, 255, 255, 0.3);
+
   --sw-input-background-focus: rgba(255, 255, 255, 0.5);
+
   --sw-input-text: var(--sw-purple-900);
+
   --sw-placeholder: rgba(49, 43, 80, 0.45);
 
   --sw-focus: rgba(121, 93, 137, 0.7);
+
   --sw-focus-ring: rgba(121, 93, 137, 0.1);
 
   /* -------------------------------------------------------
-     Buttons
+     BUTTONS
   ------------------------------------------------------- */
 
-  --sw-button-gradient:
-    linear-gradient(
-      90deg,
-      var(--sw-purple-900),
-      var(--sw-purple-700),
-      var(--sw-orange-600)
-    );
+  --sw-button-gradient: linear-gradient(
+    90deg,
+    var(--sw-purple-900),
+    var(--sw-purple-700),
+    var(--sw-orange-600)
+  );
 
-  --sw-button-shadow:
-    0 10px 25px rgba(49, 43, 80, 0.2);
+  --sw-button-shadow: 0 10px 25px rgba(49, 43, 80, 0.2);
+
+  --sw-button-shadow-hover: 0 14px 34px rgba(49, 43, 80, 0.27);
 
   /* -------------------------------------------------------
-     Glass
+     GLASS — LIGHT
   ------------------------------------------------------- */
 
-  --sw-glass-light:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.42),
-      rgba(255, 255, 255, 0.18)
-    );
+  --sw-glass-light: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.42),
+    rgba(255, 255, 255, 0.18)
+  );
 
-  --sw-glass-dark:
-    linear-gradient(
-      135deg,
-      rgba(15, 15, 18, 0.52),
-      rgba(15, 15, 18, 0.24)
-    );
+  --sw-glass-light-border: rgba(255, 255, 255, 0.48);
 
-  --sw-glass-light-border:
-    rgba(255, 255, 255, 0.48);
-
-  --sw-glass-dark-border:
-    rgba(255, 255, 255, 0.15);
-
-  --sw-glass-light-text:
-    var(--sw-purple-900);
-
-  --sw-glass-dark-text:
-    var(--sw-off-white);
+  --sw-glass-light-text: var(--sw-purple-900);
 
   --sw-glass-shadow-light:
     0 25px 70px rgba(49, 43, 80, 0.18),
@@ -158,51 +155,72 @@
     inset 0 1px 1px rgba(255, 255, 255, 0.55),
     inset 0 -1px 1px rgba(49, 43, 80, 0.08);
 
-  --sw-glass-shadow-dark:
-    0 25px 70px rgba(0, 0, 0, 0.4),
-    inset 0 1px 1px rgba(255, 255, 255, 0.12),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.25);
+  /* -------------------------------------------------------
+     GLASS — DARK
+  ------------------------------------------------------- */
 
-  --sw-glass-shadow-dark-hover:
-    0 30px 80px rgba(0, 0, 0, 0.5),
-    inset 0 1px 1px rgba(255, 255, 255, 0.16),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.3);
+  --sw-glass-dark: linear-gradient(
+    135deg,
+    rgba(33, 28, 43, 0.78),
+    rgba(19, 17, 27, 0.58)
+  );
+
+  --sw-glass-dark-border: rgba(255, 255, 255, 0.14);
+
+  --sw-glass-dark-text: #f7f5f1;
+
+  --sw-glass-dark-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.42), inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.28);
+
+  --sw-glass-dark-shadow-hover:
+    0 30px 82px rgba(0, 0, 0, 0.52), inset 0 1px 1px rgba(255, 255, 255, 0.14),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.32);
+
+  /* -------------------------------------------------------
+     GLASS SETTINGS
+  ------------------------------------------------------- */
 
   --sw-glass-blur: 24px;
+
   --sw-glass-saturation: 130%;
 
   /* -------------------------------------------------------
-     Background / orb system
+     BACKGROUND / ORB SYSTEM
   ------------------------------------------------------- */
 
   --sw-orb-blur: 80px;
+
   --sw-orb-opacity: 0.45;
 
   --sw-orb-gold: var(--sw-gold-500);
+
   --sw-orb-orange: var(--sw-orange-600);
+
   --sw-orb-purple: var(--sw-purple-700);
+
   --sw-orb-lavender: var(--sw-lavender-500);
 
   --sw-grain-opacity: 0.1;
+
   --sw-grain-dot: rgba(255, 255, 255, 0.9);
 
   /* -------------------------------------------------------
-     Theme toggle
+     THEME TOGGLE
   ------------------------------------------------------- */
 
   --sw-toggle-background: rgba(255, 255, 255, 0.22);
+
   --sw-toggle-border: rgba(255, 255, 255, 0.32);
+
   --sw-toggle-text: var(--sw-white);
 
   --sw-toggle-shadow:
-    0 8px 25px rgba(0, 0, 0, 0.1),
-    inset 0 1px 1px rgba(255, 255, 255, 0.18);
+    0 8px 25px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.18);
 
   --sw-toggle-shadow-hover:
-    0 12px 30px rgba(0, 0, 0, 0.16),
-    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    0 12px 30px rgba(0, 0, 0, 0.16), inset 0 1px 1px rgba(255, 255, 255, 0.25);
 }
-
 
 /* =========================================================
    DARK THEME
@@ -211,31 +229,105 @@
 html.dark-mode {
   color-scheme: dark;
 
-  --sw-page-gradient:
-    linear-gradient(
-      135deg,
-      #111019 0%,
-      #292137 48%,
-      #4a2119 100%
-    );
+  /* -------------------------------------------------------
+     PAGE
+  ------------------------------------------------------- */
 
-  --sw-page-text: var(--sw-off-white);
-  --sw-page-text-soft: rgba(247, 245, 241, 0.7);
-  --sw-page-text-muted: rgba(247, 245, 241, 0.65);
-  --sw-page-text-faint: rgba(247, 245, 241, 0.45);
+  --sw-page-background: #111019;
 
-  --sw-input-border: rgba(255, 255, 255, 0.16);
-  --sw-input-background: rgba(255, 255, 255, 0.07);
+  --sw-page-gradient: linear-gradient(
+    135deg,
+    #111019 0%,
+    #1d1828 48%,
+    #25181b 100%
+  );
+
+  --sw-page-surface: rgba(25, 21, 34, 0.58);
+
+  --sw-page-text: #f7f5f1;
+
+  --sw-page-text-soft: rgba(247, 245, 241, 0.76);
+
+  --sw-page-text-muted: rgba(247, 245, 241, 0.62);
+
+  --sw-page-text-faint: rgba(247, 245, 241, 0.42);
+
+  /* -------------------------------------------------------
+     FORMS
+  ------------------------------------------------------- */
+
+  --sw-input-border: rgba(247, 245, 241, 0.16);
+
+  --sw-input-background: rgba(255, 255, 255, 0.065);
+
   --sw-input-background-focus: rgba(255, 255, 255, 0.11);
-  --sw-input-text: var(--sw-off-white);
-  --sw-placeholder: rgba(247, 245, 241, 0.45);
 
-  --sw-focus: rgba(155, 134, 167, 0.8);
-  --sw-focus-ring: rgba(155, 134, 167, 0.14);
+  --sw-input-text: #f7f5f1;
 
-  --sw-grain-opacity: 0.14;
+  --sw-placeholder: rgba(247, 245, 241, 0.42);
+
+  --sw-focus: rgba(155, 134, 167, 0.88);
+
+  --sw-focus-ring: rgba(155, 134, 167, 0.16);
+
+  /* -------------------------------------------------------
+     BUTTONS
+  ------------------------------------------------------- */
+
+  --sw-button-gradient: linear-gradient(90deg, #403665, #795d89, #c2583d);
+
+  --sw-button-shadow: 0 10px 28px rgba(0, 0, 0, 0.34);
+
+  --sw-button-shadow-hover: 0 15px 38px rgba(0, 0, 0, 0.46);
+
+  /* -------------------------------------------------------
+     GLASS
+  ------------------------------------------------------- */
+
+  --sw-glass-dark: linear-gradient(
+    135deg,
+    rgba(37, 31, 48, 0.78),
+    rgba(15, 14, 23, 0.58)
+  );
+
+  --sw-glass-dark-border: rgba(255, 255, 255, 0.15);
+
+  --sw-glass-dark-text: #f7f5f1;
+
+  --sw-glass-shadow-dark:
+    0 25px 75px rgba(0, 0, 0, 0.48), inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.32);
+
+  --sw-glass-shadow-dark-hover:
+    0 32px 86px rgba(0, 0, 0, 0.58), inset 0 1px 1px rgba(255, 255, 255, 0.14),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.36);
+
+  /* -------------------------------------------------------
+     BACKGROUND
+  ------------------------------------------------------- */
+
+  --sw-orb-opacity: 0.2;
+
+  --sw-grain-opacity: 0.12;
+
+  --sw-grain-dot: rgba(255, 255, 255, 0.75);
+
+  /* -------------------------------------------------------
+     THEME TOGGLE
+  ------------------------------------------------------- */
+
+  --sw-toggle-background: rgba(18, 16, 26, 0.66);
+
+  --sw-toggle-border: rgba(255, 255, 255, 0.16);
+
+  --sw-toggle-text: var(--sw-off-white);
+
+  --sw-toggle-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.34), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+
+  --sw-toggle-shadow-hover:
+    0 12px 32px rgba(0, 0, 0, 0.46), inset 0 1px 1px rgba(255, 255, 255, 0.12);
 }
-
 
 /* =========================================================
    GLOBAL RESET
@@ -249,21 +341,26 @@ html.dark-mode {
 
 html {
   margin: 0;
+
   min-height: 100%;
+
+  background: var(--sw-page-background);
 }
 
 body {
   margin: 0;
+
   min-height: 100vh;
 
   font-family: var(--sw-font-body);
 
-  background: var(--sw-page-gradient);
+  background: var(--sw-page-background);
+
   color: var(--sw-page-text);
 
   transition:
-    background var(--sw-transition),
-    color var(--sw-transition);
+    background var(--sw-transition-slow),
+    color var(--sw-transition-slow);
 }
 
 body,
@@ -289,29 +386,102 @@ a {
   color: inherit;
 }
 
-#app {
-  min-height: 100vh;
+img,
+svg {
+  display: block;
 }
 
+#app {
+  min-height: 100vh;
+
+  background: transparent;
+}
+
+/* =========================================================
+   GLOBAL FORM PLACEHOLDERS
+   ========================================================= */
+
+::placeholder {
+  color: var(--sw-placeholder);
+}
+
+/* =========================================================
+   GLOBAL SELECTION
+   ========================================================= */
+
+::selection {
+  background: rgba(121, 93, 137, 0.22);
+
+  color: var(--sw-page-text);
+}
 
 /* =========================================================
    ACCESSIBILITY
    ========================================================= */
 
 :focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline: 2px solid var(--sw-focus);
+
   outline-offset: 3px;
 }
 
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+html {
+  scrollbar-width: thin;
+
+  scrollbar-color: rgba(121, 93, 137, 0.55) transparent;
+}
+
+html.dark-mode {
+  scrollbar-color: rgba(155, 134, 167, 0.55) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+
+  border-radius: var(--sw-radius-pill);
+
+  background-clip: padding-box;
+
+  background: rgba(121, 93, 137, 0.45);
+}
+
+html.dark-mode ::-webkit-scrollbar-thumb {
+  background: rgba(155, 134, 167, 0.45);
+}
 
 /* =========================================================
    REDUCED MOTION
    ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    scroll-behavior: auto !important;
+  }
+
   *,
   *::before,
   *::after {
+    animation-duration: 0.01ms !important;
+
+    animation-iteration-count: 1 !important;
+
+    transition-duration: 0.01ms !important;
+
     scroll-behavior: auto !important;
   }
 }
