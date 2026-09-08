@@ -418,17 +418,21 @@ onBeforeUnmount(() => {
 
   justify-content: center;
 
-  padding: var(--sw-space-14) var(--sw-space-7);
+  padding:
+    var(--sw-space-14)
+    var(--sw-space-7);
 
   background: var(--sw-page-gradient);
 
-  color: var(--sw-white);
+  color: var(--sw-page-text);
 
   font-family: var(--sw-font-body);
 
   box-sizing: border-box;
 
   transition:
+    background var(--sw-transition-slow),
+    color var(--sw-transition-slow),
     opacity 450ms ease,
     transform 450ms cubic-bezier(0.22, 1, 0.36, 1),
     filter 450ms ease;
@@ -437,12 +441,15 @@ onBeforeUnmount(() => {
 .login-page.is-leaving {
   opacity: 0;
 
-  transform: translateY(24px) scale(0.98);
+  transform:
+    translateY(24px)
+    scale(0.98);
 
   filter: blur(8px);
 
   pointer-events: none;
 }
+
 
 /* =========================================================
    NOTIFICATION
@@ -457,7 +464,10 @@ onBeforeUnmount(() => {
 
   z-index: 100;
 
-  width: min(360px, calc(100vw - 64px));
+  width: min(
+    360px,
+    calc(100vw - 64px)
+  );
 
   display: flex;
 
@@ -465,35 +475,49 @@ onBeforeUnmount(() => {
 
   gap: 14px;
 
-  padding: 16px 18px;
+  padding:
+    16px
+    18px;
 
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  border:
+    1px solid
+    rgba(255,255,255,0.35);
 
   border-radius: 20px;
 
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255,255,255,0.14);
 
   box-shadow:
-    0 18px 55px rgba(49, 43, 80, 0.24),
-    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+    0 18px 55px rgba(49,43,80,0.24),
+    inset 0 1px 1px rgba(255,255,255,0.35);
 
-  backdrop-filter: blur(24px) saturate(145%);
+  backdrop-filter:
+    blur(24px)
+    saturate(145%);
 
-  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter:
+    blur(24px)
+    saturate(145%);
 
   color: var(--sw-white);
+
+  transition:
+    background var(--sw-transition-slow),
+    border-color var(--sw-transition-slow),
+    box-shadow var(--sw-transition-slow),
+    color var(--sw-transition-slow);
 }
 
 .notification-success {
   box-shadow:
-    0 18px 55px rgba(49, 43, 80, 0.2),
-    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+    0 18px 55px rgba(49,43,80,0.2),
+    inset 0 1px 1px rgba(255,255,255,0.35);
 }
 
 .notification-error {
   box-shadow:
-    0 18px 55px rgba(163, 60, 45, 0.25),
-    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+    0 18px 55px rgba(163,60,45,0.25),
+    inset 0 1px 1px rgba(255,255,255,0.35);
 }
 
 .notification-icon {
@@ -511,7 +535,11 @@ onBeforeUnmount(() => {
 
   border-radius: 13px;
 
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255,255,255,0.15);
+
+  transition:
+    background var(--sw-transition-slow),
+    color var(--sw-transition-slow);
 }
 
 .notification-success .notification-icon {
@@ -602,15 +630,15 @@ onBeforeUnmount(() => {
   opacity: 0.65;
 
   transition:
-    transform 200ms ease,
-    opacity 200ms ease,
-    background 200ms ease;
+    transform var(--sw-transition-fast),
+    opacity var(--sw-transition-fast),
+    background var(--sw-transition-fast);
 }
 
 .notification-close:hover {
   opacity: 1;
 
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255,255,255,0.1);
 
   transform: scale(1.06);
 }
@@ -620,10 +648,13 @@ onBeforeUnmount(() => {
 }
 
 .notification-close:focus-visible {
-  outline: 2px solid currentColor;
+  outline:
+    2px solid
+    currentColor;
 
   outline-offset: 2px;
 }
+
 
 /* =========================================================
    NOTIFICATION TRANSITION
@@ -633,7 +664,7 @@ onBeforeUnmount(() => {
 .notification-leave-active {
   transition:
     opacity 450ms ease,
-    transform 550ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 550ms cubic-bezier(0.16,1,0.3,1),
     filter 450ms ease;
 }
 
@@ -641,10 +672,13 @@ onBeforeUnmount(() => {
 .notification-leave-to {
   opacity: 0;
 
-  transform: translate3d(42px, -12px, 0) scale(0.96);
+  transform:
+    translate3d(42px,-12px,0)
+    scale(0.96);
 
   filter: blur(8px);
 }
+
 
 /* =========================================================
    BACK TO AUTH
@@ -665,9 +699,13 @@ onBeforeUnmount(() => {
 
   gap: var(--sw-space-2);
 
-  padding: var(--sw-space-3) var(--sw-space-5);
+  padding:
+    var(--sw-space-3)
+    var(--sw-space-5);
 
-  border: 1px solid var(--sw-glass-light-border);
+  border:
+    1px solid
+    var(--sw-glass-light-border);
 
   border-radius: var(--sw-radius-pill);
 
@@ -677,10 +715,12 @@ onBeforeUnmount(() => {
 
   box-shadow: var(--sw-glass-shadow-light);
 
-  backdrop-filter: blur(var(--sw-glass-blur))
+  backdrop-filter:
+    blur(var(--sw-glass-blur))
     saturate(var(--sw-glass-saturation));
 
-  -webkit-backdrop-filter: blur(var(--sw-glass-blur))
+  -webkit-backdrop-filter:
+    blur(var(--sw-glass-blur))
     saturate(var(--sw-glass-saturation));
 
   font-family: inherit;
@@ -695,15 +735,18 @@ onBeforeUnmount(() => {
 
   transition:
     transform 300ms ease,
-    background 300ms ease,
-    box-shadow 300ms ease,
+    background var(--sw-transition-slow),
+    border-color var(--sw-transition-slow),
+    color var(--sw-transition-slow),
+    box-shadow var(--sw-transition-slow),
     opacity 300ms ease;
 }
 
 .back-auth-button:hover:not(:disabled) {
   transform: translateY(-3px);
 
-  box-shadow: var(--sw-glass-shadow-light-hover);
+  box-shadow:
+    var(--sw-glass-shadow-light-hover);
 }
 
 .back-auth-button:active:not(:disabled) {
@@ -719,12 +762,14 @@ onBeforeUnmount(() => {
 .back-arrow {
   font-size: 1rem;
 
-  transition: transform 300ms ease;
+  transition:
+    transform 300ms ease;
 }
 
 .back-auth-button:hover:not(:disabled) .back-arrow {
   transform: translateX(-3px);
 }
+
 
 /* =========================================================
    BRAND
@@ -744,6 +789,8 @@ onBeforeUnmount(() => {
   align-items: center;
 
   gap: var(--sw-space-3);
+
+  color: var(--sw-white);
 
   font-weight: 700;
 
@@ -785,10 +832,16 @@ onBeforeUnmount(() => {
 }
 
 .brand-mark:hover .brand-handshake {
-  transform: scale(1.08) rotate(-3deg);
+  transform:
+    scale(1.08)
+    rotate(-3deg);
 
-  filter: drop-shadow(0 3px 5px rgba(49, 43, 80, 0.18));
+  filter:
+    drop-shadow(
+      0 3px 5px rgba(49,43,80,0.18)
+    );
 }
+
 
 /* =========================================================
    CONTENT
@@ -803,7 +856,10 @@ onBeforeUnmount(() => {
 }
 
 .eyebrow {
-  margin: 0 0 var(--sw-space-3);
+  margin:
+    0
+    0
+    var(--sw-space-3);
 
   font-size: var(--sw-text-sm);
 
@@ -812,6 +868,9 @@ onBeforeUnmount(() => {
   text-transform: uppercase;
 
   color: var(--sw-page-text-muted);
+
+  transition:
+    color var(--sw-transition-slow);
 }
 
 h1 {
@@ -824,17 +883,27 @@ h1 {
   letter-spacing: -0.06em;
 
   color: var(--sw-page-text);
+
+  transition:
+    color var(--sw-transition-slow);
 }
 
 .intro {
-  margin: var(--sw-space-3) 0 var(--sw-space-12);
+  margin:
+    var(--sw-space-3)
+    0
+    var(--sw-space-12);
 
   color: var(--sw-page-text-soft);
 
   font-size: var(--sw-text-lg);
 
   line-height: 1.7;
+
+  transition:
+    color var(--sw-transition-slow);
 }
+
 
 /* =========================================================
    FIELDS
@@ -856,6 +925,9 @@ h1 {
   letter-spacing: 0.08em;
 
   color: var(--sw-page-text);
+
+  transition:
+    color var(--sw-transition-slow);
 }
 
 .field input {
@@ -863,9 +935,13 @@ h1 {
 
   box-sizing: border-box;
 
-  padding: var(--sw-space-4) var(--sw-space-5);
+  padding:
+    var(--sw-space-4)
+    var(--sw-space-5);
 
-  border: 1px solid var(--sw-input-border);
+  border:
+    1px solid
+    var(--sw-input-border);
 
   border-radius: var(--sw-radius-md);
 
@@ -882,6 +958,7 @@ h1 {
   transition:
     border-color var(--sw-transition),
     background var(--sw-transition),
+    color var(--sw-transition),
     box-shadow var(--sw-transition),
     transform var(--sw-transition);
 }
@@ -895,10 +972,15 @@ h1 {
 
   background: var(--sw-input-background-focus);
 
-  box-shadow: 0 0 0 4px var(--sw-focus-ring);
+  color: var(--sw-input-text);
+
+  box-shadow:
+    0 0 0 4px
+    var(--sw-focus-ring);
 
   transform: translateY(-1px);
 }
+
 
 /* =========================================================
    PASSWORD INPUT
@@ -946,25 +1028,31 @@ h1 {
   cursor: pointer;
 
   transition:
-    background 200ms ease,
-    color 200ms ease,
-    transform 200ms ease;
+    background var(--sw-transition-fast),
+    color var(--sw-transition-fast),
+    transform var(--sw-transition-fast);
 }
 
 .password-toggle:hover {
-  background: rgba(121, 93, 137, 0.08);
+  background: rgba(121,93,137,0.08);
 
   color: var(--sw-page-text);
 
-  transform: translateY(-50%) scale(1.06);
+  transform:
+    translateY(-50%)
+    scale(1.06);
 }
 
 .password-toggle:active {
-  transform: translateY(-50%) scale(0.94);
+  transform:
+    translateY(-50%)
+    scale(0.94);
 }
 
 .password-toggle:focus-visible {
-  outline: 2px solid var(--sw-focus);
+  outline:
+    2px solid
+    var(--sw-focus);
 
   outline-offset: 2px;
 }
@@ -985,6 +1073,7 @@ h1 {
   stroke-linejoin: round;
 }
 
+
 /* =========================================================
    FORGOT PASSWORD
    ========================================================= */
@@ -1003,11 +1092,17 @@ h1 {
   color: var(--sw-purple-700);
 
   text-decoration: none;
+
+  transition:
+    color var(--sw-transition-fast);
 }
 
 .forgot a:hover {
+  color: var(--sw-orange-600);
+
   text-decoration: underline;
 }
+
 
 /* =========================================================
    LOGIN BUTTON
@@ -1036,20 +1131,29 @@ h1 {
 
   cursor: pointer;
 
+  box-shadow:
+    0 0 0 rgba(0,0,0,0);
+
   transition:
     transform var(--sw-transition),
     box-shadow var(--sw-transition),
-    opacity var(--sw-transition);
+    opacity var(--sw-transition),
+    filter var(--sw-transition);
 }
 
 .login-submit:hover:not(:disabled) {
   transform: translateY(-2px);
 
-  box-shadow: var(--sw-button-shadow);
+  box-shadow: var(--sw-button-shadow-hover);
+
+  filter: brightness(1.03);
 }
 
 .login-submit:active:not(:disabled) {
   transform: translateY(0);
+
+  box-shadow:
+    var(--sw-button-shadow);
 }
 
 .login-submit:disabled {
@@ -1057,6 +1161,7 @@ h1 {
 
   cursor: not-allowed;
 }
+
 
 /* =========================================================
    BOTTOM LINK
@@ -1070,6 +1175,9 @@ h1 {
   font-size: var(--sw-text-md);
 
   color: var(--sw-page-text-muted);
+
+  transition:
+    color var(--sw-transition-slow);
 }
 
 .bottom-link a {
@@ -1080,11 +1188,17 @@ h1 {
   font-weight: 700;
 
   text-decoration: none;
+
+  transition:
+    color var(--sw-transition-fast);
 }
 
 .bottom-link a:hover {
+  color: var(--sw-orange-600);
+
   text-decoration: underline;
 }
+
 
 /* =========================================================
    FOOTER
@@ -1104,43 +1218,74 @@ footer {
   letter-spacing: 0.12em;
 
   opacity: 0.55;
+
+  transition:
+    opacity var(--sw-transition-slow);
 }
+
 
 /* =========================================================
    DARK MODE
    ========================================================= */
 
 :global(html.dark-mode) .back-auth-button {
-  border-color: var(--sw-glass-dark-border);
+  border-color:
+    var(--sw-glass-dark-border);
 
-  background: var(--sw-glass-dark);
+  background:
+    var(--sw-glass-dark);
 
-  color: var(--sw-glass-dark-text);
+  color:
+    var(--sw-glass-dark-text);
 
-  box-shadow: var(--sw-glass-shadow-dark);
+  box-shadow:
+    var(--sw-glass-shadow-dark);
 }
 
 :global(html.dark-mode) .back-auth-button:hover:not(:disabled) {
-  box-shadow: var(--sw-glass-shadow-dark-hover);
+  box-shadow:
+    var(--sw-glass-shadow-dark-hover);
 }
 
 :global(html.dark-mode) .brand-handshake {
-  filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08));
+  filter:
+    drop-shadow(
+      0 2px 5px rgba(255,255,255,0.08)
+    );
 }
 
 :global(html.dark-mode) .notification {
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color:
+    rgba(255,255,255,0.16);
 
-  background: rgba(28, 23, 38, 0.58);
+  background:
+    rgba(28,23,38,0.62);
 
   box-shadow:
-    0 18px 55px rgba(0, 0, 0, 0.42),
-    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    0 18px 55px rgba(0,0,0,0.42),
+    inset 0 1px 1px rgba(255,255,255,0.1);
 }
 
 :global(html.dark-mode) .notification-error .notification-icon {
   color: #ff9d8c;
 }
+
+:global(html.dark-mode) .forgot a {
+  color:
+    var(--sw-lavender-500);
+}
+
+:global(html.dark-mode) .forgot a:hover,
+:global(html.dark-mode) .bottom-link a:hover {
+  color:
+    #d47a64;
+}
+
+:global(html.dark-mode) .password-toggle:hover {
+  background:
+    rgba(155,134,167,0.12);
+}
+
 
 /* =========================================================
    MOBILE
@@ -1148,7 +1293,9 @@ footer {
 
 @media (max-width: 768px) {
   .login-page {
-    padding: var(--sw-space-14) var(--sw-space-5);
+    padding:
+      var(--sw-space-14)
+      var(--sw-space-5);
   }
 
   .page-brand {
@@ -1162,32 +1309,38 @@ footer {
 
     bottom: var(--sw-space-6);
 
-    padding: var(--sw-space-2) var(--sw-space-4);
+    padding:
+      var(--sw-space-2)
+      var(--sw-space-4);
 
     font-size: 0.62rem;
   }
 
   .notification {
-  top: 78px;
+    top: 78px;
 
-  left: 18px;
-  
-  right: 18px;
+    left: 18px;
 
-  width: auto;
+    right: 18px;
 
-  max-width: 360px;
+    width: auto;
 
-  padding:
-    14px
-    15px;
+    max-width: 360px;
 
-  border-radius:
-    18px;
-}
+    padding:
+      14px
+      15px;
+
+    border-radius: 18px;
+  }
 
   h1 {
-    font-size: clamp(2.6rem, 12vw, var(--sw-heading-xl));
+    font-size:
+      clamp(
+        2.6rem,
+        12vw,
+        var(--sw-heading-xl)
+      );
   }
 
   footer {
@@ -1196,6 +1349,7 @@ footer {
     bottom: var(--sw-space-6);
   }
 }
+
 
 /* =========================================================
    REDUCED MOTION
