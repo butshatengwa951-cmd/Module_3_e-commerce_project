@@ -101,13 +101,9 @@ const handleSubmit = async () => {
   try {
     const data = await signup({
       full_name: form.full_name,
-
       email: form.email,
-
       password: form.password,
-
       phone_number: form.phone_number,
-
       stokvel_name: form.stokvel_name,
     });
 
@@ -115,7 +111,8 @@ const handleSubmit = async () => {
       showNotification(
         "success",
         "Account created",
-        data.message || "Your StockWell account has been created successfully.",
+        data.message ||
+          "Your StockWell account has been created successfully.",
       );
 
       form.full_name = "";
@@ -180,7 +177,6 @@ onBeforeUnmount(() => {
   <main
     class="signup-page"
     :class="{
-      'signup-page-dark': isDark,
       'is-leaving': leaving,
     }"
   >
@@ -450,7 +446,9 @@ onBeforeUnmount(() => {
             >
               <option value="" disabled>
                 {{
-                  loadingStokvels ? "Loading stokvels..." : "Select a stokvel"
+                  loadingStokvels
+                    ? "Loading stokvels..."
+                    : "Select a stokvel"
                 }}
               </option>
 
@@ -472,7 +470,9 @@ onBeforeUnmount(() => {
             :disabled="submitting || loadingStokvels"
           >
             {{
-              submitting ? "Creating Account..." : "Create StockWell Account"
+              submitting
+                ? "Creating Account..."
+                : "Create StockWell Account"
             }}
           </button>
         </form>
@@ -489,7 +489,9 @@ onBeforeUnmount(() => {
 
     <!-- FOOTER -->
 
-    <footer class="page-footer">Save · Grow · Together</footer>
+    <footer class="page-footer">
+      Save · Grow · Together
+    </footer>
   </main>
 </template>
 
@@ -511,11 +513,14 @@ onBeforeUnmount(() => {
 
   justify-content: center;
 
-  padding: var(--sw-space-14) var(--sw-space-7);
+  padding:
+    var(--sw-space-14)
+    var(--sw-space-7);
 
-  background: linear-gradient(135deg, #f7f5f1 0%, #f3eee8 48%, #f0e8e2 100%);
+  background:
+    var(--sw-page-gradient);
 
-  color: var(--sw-purple-900);
+  color: var(--sw-page-text);
 
   font-family: var(--sw-font-body);
 
@@ -527,19 +532,22 @@ onBeforeUnmount(() => {
     background var(--sw-transition-slow),
     color var(--sw-transition-slow),
     opacity 450ms ease,
-    transform 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 450ms cubic-bezier(0.22,1,0.36,1),
     filter 450ms ease;
 }
 
 .signup-page.is-leaving {
   opacity: 0;
 
-  transform: translateY(24px) scale(0.98);
+  transform:
+    translateY(24px)
+    scale(0.98);
 
   filter: blur(8px);
 
   pointer-events: none;
 }
+
 
 /* =========================================================
    BACKGROUND
@@ -613,6 +621,7 @@ onBeforeUnmount(() => {
   mix-blend-mode: soft-light;
 }
 
+
 /* =========================================================
    NOTIFICATION
    ========================================================= */
@@ -626,7 +635,11 @@ onBeforeUnmount(() => {
 
   z-index: 100;
 
-  width: min(360px, calc(100vw - 64px));
+  width:
+    min(
+      360px,
+      calc(100vw - 64px)
+    );
 
   display: flex;
 
@@ -634,35 +647,55 @@ onBeforeUnmount(() => {
 
   gap: 14px;
 
-  padding: 16px 18px;
+  padding:
+    16px
+    18px;
 
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  border:
+    1px solid
+    rgba(255,255,255,0.35);
 
   border-radius: 20px;
 
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255,255,255,0.14);
 
   box-shadow:
-    0 18px 55px rgba(49, 43, 80, 0.24),
-    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+    0 18px 55px
+    rgba(49,43,80,0.24),
+    inset 0 1px 1px
+    rgba(255,255,255,0.35);
 
-  backdrop-filter: blur(24px) saturate(145%);
+  backdrop-filter:
+    blur(24px)
+    saturate(145%);
 
-  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter:
+    blur(24px)
+    saturate(145%);
 
-  color: var(--sw-purple-900);
+  color: var(--sw-white);
+
+  transition:
+    background var(--sw-transition-slow),
+    border-color var(--sw-transition-slow),
+    color var(--sw-transition-slow),
+    box-shadow var(--sw-transition-slow);
 }
 
 .notification-success {
   box-shadow:
-    0 18px 55px rgba(49, 43, 80, 0.2),
-    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+    0 18px 55px
+    rgba(49,43,80,0.2),
+    inset 0 1px 1px
+    rgba(255,255,255,0.35);
 }
 
 .notification-error {
   box-shadow:
-    0 18px 55px rgba(163, 60, 45, 0.25),
-    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+    0 18px 55px
+    rgba(163,60,45,0.25),
+    inset 0 1px 1px
+    rgba(255,255,255,0.35);
 }
 
 .notification-icon {
@@ -680,7 +713,10 @@ onBeforeUnmount(() => {
 
   border-radius: 13px;
 
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255,255,255,0.15);
+
+  transition:
+    background var(--sw-transition-slow);
 }
 
 .notification-success .notification-icon {
@@ -688,7 +724,7 @@ onBeforeUnmount(() => {
 }
 
 .notification-error .notification-icon {
-  color: var(--sw-red-600);
+  color: #ffb3a6;
 }
 
 .notification-icon svg {
@@ -734,7 +770,7 @@ onBeforeUnmount(() => {
 
   line-height: 1.5;
 
-  opacity: 0.78;
+  opacity: 0.82;
 
   overflow-wrap: anywhere;
 }
@@ -771,15 +807,15 @@ onBeforeUnmount(() => {
   opacity: 0.65;
 
   transition:
-    transform 200ms ease,
-    opacity 200ms ease,
-    background 200ms ease;
+    transform var(--sw-transition-fast),
+    opacity var(--sw-transition-fast),
+    background var(--sw-transition-fast);
 }
 
 .notification-close:hover {
   opacity: 1;
 
-  background: rgba(121, 93, 137, 0.1);
+  background: rgba(255,255,255,0.1);
 
   transform: scale(1.06);
 }
@@ -789,10 +825,13 @@ onBeforeUnmount(() => {
 }
 
 .notification-close:focus-visible {
-  outline: 2px solid currentColor;
+  outline:
+    2px solid
+    currentColor;
 
   outline-offset: 2px;
 }
+
 
 /* =========================================================
    NOTIFICATION TRANSITION
@@ -802,7 +841,7 @@ onBeforeUnmount(() => {
 .notification-leave-active {
   transition:
     opacity 450ms ease,
-    transform 550ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 550ms cubic-bezier(0.16,1,0.3,1),
     filter 450ms ease;
 }
 
@@ -810,10 +849,13 @@ onBeforeUnmount(() => {
 .notification-leave-to {
   opacity: 0;
 
-  transform: translate3d(42px, -12px, 0) scale(0.96);
+  transform:
+    translate3d(42px,-12px,0)
+    scale(0.96);
 
   filter: blur(8px);
 }
+
 
 /* =========================================================
    BACK TO AUTH
@@ -834,24 +876,31 @@ onBeforeUnmount(() => {
 
   gap: var(--sw-space-2);
 
-  padding: var(--sw-space-3) var(--sw-space-5);
+  padding:
+    var(--sw-space-3)
+    var(--sw-space-5);
 
-  border: 1px solid var(--sw-input-border);
+  border:
+    1px solid
+    var(--sw-glass-light-border);
 
   border-radius: var(--sw-radius-pill);
 
-  background: rgba(255, 255, 255, 0.3);
+  background:
+    var(--sw-glass-light);
 
-  color: var(--sw-purple-900);
+  color:
+    var(--sw-purple-900);
 
   box-shadow:
-    0 12px 30px rgba(49, 43, 80, 0.1),
-    inset 0 1px 1px rgba(255, 255, 255, 0.45);
+    var(--sw-glass-shadow-light);
 
-  backdrop-filter: blur(var(--sw-glass-blur))
+  backdrop-filter:
+    blur(var(--sw-glass-blur))
     saturate(var(--sw-glass-saturation));
 
-  -webkit-backdrop-filter: blur(var(--sw-glass-blur))
+  -webkit-backdrop-filter:
+    blur(var(--sw-glass-blur))
     saturate(var(--sw-glass-saturation));
 
   font-family: inherit;
@@ -866,20 +915,21 @@ onBeforeUnmount(() => {
 
   transition:
     transform 300ms ease,
-    background 300ms ease,
-    box-shadow 300ms ease,
-    color 300ms ease,
+    background var(--sw-transition-slow),
+    border-color var(--sw-transition-slow),
+    color var(--sw-transition-slow),
+    box-shadow var(--sw-transition-slow),
     opacity 300ms ease;
 }
 
 .back-auth-button:hover:not(:disabled) {
   transform: translateY(-3px);
 
-  background: rgba(255, 255, 255, 0.46);
+  background:
+    var(--sw-input-background-focus);
 
   box-shadow:
-    0 18px 40px rgba(49, 43, 80, 0.14),
-    inset 0 1px 1px rgba(255, 255, 255, 0.55);
+    var(--sw-glass-shadow-light-hover);
 }
 
 .back-auth-button:active:not(:disabled) {
@@ -895,12 +945,14 @@ onBeforeUnmount(() => {
 .back-arrow {
   font-size: 1rem;
 
-  transition: transform 300ms ease;
+  transition:
+    transform 300ms ease;
 }
 
 .back-auth-button:hover:not(:disabled) .back-arrow {
   transform: translateX(-3px);
 }
+
 
 /* =========================================================
    BRAND
@@ -927,9 +979,10 @@ onBeforeUnmount(() => {
 
   letter-spacing: 0.02em;
 
-  color: var(--sw-purple-900);
+  color: var(--sw-white);
 
-  transition: color var(--sw-transition);
+  transition:
+    color var(--sw-transition-slow);
 }
 
 .brand-mark {
@@ -965,10 +1018,17 @@ onBeforeUnmount(() => {
 }
 
 .brand-mark:hover .brand-handshake {
-  transform: scale(1.08) rotate(-3deg);
+  transform:
+    scale(1.08)
+    rotate(-3deg);
 
-  filter: drop-shadow(0 3px 5px rgba(49, 43, 80, 0.18));
+  filter:
+    drop-shadow(
+      0 3px 5px
+      rgba(49,43,80,0.18)
+    );
 }
+
 
 /* =========================================================
    CONTENT
@@ -981,7 +1041,10 @@ onBeforeUnmount(() => {
 }
 
 .eyebrow {
-  margin: 0 0 var(--sw-space-3);
+  margin:
+    0
+    0
+    var(--sw-space-3);
 
   font-size: var(--sw-text-sm);
 
@@ -992,6 +1055,9 @@ onBeforeUnmount(() => {
   letter-spacing: 0.18em;
 
   color: var(--sw-page-text-muted);
+
+  transition:
+    color var(--sw-transition-slow);
 }
 
 h1 {
@@ -1004,17 +1070,27 @@ h1 {
   line-height: 1;
 
   letter-spacing: -0.06em;
+
+  transition:
+    color var(--sw-transition-slow);
 }
 
 .intro {
-  margin: var(--sw-space-3) 0 var(--sw-space-10);
+  margin:
+    var(--sw-space-3)
+    0
+    var(--sw-space-10);
 
   color: var(--sw-page-text-soft);
 
   font-size: var(--sw-text-lg);
 
   line-height: 1.7;
+
+  transition:
+    color var(--sw-transition-slow);
 }
+
 
 /* =========================================================
    FORM
@@ -1036,6 +1112,9 @@ h1 {
   font-weight: 700;
 
   letter-spacing: 0.08em;
+
+  transition:
+    color var(--sw-transition-slow);
 }
 
 .field input,
@@ -1044,21 +1123,29 @@ h1 {
 
   box-sizing: border-box;
 
-  padding: var(--sw-space-4) var(--sw-space-5);
+  padding:
+    var(--sw-space-4)
+    var(--sw-space-5);
 
-  border: 1px solid var(--sw-input-border);
+  border:
+    1px solid
+    var(--sw-input-border);
 
-  border-radius: var(--sw-radius-md);
+  border-radius:
+    var(--sw-radius-md);
 
   outline: none;
 
-  background: var(--sw-input-background);
+  background:
+    var(--sw-input-background);
 
-  color: var(--sw-input-text);
+  color:
+    var(--sw-input-text);
 
   font-family: inherit;
 
-  font-size: var(--sw-text-base);
+  font-size:
+    var(--sw-text-base);
 
   transition:
     border-color var(--sw-transition),
@@ -1074,14 +1161,26 @@ h1 {
 
 .field input:focus,
 .field select:focus {
-  border-color: var(--sw-focus);
+  border-color:
+    var(--sw-focus);
 
-  background: var(--sw-input-background-focus);
+  background:
+    var(--sw-input-background-focus);
 
-  box-shadow: 0 0 0 4px var(--sw-focus-ring);
+  box-shadow:
+    0 0 0 4px
+    var(--sw-focus-ring);
 
-  transform: translateY(-1px);
+  transform:
+    translateY(-1px);
 }
+
+.field input:hover:not(:focus),
+.field select:hover:not(:focus) {
+  border-color:
+    var(--sw-focus);
+}
+
 
 /* =========================================================
    PASSWORD INPUT
@@ -1124,30 +1223,39 @@ h1 {
 
   color: var(--sw-page-text-muted);
 
-  transform: translateY(-50%);
+  transform:
+    translateY(-50%);
 
   cursor: pointer;
 
   transition:
-    background 200ms ease,
-    color 200ms ease,
-    transform 200ms ease;
+    background var(--sw-transition-fast),
+    color var(--sw-transition-fast),
+    transform var(--sw-transition-fast);
 }
 
 .password-toggle:hover {
-  background: rgba(121, 93, 137, 0.08);
+  background:
+    rgba(121,93,137,0.08);
 
-  color: var(--sw-page-text);
+  color:
+    var(--sw-page-text);
 
-  transform: translateY(-50%) scale(1.06);
+  transform:
+    translateY(-50%)
+    scale(1.06);
 }
 
 .password-toggle:active {
-  transform: translateY(-50%) scale(0.94);
+  transform:
+    translateY(-50%)
+    scale(0.94);
 }
 
 .password-toggle:focus-visible {
-  outline: 2px solid var(--sw-focus);
+  outline:
+    2px solid
+    var(--sw-focus);
 
   outline-offset: 2px;
 }
@@ -1168,6 +1276,7 @@ h1 {
   stroke-linejoin: round;
 }
 
+
 /* =========================================================
    SELECT
    ========================================================= */
@@ -1178,8 +1287,16 @@ h1 {
   appearance: none;
 
   background-image:
-    linear-gradient(45deg, transparent 50%, var(--sw-page-text) 50%),
-    linear-gradient(135deg, var(--sw-page-text) 50%, transparent 50%);
+    linear-gradient(
+      45deg,
+      transparent 50%,
+      var(--sw-page-text) 50%
+    ),
+    linear-gradient(
+      135deg,
+      var(--sw-page-text) 50%,
+      transparent 50%
+    );
 
   background-position:
     calc(100% - 18px) 50%,
@@ -1194,11 +1311,20 @@ h1 {
   padding-right: 42px;
 }
 
+.field select option {
+  background:
+    var(--sw-page-background);
+
+  color:
+    var(--sw-page-text);
+}
+
 .field select:disabled {
   cursor: wait;
 
   opacity: 0.65;
 }
+
 
 /* =========================================================
    SUBMIT
@@ -1215,13 +1341,16 @@ h1 {
 
   border-radius: var(--sw-radius-pill);
 
-  background: var(--sw-button-gradient);
+  background:
+    var(--sw-button-gradient);
 
-  color: var(--sw-white);
+  color:
+    var(--sw-white);
 
   font-family: inherit;
 
-  font-size: var(--sw-text-base);
+  font-size:
+    var(--sw-text-base);
 
   font-weight: 700;
 
@@ -1232,17 +1361,25 @@ h1 {
   transition:
     transform var(--sw-transition),
     box-shadow var(--sw-transition),
-    opacity var(--sw-transition);
+    opacity var(--sw-transition),
+    filter var(--sw-transition);
 }
 
 .signup-submit:hover:not(:disabled) {
   transform: translateY(-2px);
 
-  box-shadow: var(--sw-button-shadow);
+  box-shadow:
+    var(--sw-button-shadow-hover);
+
+  filter:
+    brightness(1.03);
 }
 
 .signup-submit:active:not(:disabled) {
   transform: translateY(0);
+
+  box-shadow:
+    var(--sw-button-shadow);
 }
 
 .signup-submit:disabled {
@@ -1251,33 +1388,51 @@ h1 {
   opacity: 0.6;
 }
 
+
 /* =========================================================
    BOTTOM LINK
    ========================================================= */
 
 .bottom-link {
-  margin: var(--sw-space-10) 0 0;
+  margin:
+    var(--sw-space-10)
+    0
+    0;
 
   text-align: center;
 
-  color: var(--sw-page-text-muted);
+  color:
+    var(--sw-page-text-muted);
 
-  font-size: var(--sw-text-md);
+  font-size:
+    var(--sw-text-md);
+
+  transition:
+    color var(--sw-transition-slow);
 }
 
 .bottom-link a {
-  margin-left: var(--sw-space-1);
+  margin-left:
+    var(--sw-space-1);
 
-  color: var(--sw-page-text);
+  color:
+    var(--sw-page-text);
 
   font-weight: 700;
 
   text-decoration: none;
+
+  transition:
+    color var(--sw-transition-fast);
 }
 
 .bottom-link a:hover {
+  color:
+    var(--sw-orange-600);
+
   text-decoration: underline;
 }
+
 
 /* =========================================================
    FOOTER
@@ -1290,80 +1445,109 @@ h1 {
 
   bottom: var(--sw-space-6);
 
-  color: var(--sw-page-text);
+  color:
+    rgba(255,255,255,0.7);
 
-  font-size: var(--sw-text-xs);
+  font-size:
+    var(--sw-text-xs);
 
   letter-spacing: 0.12em;
 
-  opacity: 0.55;
+  opacity: 0.65;
+
+  transition:
+    color var(--sw-transition-slow),
+    opacity var(--sw-transition-slow);
 }
+
 
 /* =========================================================
    DARK MODE
    ========================================================= */
 
-.signup-page-dark {
-  background: linear-gradient(135deg, #15121b 0%, #1d1825 48%, #24191b 100%);
-
-  color: var(--sw-off-white);
-}
-
-.signup-page-dark :deep(.background-orb) {
-  opacity: 0.2;
-
-  filter: blur(100px);
-}
-
-.signup-page-dark :deep(.orb-gold) {
-  opacity: 0.18;
-}
-
-.signup-page-dark :deep(.orb-orange) {
-  opacity: 0.2;
-}
-
-.signup-page-dark :deep(.orb-purple) {
-  opacity: 0.24;
-}
-
-.signup-page-dark :deep(.orb-lavender) {
-  opacity: 0.18;
-}
-
-.signup-page-dark :deep(.page-grain) {
-  opacity: 0.12;
-}
-
 :global(html.dark-mode) .back-auth-button {
-  border-color: var(--sw-glass-dark-border);
+  border-color:
+    var(--sw-glass-dark-border);
 
-  background: var(--sw-glass-dark);
+  background:
+    var(--sw-glass-dark);
 
-  color: var(--sw-glass-dark-text);
+  color:
+    var(--sw-glass-dark-text);
 
-  box-shadow: var(--sw-glass-shadow-dark);
+  box-shadow:
+    var(--sw-glass-shadow-dark);
 }
 
 :global(html.dark-mode) .back-auth-button:hover:not(:disabled) {
-  box-shadow: var(--sw-glass-shadow-dark-hover);
+  background:
+    var(--sw-input-background-focus);
+
+  box-shadow:
+    var(--sw-glass-shadow-dark-hover);
 }
 
 :global(html.dark-mode) .brand-handshake {
-  filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08));
+  filter:
+    drop-shadow(
+      0 2px 5px
+      rgba(255,255,255,0.08)
+    );
 }
 
 :global(html.dark-mode) .notification {
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color:
+    rgba(255,255,255,0.16);
 
-  background: rgba(28, 23, 38, 0.58);
+  background:
+    rgba(28,23,38,0.62);
 
-  color: var(--sw-off-white);
+  color:
+    var(--sw-off-white);
 
   box-shadow:
-    0 18px 55px rgba(0, 0, 0, 0.42),
-    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    0 18px 55px
+    rgba(0,0,0,0.42),
+    inset 0 1px 1px
+    rgba(255,255,255,0.1);
 }
+
+:global(html.dark-mode) .notification-error .notification-icon {
+  color:
+    #ff9d8c;
+}
+
+:global(html.dark-mode) .notification-success .notification-icon {
+  color:
+    var(--sw-gold-500);
+}
+
+:global(html.dark-mode) .password-toggle:hover {
+  background:
+    rgba(155,134,167,0.12);
+}
+
+:global(html.dark-mode) .page-footer {
+  color:
+    var(--sw-off-white);
+
+  opacity:
+    0.48;
+}
+
+:global(html.dark-mode) .signup-page :deep(.background-orb) {
+  opacity:
+    0.2;
+
+  filter:
+    blur(100px);
+}
+
+:global(html.dark-mode) .signup-page :deep(.page-grain) {
+  opacity:
+    0.12;
+}
+
 
 /* =========================================================
    MOBILE
@@ -1371,60 +1555,84 @@ h1 {
 
 @media (max-width: 768px) {
   .signup-page {
-    padding: var(--sw-space-14) var(--sw-space-5);
+    padding:
+      var(--sw-space-14)
+      var(--sw-space-5);
   }
 
   .page-brand {
-    top: var(--sw-space-7);
+    top:
+      var(--sw-space-7);
 
-    left: var(--sw-space-7);
+    left:
+      var(--sw-space-7);
   }
 
   .back-auth-button {
-    right: var(--sw-space-7);
+    right:
+      var(--sw-space-7);
 
-    bottom: var(--sw-space-6);
+    bottom:
+      var(--sw-space-6);
 
-    padding: var(--sw-space-2) var(--sw-space-4);
+    padding:
+      var(--sw-space-2)
+      var(--sw-space-4);
 
-    font-size: 0.62rem;
+    font-size:
+      0.62rem;
   }
 
   .notification {
-  top: 78px;
+    top:
+      78px;
 
-  left: 18px;
-  
-  right: 18px;
+    left:
+      18px;
 
-  width: auto;
+    right:
+      18px;
 
-  max-width: 360px;
+    width:
+      auto;
 
-  padding:
-    14px
-    15px;
+    max-width:
+      360px;
 
-  border-radius:
-    18px;
-}
+    padding:
+      14px
+      15px;
+
+    border-radius:
+      18px;
+  }
 
   h1 {
-    font-size: clamp(2.4rem, 11vw, var(--sw-heading-lg));
+    font-size:
+      clamp(
+        2.4rem,
+        11vw,
+        var(--sw-heading-lg)
+      );
   }
 
   .page-footer {
-    left: var(--sw-space-7);
+    left:
+      var(--sw-space-7);
 
-    bottom: var(--sw-space-6);
+    bottom:
+      var(--sw-space-6);
 
-    max-width: 45%;
+    max-width:
+      45%;
   }
 
   .signup-page :deep(.background-orb) {
-    filter: blur(65px);
+    filter:
+      blur(65px);
   }
 }
+
 
 /* =========================================================
    REDUCED MOTION
