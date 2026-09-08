@@ -249,8 +249,6 @@
       rgba(49,43,80,0.05) 74%,
       rgba(49,43,80,0.12) 100%
     );
-
-  opacity: 0.5;
 }
 
 :global(html.light-mode) .background-orb {
