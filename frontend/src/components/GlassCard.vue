@@ -54,7 +54,11 @@ defineProps({
     both;
 
   transition:
-    box-shadow var(--sw-transition);
+    background var(--sw-transition-slow),
+    border-color var(--sw-transition-slow),
+    color var(--sw-transition-slow),
+    box-shadow var(--sw-transition-slow),
+    transform var(--sw-transition);
 }
 
 
@@ -95,6 +99,35 @@ defineProps({
 
 
 /* =========================================================
+   THEME ADAPTATION
+   ========================================================= */
+
+/*
+   When a light glass card is used inside dark mode,
+   automatically soften it into the dark glass treatment.
+   This protects pages that still pass variant="light".
+*/
+
+:global(html.dark-mode) .glass-light {
+  background: var(--sw-glass-dark);
+
+  border-color:
+    var(--sw-glass-dark-border);
+
+  color:
+    var(--sw-glass-dark-text);
+
+  box-shadow:
+    var(--sw-glass-shadow-dark);
+}
+
+:global(html.dark-mode) .glass-light:hover {
+  box-shadow:
+    var(--sw-glass-shadow-dark-hover);
+}
+
+
+/* =========================================================
    HIGHLIGHT
    ========================================================= */
 
@@ -118,6 +151,23 @@ defineProps({
   opacity: 0.7;
 
   pointer-events: none;
+
+  transition:
+    opacity var(--sw-transition-slow);
+}
+
+
+/* Light-mode highlight */
+
+:global(html.light-mode) .glass-highlight {
+  opacity: 0.82;
+}
+
+
+/* Dark-mode highlight */
+
+:global(html.dark-mode) .glass-highlight {
+  opacity: 0.46;
 }
 
 
@@ -145,6 +195,16 @@ defineProps({
   background-size: 5px 5px;
 
   mix-blend-mode: soft-light;
+
+  transition:
+    opacity var(--sw-transition-slow);
+}
+
+
+/* Dark mode gets slightly stronger texture */
+
+:global(html.dark-mode) .glass-noise {
+  opacity: 0.1;
 }
 
 
@@ -163,12 +223,26 @@ defineProps({
    HOVER
    ========================================================= */
 
+.glass-card:hover {
+  transform: translateY(-2px);
+}
+
 .glass-light:hover {
   box-shadow:
     var(--sw-glass-shadow-light-hover);
 }
 
 .glass-dark:hover {
+  box-shadow:
+    var(--sw-glass-shadow-dark-hover);
+}
+
+
+/* =========================================================
+   DARK-MODE HOVER
+   ========================================================= */
+
+:global(html.dark-mode) .glass-light:hover {
   box-shadow:
     var(--sw-glass-shadow-dark-hover);
 }
@@ -215,6 +289,10 @@ defineProps({
 
     border-radius: var(--sw-radius-lg);
   }
+
+  .glass-card:hover {
+    transform: none;
+  }
 }
 
 
@@ -225,6 +303,12 @@ defineProps({
 @media (prefers-reduced-motion: reduce) {
   .glass-card {
     animation: none;
+
+    transition: none;
+  }
+
+  .glass-card:hover {
+    transform: none;
   }
 }
 </style>
