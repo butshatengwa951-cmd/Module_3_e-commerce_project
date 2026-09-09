@@ -1444,7 +1444,7 @@ h1 {
    DARK MODE
    ========================================================= */
 
-:global(html.dark-mode) .back-auth-button {
+html.dark-mode .back-auth-button {
   border-color: var(--sw-glass-dark-border);
 
   background: var(--sw-glass-dark);
@@ -1454,17 +1454,17 @@ h1 {
   box-shadow: var(--sw-glass-shadow-dark);
 }
 
-:global(html.dark-mode) .back-auth-button:hover:not(:disabled) {
+html.dark-mode .back-auth-button:hover:not(:disabled) {
   background: var(--sw-input-background-focus);
 
   box-shadow: var(--sw-glass-shadow-dark-hover);
 }
 
-:global(html.dark-mode) .brand-handshake {
+html.dark-mode .brand-handshake {
   filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08));
 }
 
-:global(html.dark-mode) .notification {
+html.dark-mode .notification {
   border-color: rgba(255, 255, 255, 0.16);
 
   background: rgba(28, 23, 38, 0.62);
@@ -1476,31 +1476,31 @@ h1 {
     inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
-:global(html.dark-mode) .notification-error .notification-icon {
+html.dark-mode .notification-error .notification-icon {
   color: #ff9d8c;
 }
 
-:global(html.dark-mode) .notification-success .notification-icon {
+html.dark-mode .notification-success .notification-icon {
   color: var(--sw-gold-500);
 }
 
-:global(html.dark-mode) .password-toggle:hover {
+html.dark-mode .password-toggle:hover {
   background: rgba(155, 134, 167, 0.12);
 }
 
-:global(html.dark-mode) .page-footer {
+html.dark-mode .page-footer {
   color: var(--sw-off-white);
 
   opacity: 0.48;
 }
 
-:global(html.dark-mode) .signup-page :deep(.background-orb) {
+html.dark-mode .signup-page :deep(.background-orb) {
   opacity: 0.2;
 
   filter: blur(100px);
 }
 
-:global(html.dark-mode) .signup-page :deep(.page-grain) {
+html.dark-mode .signup-page :deep(.page-grain) {
   opacity: 0.12;
 }
 

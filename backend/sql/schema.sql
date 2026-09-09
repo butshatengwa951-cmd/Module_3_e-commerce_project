@@ -288,3 +288,126 @@ CREATE TABLE IF NOT EXISTS password_resets (
     INDEX idx_password_reset_user (user_id),
     INDEX idx_password_reset_expiry (expires_at)
 );
+
+CREATE TABLE IF NOT EXISTS carts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NULL,
+  session_id VARCHAR(100) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS cart_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  cart_id INT NOT NULL,
+  product_id INT NOT NULL,
+  qty INT NOT NULL DEFAULT 1,
+  price DECIMAL(10,2) NOT NULL,
+  FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
+  UNIQUE KEY uniq_cart_product (cart_id, product_id)
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NULL,
+  tracking_number VARCHAR(50) NOT NULL UNIQUE,
+  total_amount DECIMAL(10,2) NOT NULL,
+  shipping_fee DECIMAL(10,2) DEFAULT 25.00,
+  discount DECIMAL(10,2) DEFAULT 0,
+  final_amount DECIMAL(10,2) NOT NULL,
+  email VARCHAR(150) NOT NULL,
+  member_name VARCHAR(150) NOT NULL,
+  delivery_address TEXT NOT NULL,
+  status ENUM('pending','paid','shipped','in_transit','out_for_delivery','delivered','cancelled') DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS order_items_ecom (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL,
+  product_id INT NOT NULL,
+  qty INT NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL,
+  reference VARCHAR(100) NOT NULL UNIQUE,
+  paystack_reference VARCHAR(100),
+  amount DECIMAL(10,2) NOT NULL,
+  currency VARCHAR(10) DEFAULT 'ZAR',
+  method ENUM('card','bank','voucher') DEFAULT 'card',
+  status ENUM('pending','success','failed','abandoned') DEFAULT 'pending',
+  card_last4 VARCHAR(10),
+  card_type VARCHAR(20),
+  verified_at DATETIME NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS vouchers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(20) NOT NULL UNIQUE,
+  discount_type ENUM('percent','fixed') NOT NULL,
+  discount_value DECIMAL(10,2) NOT NULL,
+  max_uses INT DEFAULT 100,
+  used_count INT DEFAULT 0,
+  active TINYINT(1) DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT IGNORE INTO vouchers (code, discount_type, discount_value) VALUES
+('STOCK10','percent',10),
+('WELCOME50','fixed',50),
+('GLOBAL20','percent',20);
+
+CREATE TABLE IF NOT EXISTS deliveries (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL UNIQUE,
+  tracking_number VARCHAR(50) NOT NULL UNIQUE,
+  courier VARCHAR(100) DEFAULT 'StockWell Express ZA',
+  courier_phone VARCHAR(30) DEFAULT '0800 123 456',
+  status ENUM('ordered','paid','shipped','in_transit','out_for_delivery','delivered') DEFAULT 'ordered',
+  progress INT DEFAULT 0,
+  current_step INT DEFAULT 0,
+  eta DATETIME,
+  estimated_text VARCHAR(100) DEFAULT 'Tomorrow by 18:00',
+  delivery_address TEXT NOT NULL,
+  delivery_fee DECIMAL(10,2) DEFAULT 25.00,
+  confirmed_at DATETIME NULL,
+  delivered_at DATETIME NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS delivery_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  delivery_id INT NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  description TEXT,
+  status_key VARCHAR(30) NOT NULL,
+  tag VARCHAR(50),
+  location VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (delivery_id) REFERENCES deliveries(id) ON DELETE CASCADE,
+  KEY idx_delivery_created (delivery_id, created_at)
+);
+
+CREATE TABLE IF NOT EXISTS delivery_confirmations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  delivery_id INT NOT NULL,
+  user_id INT NULL,
+  action ENUM('confirmed','issue_reported','contacted') NOT NULL,
+  message TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (delivery_id) REFERENCES deliveries(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
+);

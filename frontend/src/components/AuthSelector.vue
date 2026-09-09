@@ -879,21 +879,21 @@ h1 {
    DARK MODE
    ================================================== */
 
-:global(html.dark-mode) .auth-selector {
+html.dark-mode .auth-selector {
   background: #111019;
 
   color: var(--sw-off-white);
 }
 
-:global(html.dark-mode) .brand {
+html.dark-mode .brand {
   color: var(--sw-off-white);
 }
 
-:global(html.dark-mode) .brand-handshake {
+html.dark-mode .brand-handshake {
   filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08));
 }
 
-:global(html.dark-mode) .signup-panel {
+html.dark-mode .signup-panel {
   background:
     radial-gradient(
       circle at var(--light-x) var(--light-y),
@@ -905,11 +905,11 @@ h1 {
   color: var(--sw-off-white);
 }
 
-:global(html.dark-mode) .signup-panel::before {
+html.dark-mode .signup-panel::before {
   opacity: 0.14;
 }
 
-:global(html.dark-mode) .signup-panel::after {
+html.dark-mode .signup-panel::after {
   background: radial-gradient(
     circle at var(--light-x) var(--light-y),
     rgba(200, 176, 25, 0.12),
@@ -917,17 +917,17 @@ h1 {
   );
 }
 
-:global(html.dark-mode) .signup-light {
+html.dark-mode .signup-light {
   opacity: 0.2;
 
   mix-blend-mode: screen;
 }
 
-:global(html.dark-mode) .tagline {
+html.dark-mode .tagline {
   color: var(--sw-off-white);
 }
 
-:global(html.dark-mode) .login-panel {
+html.dark-mode .login-panel {
   background:
     radial-gradient(
       circle at var(--mouse-x) var(--mouse-y),
@@ -950,7 +950,7 @@ h1 {
     linear-gradient(135deg, #111019, #292137, #4a2119);
 }
 
-:global(html.dark-mode) .login-selected .liquid-transition {
+html.dark-mode .login-selected .liquid-transition {
   background:
     radial-gradient(
       circle at 35% 35%,
@@ -971,7 +971,7 @@ h1 {
   box-shadow: 0 0 110px rgba(0, 0, 0, 0.4);
 }
 
-:global(html.dark-mode) .signup-selected .liquid-transition {
+html.dark-mode .signup-selected .liquid-transition {
   background:
     radial-gradient(
       circle at 30% 28%,

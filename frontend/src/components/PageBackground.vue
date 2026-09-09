@@ -241,7 +241,7 @@
    LIGHT MODE
    ========================================================= */
 
-:global(html.light-mode) .page-vignette {
+html.light-mode .page-vignette {
   background:
     radial-gradient(
       circle at center,
@@ -251,7 +251,7 @@
     );
 }
 
-:global(html.light-mode) .background-orb {
+html.light-mode .background-orb {
   mix-blend-mode: multiply;
 }
 
@@ -260,15 +260,15 @@
    DARK MODE
    ========================================================= */
 
-:global(html.dark-mode) .page-gradient {
+html.dark-mode .page-gradient {
   opacity: 1;
 }
 
-:global(html.dark-mode) .background-orb {
+html.dark-mode .background-orb {
   mix-blend-mode: screen;
 }
 
-:global(html.dark-mode) .page-vignette {
+html.dark-mode .page-vignette {
   opacity: 0.9;
 }
 

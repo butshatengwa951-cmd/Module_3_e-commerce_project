@@ -923,7 +923,7 @@ footer {
    DARK MODE
    ========================================================= */
 
-:global(html.dark-mode) .back-auth-button {
+html.dark-mode .back-auth-button {
   border-color: var(--sw-glass-dark-border);
 
   background: var(--sw-glass-dark);
@@ -933,11 +933,11 @@ footer {
   box-shadow: var(--sw-glass-shadow-dark);
 }
 
-:global(html.dark-mode) .back-auth-button:hover:not(:disabled) {
+html.dark-mode .back-auth-button:hover:not(:disabled) {
   box-shadow: var(--sw-glass-shadow-dark-hover);
 }
 
-:global(html.dark-mode) .notification {
+html.dark-mode .notification {
   border-color: rgba(255, 255, 255, 0.16);
 
   background: rgba(28, 23, 38, 0.58);
@@ -947,7 +947,7 @@ footer {
     inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
-:global(html.dark-mode) .brand-handshake {
+html.dark-mode .brand-handshake {
   filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08));
 }
 

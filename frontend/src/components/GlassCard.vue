@@ -108,7 +108,7 @@ defineProps({
    This protects pages that still pass variant="light".
 */
 
-:global(html.dark-mode) .glass-light {
+html.dark-mode .glass-light {
   background: var(--sw-glass-dark);
 
   border-color:
@@ -121,7 +121,7 @@ defineProps({
     var(--sw-glass-shadow-dark);
 }
 
-:global(html.dark-mode) .glass-light:hover {
+html.dark-mode .glass-light:hover {
   box-shadow:
     var(--sw-glass-shadow-dark-hover);
 }
@@ -159,14 +159,14 @@ defineProps({
 
 /* Light-mode highlight */
 
-:global(html.light-mode) .glass-highlight {
+html.light-mode .glass-highlight {
   opacity: 0.82;
 }
 
 
 /* Dark-mode highlight */
 
-:global(html.dark-mode) .glass-highlight {
+html.dark-mode .glass-highlight {
   opacity: 0.46;
 }
 
@@ -203,7 +203,7 @@ defineProps({
 
 /* Dark mode gets slightly stronger texture */
 
-:global(html.dark-mode) .glass-noise {
+html.dark-mode .glass-noise {
   opacity: 0.1;
 }
 
@@ -242,7 +242,7 @@ defineProps({
    DARK-MODE HOVER
    ========================================================= */
 
-:global(html.dark-mode) .glass-light:hover {
+html.dark-mode .glass-light:hover {
   box-shadow:
     var(--sw-glass-shadow-dark-hover);
 }

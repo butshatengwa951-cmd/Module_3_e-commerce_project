@@ -1240,7 +1240,7 @@ footer {
    DARK MODE
    ========================================================= */
 
-:global(html.dark-mode) .back-auth-button {
+html.dark-mode .back-auth-button {
   border-color: var(--sw-glass-dark-border);
 
   background: var(--sw-glass-dark);
@@ -1250,15 +1250,15 @@ footer {
   box-shadow: var(--sw-glass-shadow-dark);
 }
 
-:global(html.dark-mode) .back-auth-button:hover:not(:disabled) {
+html.dark-mode .back-auth-button:hover:not(:disabled) {
   box-shadow: var(--sw-glass-shadow-dark-hover);
 }
 
-:global(html.dark-mode) .brand-handshake {
+html.dark-mode .brand-handshake {
   filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08));
 }
 
-:global(html.dark-mode) .notification {
+html.dark-mode .notification {
   border-color: rgba(255, 255, 255, 0.16);
 
   background: rgba(28, 23, 38, 0.62);
@@ -1268,20 +1268,20 @@ footer {
     inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
-:global(html.dark-mode) .notification-error .notification-icon {
+html.dark-mode .notification-error .notification-icon {
   color: #ff9d8c;
 }
 
-:global(html.dark-mode) .forgot a {
+html.dark-mode .forgot a {
   color: var(--sw-lavender-500);
 }
 
-:global(html.dark-mode) .forgot a:hover,
-:global(html.dark-mode) .bottom-link a:hover {
+html.dark-mode .forgot a:hover,
+html.dark-mode .bottom-link a:hover {
   color: #d47a64;
 }
 
-:global(html.dark-mode) .password-toggle:hover {
+html.dark-mode .password-toggle:hover {
   background: rgba(155, 134, 167, 0.12);
 }
 
