@@ -1,0 +1,1 @@
+const e=require('express');const r=e.Router();const c=require('../controllers/deliveryController');r.get('/:id',c.getDelivery);r.patch('/:id/progress',c.updateProgress);module.exports=r;

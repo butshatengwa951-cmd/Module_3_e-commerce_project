@@ -1,0 +1,1 @@
+const e=require('express');const r=e.Router();const c=require('../controllers/cartController');r.get('/',c.getCart);r.post('/',c.addToCart);r.delete('/',c.clearCart);module.exports=r;

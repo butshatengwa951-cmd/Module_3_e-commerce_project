@@ -1,0 +1,1 @@
+const e=require('express');const r=e.Router();const c=require('../controllers/payController');r.post('/',c.pay);module.exports=r;

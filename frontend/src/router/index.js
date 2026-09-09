@@ -1,6 +1,1 @@
-import PaymentView from "../views/PaymentView.vue";
-
-const routes = [
-  { path: "/", component: PaymentView },
-  { path: "/pay", component: PaymentView },
-];
+import {createRouter,createWebHistory} from 'vue-router';export default createRouter({history:createWebHistory(),routes:[{path:'/',redirect:'/pay'},{path:'/pay',component:()=>import('../views/PayView.vue')},{path:'/delivery',component:()=>import('../views/DeliveryView.vue')},{path:'/delivery/:id',component:()=>import('../views/DeliveryView.vue')}]})
