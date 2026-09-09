@@ -418,9 +418,7 @@ onBeforeUnmount(() => {
 
   justify-content: center;
 
-  padding:
-    var(--sw-space-14)
-    var(--sw-space-7);
+  padding: var(--sw-space-14) var(--sw-space-7);
 
   background: var(--sw-page-gradient);
 
@@ -441,15 +439,96 @@ onBeforeUnmount(() => {
 .login-page.is-leaving {
   opacity: 0;
 
-  transform:
-    translateY(24px)
-    scale(0.98);
+  transform: translateY(24px) scale(0.98);
 
   filter: blur(8px);
 
   pointer-events: none;
 }
 
+.login-page :deep(.page-gradient) {
+  opacity: 0.9;
+
+  filter: saturate(1.3) brightness(1.08);
+
+  animation-duration: 18s;
+}
+
+.login-page :deep(.background-orb) {
+  opacity: 0.52;
+
+  filter: blur(68px) saturate(1.2);
+
+  animation-duration: 14s;
+  animation-timing-function: ease-in-out;
+}
+
+.login-page :deep(.orb-gold),
+.login-page :deep(.orb-orange),
+.login-page :deep(.orb-purple),
+.login-page :deep(.orb-lavender) {
+  transform: scale(0.9);
+}
+
+.login-page :deep(.orb-gold) {
+  animation-name: loginOrbGold;
+}
+
+.login-page :deep(.orb-orange) {
+  animation-name: loginOrbOrange;
+}
+
+.login-page :deep(.orb-purple) {
+  animation-name: loginOrbPurple;
+}
+
+.login-page :deep(.orb-lavender) {
+  animation-name: loginOrbLavender;
+}
+
+@keyframes loginOrbGold {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(0.9);
+  }
+
+  50% {
+    transform: translate(72px, 48px) scale(1.06);
+  }
+}
+
+@keyframes loginOrbOrange {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(0.9);
+  }
+
+  50% {
+    transform: translate(-72px, 64px) scale(1.04);
+  }
+}
+
+@keyframes loginOrbPurple {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(0.92);
+  }
+
+  50% {
+    transform: translate(44px, -56px) scale(1.02);
+  }
+}
+
+@keyframes loginOrbLavender {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(0.9);
+  }
+
+  50% {
+    transform: translate(-40px, -48px) scale(1.02);
+  }
+}
 
 /* =========================================================
    NOTIFICATION
@@ -464,10 +543,7 @@ onBeforeUnmount(() => {
 
   z-index: 100;
 
-  width: min(
-    360px,
-    calc(100vw - 64px)
-  );
+  width: min(360px, calc(100vw - 64px));
 
   display: flex;
 
@@ -475,29 +551,21 @@ onBeforeUnmount(() => {
 
   gap: 14px;
 
-  padding:
-    16px
-    18px;
+  padding: 16px 18px;
 
-  border:
-    1px solid
-    rgba(255,255,255,0.35);
+  border: 1px solid rgba(255, 255, 255, 0.35);
 
   border-radius: 20px;
 
-  background: rgba(255,255,255,0.14);
+  background: rgba(255, 255, 255, 0.14);
 
   box-shadow:
-    0 18px 55px rgba(49,43,80,0.24),
-    inset 0 1px 1px rgba(255,255,255,0.35);
+    0 18px 55px rgba(49, 43, 80, 0.24),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
 
-  backdrop-filter:
-    blur(24px)
-    saturate(145%);
+  backdrop-filter: blur(24px) saturate(145%);
 
-  -webkit-backdrop-filter:
-    blur(24px)
-    saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
 
   color: var(--sw-white);
 
@@ -510,14 +578,14 @@ onBeforeUnmount(() => {
 
 .notification-success {
   box-shadow:
-    0 18px 55px rgba(49,43,80,0.2),
-    inset 0 1px 1px rgba(255,255,255,0.35);
+    0 18px 55px rgba(49, 43, 80, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
 }
 
 .notification-error {
   box-shadow:
-    0 18px 55px rgba(163,60,45,0.25),
-    inset 0 1px 1px rgba(255,255,255,0.35);
+    0 18px 55px rgba(163, 60, 45, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
 }
 
 .notification-icon {
@@ -535,7 +603,7 @@ onBeforeUnmount(() => {
 
   border-radius: 13px;
 
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
 
   transition:
     background var(--sw-transition-slow),
@@ -638,7 +706,7 @@ onBeforeUnmount(() => {
 .notification-close:hover {
   opacity: 1;
 
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
 
   transform: scale(1.06);
 }
@@ -648,13 +716,10 @@ onBeforeUnmount(() => {
 }
 
 .notification-close:focus-visible {
-  outline:
-    2px solid
-    currentColor;
+  outline: 2px solid currentColor;
 
   outline-offset: 2px;
 }
-
 
 /* =========================================================
    NOTIFICATION TRANSITION
@@ -664,7 +729,7 @@ onBeforeUnmount(() => {
 .notification-leave-active {
   transition:
     opacity 450ms ease,
-    transform 550ms cubic-bezier(0.16,1,0.3,1),
+    transform 550ms cubic-bezier(0.16, 1, 0.3, 1),
     filter 450ms ease;
 }
 
@@ -672,13 +737,10 @@ onBeforeUnmount(() => {
 .notification-leave-to {
   opacity: 0;
 
-  transform:
-    translate3d(42px,-12px,0)
-    scale(0.96);
+  transform: translate3d(42px, -12px, 0) scale(0.96);
 
   filter: blur(8px);
 }
-
 
 /* =========================================================
    BACK TO AUTH
@@ -699,13 +761,9 @@ onBeforeUnmount(() => {
 
   gap: var(--sw-space-2);
 
-  padding:
-    var(--sw-space-3)
-    var(--sw-space-5);
+  padding: var(--sw-space-3) var(--sw-space-5);
 
-  border:
-    1px solid
-    var(--sw-glass-light-border);
+  border: 1px solid var(--sw-glass-light-border);
 
   border-radius: var(--sw-radius-pill);
 
@@ -715,12 +773,10 @@ onBeforeUnmount(() => {
 
   box-shadow: var(--sw-glass-shadow-light);
 
-  backdrop-filter:
-    blur(var(--sw-glass-blur))
+  backdrop-filter: blur(var(--sw-glass-blur))
     saturate(var(--sw-glass-saturation));
 
-  -webkit-backdrop-filter:
-    blur(var(--sw-glass-blur))
+  -webkit-backdrop-filter: blur(var(--sw-glass-blur))
     saturate(var(--sw-glass-saturation));
 
   font-family: inherit;
@@ -745,8 +801,7 @@ onBeforeUnmount(() => {
 .back-auth-button:hover:not(:disabled) {
   transform: translateY(-3px);
 
-  box-shadow:
-    var(--sw-glass-shadow-light-hover);
+  box-shadow: var(--sw-glass-shadow-light-hover);
 }
 
 .back-auth-button:active:not(:disabled) {
@@ -762,14 +817,12 @@ onBeforeUnmount(() => {
 .back-arrow {
   font-size: 1rem;
 
-  transition:
-    transform 300ms ease;
+  transition: transform 300ms ease;
 }
 
 .back-auth-button:hover:not(:disabled) .back-arrow {
   transform: translateX(-3px);
 }
-
 
 /* =========================================================
    BRAND
@@ -832,16 +885,10 @@ onBeforeUnmount(() => {
 }
 
 .brand-mark:hover .brand-handshake {
-  transform:
-    scale(1.08)
-    rotate(-3deg);
+  transform: scale(1.08) rotate(-3deg);
 
-  filter:
-    drop-shadow(
-      0 3px 5px rgba(49,43,80,0.18)
-    );
+  filter: drop-shadow(0 3px 5px rgba(49, 43, 80, 0.18));
 }
-
 
 /* =========================================================
    CONTENT
@@ -856,10 +903,7 @@ onBeforeUnmount(() => {
 }
 
 .eyebrow {
-  margin:
-    0
-    0
-    var(--sw-space-3);
+  margin: 0 0 var(--sw-space-3);
 
   font-size: var(--sw-text-sm);
 
@@ -869,8 +913,7 @@ onBeforeUnmount(() => {
 
   color: var(--sw-page-text-muted);
 
-  transition:
-    color var(--sw-transition-slow);
+  transition: color var(--sw-transition-slow);
 }
 
 h1 {
@@ -884,15 +927,11 @@ h1 {
 
   color: var(--sw-page-text);
 
-  transition:
-    color var(--sw-transition-slow);
+  transition: color var(--sw-transition-slow);
 }
 
 .intro {
-  margin:
-    var(--sw-space-3)
-    0
-    var(--sw-space-12);
+  margin: var(--sw-space-3) 0 var(--sw-space-12);
 
   color: var(--sw-page-text-soft);
 
@@ -900,10 +939,8 @@ h1 {
 
   line-height: 1.7;
 
-  transition:
-    color var(--sw-transition-slow);
+  transition: color var(--sw-transition-slow);
 }
-
 
 /* =========================================================
    FIELDS
@@ -926,8 +963,7 @@ h1 {
 
   color: var(--sw-page-text);
 
-  transition:
-    color var(--sw-transition-slow);
+  transition: color var(--sw-transition-slow);
 }
 
 .field input {
@@ -935,13 +971,9 @@ h1 {
 
   box-sizing: border-box;
 
-  padding:
-    var(--sw-space-4)
-    var(--sw-space-5);
+  padding: var(--sw-space-4) var(--sw-space-5);
 
-  border:
-    1px solid
-    var(--sw-input-border);
+  border: 1px solid var(--sw-input-border);
 
   border-radius: var(--sw-radius-md);
 
@@ -974,13 +1006,10 @@ h1 {
 
   color: var(--sw-input-text);
 
-  box-shadow:
-    0 0 0 4px
-    var(--sw-focus-ring);
+  box-shadow: 0 0 0 4px var(--sw-focus-ring);
 
   transform: translateY(-1px);
 }
-
 
 /* =========================================================
    PASSWORD INPUT
@@ -1034,25 +1063,19 @@ h1 {
 }
 
 .password-toggle:hover {
-  background: rgba(121,93,137,0.08);
+  background: rgba(121, 93, 137, 0.08);
 
   color: var(--sw-page-text);
 
-  transform:
-    translateY(-50%)
-    scale(1.06);
+  transform: translateY(-50%) scale(1.06);
 }
 
 .password-toggle:active {
-  transform:
-    translateY(-50%)
-    scale(0.94);
+  transform: translateY(-50%) scale(0.94);
 }
 
 .password-toggle:focus-visible {
-  outline:
-    2px solid
-    var(--sw-focus);
+  outline: 2px solid var(--sw-focus);
 
   outline-offset: 2px;
 }
@@ -1073,7 +1096,6 @@ h1 {
   stroke-linejoin: round;
 }
 
-
 /* =========================================================
    FORGOT PASSWORD
    ========================================================= */
@@ -1093,8 +1115,7 @@ h1 {
 
   text-decoration: none;
 
-  transition:
-    color var(--sw-transition-fast);
+  transition: color var(--sw-transition-fast);
 }
 
 .forgot a:hover {
@@ -1102,7 +1123,6 @@ h1 {
 
   text-decoration: underline;
 }
-
 
 /* =========================================================
    LOGIN BUTTON
@@ -1131,8 +1151,7 @@ h1 {
 
   cursor: pointer;
 
-  box-shadow:
-    0 0 0 rgba(0,0,0,0);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
 
   transition:
     transform var(--sw-transition),
@@ -1152,8 +1171,7 @@ h1 {
 .login-submit:active:not(:disabled) {
   transform: translateY(0);
 
-  box-shadow:
-    var(--sw-button-shadow);
+  box-shadow: var(--sw-button-shadow);
 }
 
 .login-submit:disabled {
@@ -1161,7 +1179,6 @@ h1 {
 
   cursor: not-allowed;
 }
-
 
 /* =========================================================
    BOTTOM LINK
@@ -1176,8 +1193,7 @@ h1 {
 
   color: var(--sw-page-text-muted);
 
-  transition:
-    color var(--sw-transition-slow);
+  transition: color var(--sw-transition-slow);
 }
 
 .bottom-link a {
@@ -1189,8 +1205,7 @@ h1 {
 
   text-decoration: none;
 
-  transition:
-    color var(--sw-transition-fast);
+  transition: color var(--sw-transition-fast);
 }
 
 .bottom-link a:hover {
@@ -1198,7 +1213,6 @@ h1 {
 
   text-decoration: underline;
 }
-
 
 /* =========================================================
    FOOTER
@@ -1219,51 +1233,39 @@ footer {
 
   opacity: 0.55;
 
-  transition:
-    opacity var(--sw-transition-slow);
+  transition: opacity var(--sw-transition-slow);
 }
-
 
 /* =========================================================
    DARK MODE
    ========================================================= */
 
 :global(html.dark-mode) .back-auth-button {
-  border-color:
-    var(--sw-glass-dark-border);
+  border-color: var(--sw-glass-dark-border);
 
-  background:
-    var(--sw-glass-dark);
+  background: var(--sw-glass-dark);
 
-  color:
-    var(--sw-glass-dark-text);
+  color: var(--sw-glass-dark-text);
 
-  box-shadow:
-    var(--sw-glass-shadow-dark);
+  box-shadow: var(--sw-glass-shadow-dark);
 }
 
 :global(html.dark-mode) .back-auth-button:hover:not(:disabled) {
-  box-shadow:
-    var(--sw-glass-shadow-dark-hover);
+  box-shadow: var(--sw-glass-shadow-dark-hover);
 }
 
 :global(html.dark-mode) .brand-handshake {
-  filter:
-    drop-shadow(
-      0 2px 5px rgba(255,255,255,0.08)
-    );
+  filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08));
 }
 
 :global(html.dark-mode) .notification {
-  border-color:
-    rgba(255,255,255,0.16);
+  border-color: rgba(255, 255, 255, 0.16);
 
-  background:
-    rgba(28,23,38,0.62);
+  background: rgba(28, 23, 38, 0.62);
 
   box-shadow:
-    0 18px 55px rgba(0,0,0,0.42),
-    inset 0 1px 1px rgba(255,255,255,0.1);
+    0 18px 55px rgba(0, 0, 0, 0.42),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 :global(html.dark-mode) .notification-error .notification-icon {
@@ -1271,21 +1273,17 @@ footer {
 }
 
 :global(html.dark-mode) .forgot a {
-  color:
-    var(--sw-lavender-500);
+  color: var(--sw-lavender-500);
 }
 
 :global(html.dark-mode) .forgot a:hover,
 :global(html.dark-mode) .bottom-link a:hover {
-  color:
-    #d47a64;
+  color: #d47a64;
 }
 
 :global(html.dark-mode) .password-toggle:hover {
-  background:
-    rgba(155,134,167,0.12);
+  background: rgba(155, 134, 167, 0.12);
 }
-
 
 /* =========================================================
    MOBILE
@@ -1293,9 +1291,7 @@ footer {
 
 @media (max-width: 768px) {
   .login-page {
-    padding:
-      var(--sw-space-14)
-      var(--sw-space-5);
+    padding: var(--sw-space-14) var(--sw-space-5);
   }
 
   .page-brand {
@@ -1309,9 +1305,7 @@ footer {
 
     bottom: var(--sw-space-6);
 
-    padding:
-      var(--sw-space-2)
-      var(--sw-space-4);
+    padding: var(--sw-space-2) var(--sw-space-4);
 
     font-size: 0.62rem;
   }
@@ -1327,20 +1321,13 @@ footer {
 
     max-width: 360px;
 
-    padding:
-      14px
-      15px;
+    padding: 14px 15px;
 
     border-radius: 18px;
   }
 
   h1 {
-    font-size:
-      clamp(
-        2.6rem,
-        12vw,
-        var(--sw-heading-xl)
-      );
+    font-size: clamp(2.6rem, 12vw, var(--sw-heading-xl));
   }
 
   footer {
@@ -1349,7 +1336,6 @@ footer {
     bottom: var(--sw-space-6);
   }
 }
-
 
 /* =========================================================
    REDUCED MOTION

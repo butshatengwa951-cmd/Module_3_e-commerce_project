@@ -111,8 +111,7 @@ const handleSubmit = async () => {
       showNotification(
         "success",
         "Account created",
-        data.message ||
-          "Your StockWell account has been created successfully.",
+        data.message || "Your StockWell account has been created successfully.",
       );
 
       form.full_name = "";
@@ -446,9 +445,7 @@ onBeforeUnmount(() => {
             >
               <option value="" disabled>
                 {{
-                  loadingStokvels
-                    ? "Loading stokvels..."
-                    : "Select a stokvel"
+                  loadingStokvels ? "Loading stokvels..." : "Select a stokvel"
                 }}
               </option>
 
@@ -470,9 +467,7 @@ onBeforeUnmount(() => {
             :disabled="submitting || loadingStokvels"
           >
             {{
-              submitting
-                ? "Creating Account..."
-                : "Create StockWell Account"
+              submitting ? "Creating Account..." : "Create StockWell Account"
             }}
           </button>
         </form>
@@ -489,9 +484,7 @@ onBeforeUnmount(() => {
 
     <!-- FOOTER -->
 
-    <footer class="page-footer">
-      Save · Grow · Together
-    </footer>
+    <footer class="page-footer">Save · Grow · Together</footer>
   </main>
 </template>
 
@@ -513,14 +506,32 @@ onBeforeUnmount(() => {
 
   justify-content: center;
 
-  padding:
-    var(--sw-space-14)
-    var(--sw-space-7);
+  padding: var(--sw-space-14) var(--sw-space-7);
 
   background:
-    var(--sw-page-gradient);
+    radial-gradient(
+      circle at 18% 18%,
+      rgba(255, 214, 120, 0.18),
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at 74% 38%,
+      rgba(170, 124, 230, 0.15),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 80% 72%,
+      rgba(255, 155, 96, 0.12),
+      transparent 22%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(249, 244, 236, 1) 0%,
+      rgba(255, 248, 242, 0.94) 35%,
+      rgba(247, 235, 249, 0.96) 100%
+    );
 
-  color: var(--sw-page-text);
+  color: var(--sw-purple-900);
 
   font-family: var(--sw-font-body);
 
@@ -532,22 +543,19 @@ onBeforeUnmount(() => {
     background var(--sw-transition-slow),
     color var(--sw-transition-slow),
     opacity 450ms ease,
-    transform 450ms cubic-bezier(0.22,1,0.36,1),
+    transform 450ms cubic-bezier(0.22, 1, 0.36, 1),
     filter 450ms ease;
 }
 
 .signup-page.is-leaving {
   opacity: 0;
 
-  transform:
-    translateY(24px)
-    scale(0.98);
+  transform: translateY(24px) scale(0.98);
 
   filter: blur(8px);
 
   pointer-events: none;
 }
-
 
 /* =========================================================
    BACKGROUND
@@ -557,10 +565,44 @@ onBeforeUnmount(() => {
   z-index: 0;
 }
 
-.signup-page :deep(.background-orb) {
-  opacity: 0.28;
+.signup-page :deep(.page-gradient) {
+  opacity: 0.94;
 
-  filter: blur(90px);
+  background:
+    radial-gradient(
+      circle at 18% 18%,
+      rgba(255, 214, 120, 0.22),
+      transparent 22%
+    ),
+    radial-gradient(
+      circle at 72% 42%,
+      rgba(170, 124, 230, 0.18),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 82% 72%,
+      rgba(255, 155, 96, 0.14),
+      transparent 20%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(249, 244, 236, 1) 0%,
+      rgba(255, 248, 242, 0.9) 26%,
+      rgba(247, 235, 250, 0.94) 100%
+    );
+
+  filter: saturate(1.2) brightness(1.06);
+
+  animation-duration: 18s;
+}
+
+.signup-page :deep(.background-orb) {
+  opacity: 0.5;
+
+  filter: blur(72px) saturate(1.25);
+
+  animation-duration: 14s;
+  animation-timing-function: ease-in-out;
 
   transition:
     opacity var(--sw-transition-slow),
@@ -568,59 +610,110 @@ onBeforeUnmount(() => {
 }
 
 .signup-page :deep(.orb-gold) {
-  width: 34vw;
+  width: 20vw;
 
-  height: 34vw;
+  height: 20vw;
 
-  top: -10%;
+  top: 8%;
 
-  left: -8%;
+  left: 12%;
 
   background: var(--sw-gold-500);
+
+  animation-name: signupOrbGold;
 }
 
 .signup-page :deep(.orb-orange) {
-  width: 30vw;
+  width: 16vw;
 
-  height: 30vw;
+  height: 16vw;
 
-  top: 12%;
+  top: 22%;
 
-  right: -8%;
+  right: 10%;
 
   background: var(--sw-orange-600);
+
+  animation-name: signupOrbOrange;
 }
 
 .signup-page :deep(.orb-purple) {
-  width: 38vw;
+  width: 22vw;
 
-  height: 38vw;
+  height: 22vw;
 
-  bottom: -18%;
+  bottom: 8%;
 
-  left: 18%;
+  left: 24%;
 
   background: var(--sw-purple-700);
+
+  animation-name: signupOrbPurple;
 }
 
 .signup-page :deep(.orb-lavender) {
-  width: 25vw;
+  width: 15vw;
 
-  height: 25vw;
+  height: 15vw;
 
-  bottom: 6%;
+  bottom: 16%;
 
   right: 16%;
 
   background: var(--sw-lavender-500);
+
+  animation-name: signupOrbLavender;
 }
 
 .signup-page :deep(.page-grain) {
-  opacity: 0.07;
+  opacity: 0.08;
 
   mix-blend-mode: soft-light;
 }
 
+@keyframes signupOrbGold {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(5%, 7%, 0) scale(1.12);
+  }
+}
+
+@keyframes signupOrbOrange {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(-6%, 9%, 0) scale(1.13);
+  }
+}
+
+@keyframes signupOrbPurple {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(7%, -8%, 0) scale(1.1);
+  }
+}
+
+@keyframes signupOrbLavender {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(-4%, -6%, 0) scale(1.08);
+  }
+}
 
 /* =========================================================
    NOTIFICATION
@@ -635,11 +728,7 @@ onBeforeUnmount(() => {
 
   z-index: 100;
 
-  width:
-    min(
-      360px,
-      calc(100vw - 64px)
-    );
+  width: min(360px, calc(100vw - 64px));
 
   display: flex;
 
@@ -647,31 +736,21 @@ onBeforeUnmount(() => {
 
   gap: 14px;
 
-  padding:
-    16px
-    18px;
+  padding: 16px 18px;
 
-  border:
-    1px solid
-    rgba(255,255,255,0.35);
+  border: 1px solid rgba(255, 255, 255, 0.35);
 
   border-radius: 20px;
 
-  background: rgba(255,255,255,0.14);
+  background: rgba(255, 255, 255, 0.14);
 
   box-shadow:
-    0 18px 55px
-    rgba(49,43,80,0.24),
-    inset 0 1px 1px
-    rgba(255,255,255,0.35);
+    0 18px 55px rgba(49, 43, 80, 0.24),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
 
-  backdrop-filter:
-    blur(24px)
-    saturate(145%);
+  backdrop-filter: blur(24px) saturate(145%);
 
-  -webkit-backdrop-filter:
-    blur(24px)
-    saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
 
   color: var(--sw-white);
 
@@ -684,18 +763,14 @@ onBeforeUnmount(() => {
 
 .notification-success {
   box-shadow:
-    0 18px 55px
-    rgba(49,43,80,0.2),
-    inset 0 1px 1px
-    rgba(255,255,255,0.35);
+    0 18px 55px rgba(49, 43, 80, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
 }
 
 .notification-error {
   box-shadow:
-    0 18px 55px
-    rgba(163,60,45,0.25),
-    inset 0 1px 1px
-    rgba(255,255,255,0.35);
+    0 18px 55px rgba(163, 60, 45, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
 }
 
 .notification-icon {
@@ -713,10 +788,9 @@ onBeforeUnmount(() => {
 
   border-radius: 13px;
 
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
 
-  transition:
-    background var(--sw-transition-slow);
+  transition: background var(--sw-transition-slow);
 }
 
 .notification-success .notification-icon {
@@ -815,7 +889,7 @@ onBeforeUnmount(() => {
 .notification-close:hover {
   opacity: 1;
 
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
 
   transform: scale(1.06);
 }
@@ -825,13 +899,10 @@ onBeforeUnmount(() => {
 }
 
 .notification-close:focus-visible {
-  outline:
-    2px solid
-    currentColor;
+  outline: 2px solid currentColor;
 
   outline-offset: 2px;
 }
-
 
 /* =========================================================
    NOTIFICATION TRANSITION
@@ -841,7 +912,7 @@ onBeforeUnmount(() => {
 .notification-leave-active {
   transition:
     opacity 450ms ease,
-    transform 550ms cubic-bezier(0.16,1,0.3,1),
+    transform 550ms cubic-bezier(0.16, 1, 0.3, 1),
     filter 450ms ease;
 }
 
@@ -849,13 +920,10 @@ onBeforeUnmount(() => {
 .notification-leave-to {
   opacity: 0;
 
-  transform:
-    translate3d(42px,-12px,0)
-    scale(0.96);
+  transform: translate3d(42px, -12px, 0) scale(0.96);
 
   filter: blur(8px);
 }
-
 
 /* =========================================================
    BACK TO AUTH
@@ -876,31 +944,22 @@ onBeforeUnmount(() => {
 
   gap: var(--sw-space-2);
 
-  padding:
-    var(--sw-space-3)
-    var(--sw-space-5);
+  padding: var(--sw-space-3) var(--sw-space-5);
 
-  border:
-    1px solid
-    var(--sw-glass-light-border);
+  border: 1px solid var(--sw-glass-light-border);
 
   border-radius: var(--sw-radius-pill);
 
-  background:
-    var(--sw-glass-light);
+  background: var(--sw-glass-light);
 
-  color:
-    var(--sw-purple-900);
+  color: var(--sw-purple-900);
 
-  box-shadow:
-    var(--sw-glass-shadow-light);
+  box-shadow: var(--sw-glass-shadow-light);
 
-  backdrop-filter:
-    blur(var(--sw-glass-blur))
+  backdrop-filter: blur(var(--sw-glass-blur))
     saturate(var(--sw-glass-saturation));
 
-  -webkit-backdrop-filter:
-    blur(var(--sw-glass-blur))
+  -webkit-backdrop-filter: blur(var(--sw-glass-blur))
     saturate(var(--sw-glass-saturation));
 
   font-family: inherit;
@@ -925,11 +984,9 @@ onBeforeUnmount(() => {
 .back-auth-button:hover:not(:disabled) {
   transform: translateY(-3px);
 
-  background:
-    var(--sw-input-background-focus);
+  background: var(--sw-input-background-focus);
 
-  box-shadow:
-    var(--sw-glass-shadow-light-hover);
+  box-shadow: var(--sw-glass-shadow-light-hover);
 }
 
 .back-auth-button:active:not(:disabled) {
@@ -945,14 +1002,12 @@ onBeforeUnmount(() => {
 .back-arrow {
   font-size: 1rem;
 
-  transition:
-    transform 300ms ease;
+  transition: transform 300ms ease;
 }
 
 .back-auth-button:hover:not(:disabled) .back-arrow {
   transform: translateX(-3px);
 }
-
 
 /* =========================================================
    BRAND
@@ -979,10 +1034,9 @@ onBeforeUnmount(() => {
 
   letter-spacing: 0.02em;
 
-  color: var(--sw-white);
+  color: var(--sw-purple-900);
 
-  transition:
-    color var(--sw-transition-slow);
+  transition: color var(--sw-transition-slow);
 }
 
 .brand-mark {
@@ -1018,17 +1072,10 @@ onBeforeUnmount(() => {
 }
 
 .brand-mark:hover .brand-handshake {
-  transform:
-    scale(1.08)
-    rotate(-3deg);
+  transform: scale(1.08) rotate(-3deg);
 
-  filter:
-    drop-shadow(
-      0 3px 5px
-      rgba(49,43,80,0.18)
-    );
+  filter: drop-shadow(0 3px 5px rgba(49, 43, 80, 0.18));
 }
-
 
 /* =========================================================
    CONTENT
@@ -1041,10 +1088,7 @@ onBeforeUnmount(() => {
 }
 
 .eyebrow {
-  margin:
-    0
-    0
-    var(--sw-space-3);
+  margin: 0 0 var(--sw-space-3);
 
   font-size: var(--sw-text-sm);
 
@@ -1056,8 +1100,7 @@ onBeforeUnmount(() => {
 
   color: var(--sw-page-text-muted);
 
-  transition:
-    color var(--sw-transition-slow);
+  transition: color var(--sw-transition-slow);
 }
 
 h1 {
@@ -1071,15 +1114,11 @@ h1 {
 
   letter-spacing: -0.06em;
 
-  transition:
-    color var(--sw-transition-slow);
+  transition: color var(--sw-transition-slow);
 }
 
 .intro {
-  margin:
-    var(--sw-space-3)
-    0
-    var(--sw-space-10);
+  margin: var(--sw-space-3) 0 var(--sw-space-10);
 
   color: var(--sw-page-text-soft);
 
@@ -1087,10 +1126,8 @@ h1 {
 
   line-height: 1.7;
 
-  transition:
-    color var(--sw-transition-slow);
+  transition: color var(--sw-transition-slow);
 }
-
 
 /* =========================================================
    FORM
@@ -1113,8 +1150,7 @@ h1 {
 
   letter-spacing: 0.08em;
 
-  transition:
-    color var(--sw-transition-slow);
+  transition: color var(--sw-transition-slow);
 }
 
 .field input,
@@ -1123,29 +1159,21 @@ h1 {
 
   box-sizing: border-box;
 
-  padding:
-    var(--sw-space-4)
-    var(--sw-space-5);
+  padding: var(--sw-space-4) var(--sw-space-5);
 
-  border:
-    1px solid
-    var(--sw-input-border);
+  border: 1px solid var(--sw-input-border);
 
-  border-radius:
-    var(--sw-radius-md);
+  border-radius: var(--sw-radius-md);
 
   outline: none;
 
-  background:
-    var(--sw-input-background);
+  background: var(--sw-input-background);
 
-  color:
-    var(--sw-input-text);
+  color: var(--sw-input-text);
 
   font-family: inherit;
 
-  font-size:
-    var(--sw-text-base);
+  font-size: var(--sw-text-base);
 
   transition:
     border-color var(--sw-transition),
@@ -1161,26 +1189,19 @@ h1 {
 
 .field input:focus,
 .field select:focus {
-  border-color:
-    var(--sw-focus);
+  border-color: var(--sw-focus);
 
-  background:
-    var(--sw-input-background-focus);
+  background: var(--sw-input-background-focus);
 
-  box-shadow:
-    0 0 0 4px
-    var(--sw-focus-ring);
+  box-shadow: 0 0 0 4px var(--sw-focus-ring);
 
-  transform:
-    translateY(-1px);
+  transform: translateY(-1px);
 }
 
 .field input:hover:not(:focus),
 .field select:hover:not(:focus) {
-  border-color:
-    var(--sw-focus);
+  border-color: var(--sw-focus);
 }
-
 
 /* =========================================================
    PASSWORD INPUT
@@ -1223,8 +1244,7 @@ h1 {
 
   color: var(--sw-page-text-muted);
 
-  transform:
-    translateY(-50%);
+  transform: translateY(-50%);
 
   cursor: pointer;
 
@@ -1235,27 +1255,19 @@ h1 {
 }
 
 .password-toggle:hover {
-  background:
-    rgba(121,93,137,0.08);
+  background: rgba(121, 93, 137, 0.08);
 
-  color:
-    var(--sw-page-text);
+  color: var(--sw-page-text);
 
-  transform:
-    translateY(-50%)
-    scale(1.06);
+  transform: translateY(-50%) scale(1.06);
 }
 
 .password-toggle:active {
-  transform:
-    translateY(-50%)
-    scale(0.94);
+  transform: translateY(-50%) scale(0.94);
 }
 
 .password-toggle:focus-visible {
-  outline:
-    2px solid
-    var(--sw-focus);
+  outline: 2px solid var(--sw-focus);
 
   outline-offset: 2px;
 }
@@ -1276,7 +1288,6 @@ h1 {
   stroke-linejoin: round;
 }
 
-
 /* =========================================================
    SELECT
    ========================================================= */
@@ -1287,16 +1298,8 @@ h1 {
   appearance: none;
 
   background-image:
-    linear-gradient(
-      45deg,
-      transparent 50%,
-      var(--sw-page-text) 50%
-    ),
-    linear-gradient(
-      135deg,
-      var(--sw-page-text) 50%,
-      transparent 50%
-    );
+    linear-gradient(45deg, transparent 50%, var(--sw-page-text) 50%),
+    linear-gradient(135deg, var(--sw-page-text) 50%, transparent 50%);
 
   background-position:
     calc(100% - 18px) 50%,
@@ -1312,11 +1315,9 @@ h1 {
 }
 
 .field select option {
-  background:
-    var(--sw-page-background);
+  background: var(--sw-page-background);
 
-  color:
-    var(--sw-page-text);
+  color: var(--sw-page-text);
 }
 
 .field select:disabled {
@@ -1324,7 +1325,6 @@ h1 {
 
   opacity: 0.65;
 }
-
 
 /* =========================================================
    SUBMIT
@@ -1341,16 +1341,13 @@ h1 {
 
   border-radius: var(--sw-radius-pill);
 
-  background:
-    var(--sw-button-gradient);
+  background: var(--sw-button-gradient);
 
-  color:
-    var(--sw-white);
+  color: var(--sw-white);
 
   font-family: inherit;
 
-  font-size:
-    var(--sw-text-base);
+  font-size: var(--sw-text-base);
 
   font-weight: 700;
 
@@ -1368,18 +1365,15 @@ h1 {
 .signup-submit:hover:not(:disabled) {
   transform: translateY(-2px);
 
-  box-shadow:
-    var(--sw-button-shadow-hover);
+  box-shadow: var(--sw-button-shadow-hover);
 
-  filter:
-    brightness(1.03);
+  filter: brightness(1.03);
 }
 
 .signup-submit:active:not(:disabled) {
   transform: translateY(0);
 
-  box-shadow:
-    var(--sw-button-shadow);
+  box-shadow: var(--sw-button-shadow);
 }
 
 .signup-submit:disabled {
@@ -1388,51 +1382,39 @@ h1 {
   opacity: 0.6;
 }
 
-
 /* =========================================================
    BOTTOM LINK
    ========================================================= */
 
 .bottom-link {
-  margin:
-    var(--sw-space-10)
-    0
-    0;
+  margin: var(--sw-space-10) 0 0;
 
   text-align: center;
 
-  color:
-    var(--sw-page-text-muted);
+  color: var(--sw-page-text-muted);
 
-  font-size:
-    var(--sw-text-md);
+  font-size: var(--sw-text-md);
 
-  transition:
-    color var(--sw-transition-slow);
+  transition: color var(--sw-transition-slow);
 }
 
 .bottom-link a {
-  margin-left:
-    var(--sw-space-1);
+  margin-left: var(--sw-space-1);
 
-  color:
-    var(--sw-page-text);
+  color: var(--sw-page-text);
 
   font-weight: 700;
 
   text-decoration: none;
 
-  transition:
-    color var(--sw-transition-fast);
+  transition: color var(--sw-transition-fast);
 }
 
 .bottom-link a:hover {
-  color:
-    var(--sw-orange-600);
+  color: var(--sw-orange-600);
 
   text-decoration: underline;
 }
-
 
 /* =========================================================
    FOOTER
@@ -1445,109 +1427,82 @@ h1 {
 
   bottom: var(--sw-space-6);
 
-  color:
-    rgba(255,255,255,0.7);
+  color: var(--sw-purple-900);
 
-  font-size:
-    var(--sw-text-xs);
+  font-size: var(--sw-text-xs);
 
   letter-spacing: 0.12em;
 
-  opacity: 0.65;
+  opacity: 0.72;
 
   transition:
     color var(--sw-transition-slow),
     opacity var(--sw-transition-slow);
 }
 
-
 /* =========================================================
    DARK MODE
    ========================================================= */
 
 :global(html.dark-mode) .back-auth-button {
-  border-color:
-    var(--sw-glass-dark-border);
+  border-color: var(--sw-glass-dark-border);
 
-  background:
-    var(--sw-glass-dark);
+  background: var(--sw-glass-dark);
 
-  color:
-    var(--sw-glass-dark-text);
+  color: var(--sw-glass-dark-text);
 
-  box-shadow:
-    var(--sw-glass-shadow-dark);
+  box-shadow: var(--sw-glass-shadow-dark);
 }
 
 :global(html.dark-mode) .back-auth-button:hover:not(:disabled) {
-  background:
-    var(--sw-input-background-focus);
+  background: var(--sw-input-background-focus);
 
-  box-shadow:
-    var(--sw-glass-shadow-dark-hover);
+  box-shadow: var(--sw-glass-shadow-dark-hover);
 }
 
 :global(html.dark-mode) .brand-handshake {
-  filter:
-    drop-shadow(
-      0 2px 5px
-      rgba(255,255,255,0.08)
-    );
+  filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08));
 }
 
 :global(html.dark-mode) .notification {
-  border-color:
-    rgba(255,255,255,0.16);
+  border-color: rgba(255, 255, 255, 0.16);
 
-  background:
-    rgba(28,23,38,0.62);
+  background: rgba(28, 23, 38, 0.62);
 
-  color:
-    var(--sw-off-white);
+  color: var(--sw-off-white);
 
   box-shadow:
-    0 18px 55px
-    rgba(0,0,0,0.42),
-    inset 0 1px 1px
-    rgba(255,255,255,0.1);
+    0 18px 55px rgba(0, 0, 0, 0.42),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 :global(html.dark-mode) .notification-error .notification-icon {
-  color:
-    #ff9d8c;
+  color: #ff9d8c;
 }
 
 :global(html.dark-mode) .notification-success .notification-icon {
-  color:
-    var(--sw-gold-500);
+  color: var(--sw-gold-500);
 }
 
 :global(html.dark-mode) .password-toggle:hover {
-  background:
-    rgba(155,134,167,0.12);
+  background: rgba(155, 134, 167, 0.12);
 }
 
 :global(html.dark-mode) .page-footer {
-  color:
-    var(--sw-off-white);
+  color: var(--sw-off-white);
 
-  opacity:
-    0.48;
+  opacity: 0.48;
 }
 
 :global(html.dark-mode) .signup-page :deep(.background-orb) {
-  opacity:
-    0.2;
+  opacity: 0.2;
 
-  filter:
-    blur(100px);
+  filter: blur(100px);
 }
 
 :global(html.dark-mode) .signup-page :deep(.page-grain) {
-  opacity:
-    0.12;
+  opacity: 0.12;
 }
-
 
 /* =========================================================
    MOBILE
@@ -1555,84 +1510,57 @@ h1 {
 
 @media (max-width: 768px) {
   .signup-page {
-    padding:
-      var(--sw-space-14)
-      var(--sw-space-5);
+    padding: var(--sw-space-14) var(--sw-space-5);
   }
 
   .page-brand {
-    top:
-      var(--sw-space-7);
+    top: var(--sw-space-7);
 
-    left:
-      var(--sw-space-7);
+    left: var(--sw-space-7);
   }
 
   .back-auth-button {
-    right:
-      var(--sw-space-7);
+    right: var(--sw-space-7);
 
-    bottom:
-      var(--sw-space-6);
+    bottom: var(--sw-space-6);
 
-    padding:
-      var(--sw-space-2)
-      var(--sw-space-4);
+    padding: var(--sw-space-2) var(--sw-space-4);
 
-    font-size:
-      0.62rem;
+    font-size: 0.62rem;
   }
 
   .notification {
-    top:
-      78px;
+    top: 78px;
 
-    left:
-      18px;
+    left: 18px;
 
-    right:
-      18px;
+    right: 18px;
 
-    width:
-      auto;
+    width: auto;
 
-    max-width:
-      360px;
+    max-width: 360px;
 
-    padding:
-      14px
-      15px;
+    padding: 14px 15px;
 
-    border-radius:
-      18px;
+    border-radius: 18px;
   }
 
   h1 {
-    font-size:
-      clamp(
-        2.4rem,
-        11vw,
-        var(--sw-heading-lg)
-      );
+    font-size: clamp(2.4rem, 11vw, var(--sw-heading-lg));
   }
 
   .page-footer {
-    left:
-      var(--sw-space-7);
+    left: var(--sw-space-7);
 
-    bottom:
-      var(--sw-space-6);
+    bottom: var(--sw-space-6);
 
-    max-width:
-      45%;
+    max-width: 45%;
   }
 
   .signup-page :deep(.background-orb) {
-    filter:
-      blur(65px);
+    filter: blur(65px);
   }
 }
-
 
 /* =========================================================
    REDUCED MOTION

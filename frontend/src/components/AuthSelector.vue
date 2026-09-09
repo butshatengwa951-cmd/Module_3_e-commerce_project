@@ -324,34 +324,31 @@ onBeforeUnmount(() => {
   background:
     radial-gradient(
       circle at var(--mouse-x) var(--mouse-y),
-      var(--sw-gold-500) 0%,
-
+      rgba(255, 208, 98, 0.95) 0%,
+      rgba(255, 208, 98, 0.8) 10%,
       transparent 28%
     ),
     radial-gradient(
-      circle at calc(var(--mouse-x) + 25%) calc(var(--mouse-y) - 10%),
-      var(--sw-orange-600) 0%,
-
+      circle at calc(var(--mouse-x) + 24%) calc(var(--mouse-y) - 8%),
+      rgba(235, 120, 74, 0.92) 0%,
+      rgba(235, 120, 74, 0.7) 12%,
       transparent 38%
     ),
     radial-gradient(
-      circle at calc(var(--mouse-x) - 20%) calc(var(--mouse-y) + 25%),
-      var(--sw-purple-700) 0%,
-
+      circle at calc(var(--mouse-x) - 18%) calc(var(--mouse-y) + 24%),
+      rgba(109, 82, 160, 0.88) 0%,
+      rgba(109, 82, 160, 0.7) 14%,
       transparent 42%
     ),
-    linear-gradient(
-      135deg,
-      var(--sw-purple-900),
-      var(--sw-purple-700),
-      var(--sw-orange-600)
-    );
+    linear-gradient(135deg, #301d46, #4d2c67, #7f3e5d, #c85a2d, #8d5d30);
 
   background-size:
     150% 150%,
     145% 145%,
     150% 150%,
     180% 180%;
+
+  filter: saturate(1.18) brightness(1.04);
 }
 
 /* ==================================================
@@ -428,9 +425,9 @@ onBeforeUnmount(() => {
 
   border-radius: 50%;
 
-  filter: blur(45px);
+  filter: blur(52px) saturate(1.25);
 
-  opacity: 0.35;
+  opacity: 0.7;
 
   pointer-events: none;
 
@@ -444,7 +441,7 @@ onBeforeUnmount(() => {
 
   background: var(--sw-gold-500);
 
-  animation: floatOne 14s ease-in-out infinite;
+  animation: floatOne 13s ease-in-out infinite;
 }
 
 .orb-two {
@@ -454,7 +451,7 @@ onBeforeUnmount(() => {
 
   background: var(--sw-orange-600);
 
-  animation: floatTwo 17s ease-in-out infinite;
+  animation: floatTwo 15s ease-in-out infinite;
 }
 
 .orb-three {
@@ -464,7 +461,7 @@ onBeforeUnmount(() => {
 
   background: var(--sw-purple-700);
 
-  animation: floatThree 19s ease-in-out infinite;
+  animation: floatThree 17s ease-in-out infinite;
 }
 
 /* ==================================================
@@ -1194,7 +1191,7 @@ h1 {
   }
 
   50% {
-    transform: translate3d(8%, 5%, 0) scale(1.06);
+    transform: translate3d(9%, 7%, 0) scale(1.14);
   }
 }
 
@@ -1205,7 +1202,7 @@ h1 {
   }
 
   50% {
-    transform: translate3d(-7%, 8%, 0) scale(1.08);
+    transform: translate3d(-8%, 10%, 0) scale(1.16);
   }
 }
 
@@ -1216,7 +1213,7 @@ h1 {
   }
 
   50% {
-    transform: translate3d(5%, -7%, 0) scale(1.05);
+    transform: translate3d(7%, -10%, 0) scale(1.12);
   }
 }
 

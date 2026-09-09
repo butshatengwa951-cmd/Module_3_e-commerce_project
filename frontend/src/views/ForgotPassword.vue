@@ -322,6 +322,46 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
+.forgot-password-page :deep(.page-gradient) {
+  opacity: 0.94;
+
+  background:
+    radial-gradient(
+      circle at 18% 18%,
+      rgba(255, 214, 120, 0.22),
+      transparent 22%
+    ),
+    radial-gradient(
+      circle at 72% 42%,
+      rgba(170, 124, 230, 0.18),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 82% 72%,
+      rgba(255, 155, 96, 0.14),
+      transparent 20%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(249, 244, 236, 1) 0%,
+      rgba(255, 248, 242, 0.9) 26%,
+      rgba(247, 235, 250, 0.94) 100%
+    );
+
+  filter: saturate(1.2) brightness(1.06);
+
+  animation-duration: 18s;
+}
+
+.forgot-password-page :deep(.background-orb) {
+  opacity: 0.5;
+
+  filter: blur(72px) saturate(1.25);
+
+  animation-duration: 14s;
+  animation-timing-function: ease-in-out;
+}
+
 /* =========================================================
    NOTIFICATION
    ========================================================= */
@@ -553,7 +593,7 @@ onBeforeUnmount(() => {
 
   background: var(--sw-glass-light);
 
-  color: var(--sw-white);
+  color: var(--sw-purple-900);
 
   box-shadow: var(--sw-glass-shadow-light);
 
@@ -630,6 +670,8 @@ onBeforeUnmount(() => {
   font-size: var(--sw-text-xl);
 
   letter-spacing: 0.02em;
+
+  color: var(--sw-purple-900);
 }
 
 .brand-mark {
@@ -868,13 +910,13 @@ footer {
 
   bottom: var(--sw-space-6);
 
-  color: var(--sw-white);
+  color: var(--sw-purple-900);
 
   font-size: var(--sw-text-xs);
 
   letter-spacing: 0.12em;
 
-  opacity: 0.55;
+  opacity: 0.72;
 }
 
 /* =========================================================
