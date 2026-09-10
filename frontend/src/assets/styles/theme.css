@@ -486,25 +486,8 @@ html.dark-mode ::-webkit-scrollbar-thumb {
   }
 }
 
-/*
- * STOCKWELL AUTH / THEME VISUAL UPDATE — REVISION 2
- *
- * Paste this entire file over:
- * frontend/src/assets/styles/theme.css
- *
- * Changes in this revision:
- * - Removes the visible theme-switch paint/gradient glitch.
- * - Makes dark-mode auth-page branding white.
- * - Dims the AuthSelector login-side orbs in dark mode.
- * - Keeps light mode unchanged.
- * - Keeps the stronger auth-page orb treatment.
- * - Keeps the dark-mode primary button distinction.
- */
-
 /* =========================================================
    1. THEME TOGGLE
-   Light mode keeps StockWell purple.
-   Dark mode makes the sun + "Light" label white.
    ========================================================= */
 
 .theme-toggle {
@@ -521,13 +504,6 @@ html.dark-mode .theme-toggle {
 
 /* =========================================================
    2. THEME-SWITCH GLITCH FIX
-   =========================================================
-   The previous styling transitioned the root/body background while
-   html.dark-mode was being added/removed. That could briefly expose
-   an intermediate gradient/paint state.
-
-   Keep the document-level paint immediate and let the actual auth
-   surfaces handle their own controlled transitions instead.
    ========================================================= */
 
 html,
@@ -536,21 +512,17 @@ body {
   background-color: var(--sw-page-background);
 }
 
-/* Prevent the browser's color-scheme switch from contributing an
-   extra painted frame while the theme class changes. */
 html,
 body {
   color-scheme: light dark;
 }
 
-/* Keep the app itself visually stable during the class swap. */
 #app {
   background: transparent !important;
 }
 
 /* =========================================================
    3. SHARED AUTH-PAGE LIGHT ORBS
-   Signup + Forgot Password + Reset Password
    ========================================================= */
 
 .signup-page .background-orb,
@@ -585,7 +557,6 @@ body {
   background: #9b86a7 !important;
 }
 
-/* Livelier light atmosphere. */
 .signup-page,
 .forgot-password-page,
 .reset-password-page {
@@ -605,12 +576,7 @@ body {
       rgba(121, 93, 137, 0.18),
       transparent 30%
     ),
-    linear-gradient(
-      135deg,
-      #f9f4ec 0%,
-      #fff8f2 36%,
-      #f7ebfa 100%
-    ) !important;
+    linear-gradient(135deg, #f9f4ec 0%, #fff8f2 36%, #f7ebfa 100%) !important;
 }
 
 /* =========================================================
@@ -633,15 +599,10 @@ html.dark-mode .reset-password-page {
     ),
     radial-gradient(
       circle at 58% 78%,
-      rgba(121, 93, 137, 0.20),
+      rgba(121, 93, 137, 0.2),
       transparent 32%
     ),
-    linear-gradient(
-      135deg,
-      #17131f 0%,
-      #1f1828 48%,
-      #25181a 100%
-    ) !important;
+    linear-gradient(135deg, #17131f 0%, #1f1828 48%, #25181a 100%) !important;
 }
 
 html.dark-mode .signup-page .page-gradient,
@@ -654,40 +615,30 @@ html.dark-mode .reset-password-page .page-gradient {
       rgba(200, 176, 25, 0.17),
       transparent 25%
     ),
-    radial-gradient(
-      circle at 81% 32%,
-      rgba(194, 88, 61, 0.20),
-      transparent 29%
-    ),
+    radial-gradient(circle at 81% 32%, rgba(194, 88, 61, 0.2), transparent 29%),
     radial-gradient(
       circle at 55% 82%,
       rgba(121, 93, 137, 0.22),
       transparent 34%
     ),
-    linear-gradient(
-      135deg,
-      #17131f 0%,
-      #21192d 48%,
-      #2a1a20 100%
-    ) !important;
+    linear-gradient(135deg, #17131f 0%, #21192d 48%, #2a1a20 100%) !important;
   filter: saturate(1.18) brightness(0.92) !important;
 }
 
-/* Dark auth-page orbs: clearly visible but controlled. */
 html.dark-mode .signup-page .background-orb,
 html.dark-mode .forgot-password-page .background-orb,
 html.dark-mode .reset-password-page .background-orb {
   opacity: 0.34 !important;
   filter: blur(92px) saturate(1.28) !important;
   mix-blend-mode: screen !important;
-  transform: scale(1.10);
+  transform: scale(1.1);
 }
 
 html.dark-mode .signup-page .orb-gold,
 html.dark-mode .forgot-password-page .orb-gold,
 html.dark-mode .reset-password-page .orb-gold {
   background: #e3c84f !important;
-  opacity: 0.50 !important;
+  opacity: 0.5 !important;
 }
 
 html.dark-mode .signup-page .orb-orange,
@@ -708,16 +659,11 @@ html.dark-mode .signup-page .orb-lavender,
 html.dark-mode .forgot-password-page .orb-lavender,
 html.dark-mode .reset-password-page .orb-lavender {
   background: #b298c2 !important;
-  opacity: 0.30 !important;
+  opacity: 0.3 !important;
 }
 
 /* =========================================================
    5. DARK AUTH BRANDING — WHITE
-   =========================================================
-   This specifically addresses:
-   "SIGN UP to StockWell"
-   "FORGOT PASSWORD · StockWell"
-   and also keeps Reset Password consistent.
    ========================================================= */
 
 html.dark-mode .signup-page .page-brand,
@@ -741,8 +687,6 @@ html.dark-mode .reset-password-page .page-brand .brand-handshake {
 
 /* =========================================================
    6. AUTHSELECTOR LOGIN SIDE — DARK MODE
-   Damped from the previous version so the orbs are atmospheric
-   instead of overpowering the panel.
    ========================================================= */
 
 html.dark-mode .auth-selector .login-panel {
@@ -762,16 +706,10 @@ html.dark-mode .auth-selector .login-panel {
       rgba(121, 93, 137, 0.16),
       transparent 40%
     ),
-    linear-gradient(
-      135deg,
-      #160f20 0%,
-      #21172f 48%,
-      #331c28 100%
-    ) !important;
-  filter: saturate(1.10) brightness(0.98) !important;
+    linear-gradient(135deg, #160f20 0%, #21172f 48%, #331c28 100%) !important;
+  filter: saturate(1.1) brightness(0.98) !important;
 }
 
-/* Dimmed actual floating orbs. */
 html.dark-mode .auth-selector .login-panel .gradient-orb {
   opacity: 0.62 !important;
   filter: blur(58px) saturate(1.12) !important;
@@ -791,7 +729,7 @@ html.dark-mode .auth-selector .login-panel .orb-two {
 
 html.dark-mode .auth-selector .login-panel .orb-three {
   background: #795d89 !important;
-  opacity: 0.40 !important;
+  opacity: 0.4 !important;
   mix-blend-mode: screen !important;
 }
 
@@ -801,13 +739,6 @@ html.dark-mode .auth-selector .login-panel .panel-content {
 
 /* =========================================================
    7. DARK-MODE PRIMARY AUTH BUTTONS
-   Light theme is untouched.
-
-   Light:
-     PURPLE -> PURPLE -> ORANGE
-
-   Dark:
-     ORANGE -> PURPLE -> DEEP PURPLE
    ========================================================= */
 
 html.dark-mode .login-submit,
@@ -879,7 +810,7 @@ html.dark-mode .reset-password-page footer {
   html.dark-mode .signup-page .background-orb,
   html.dark-mode .forgot-password-page .background-orb,
   html.dark-mode .reset-password-page .background-orb {
-    filter: blur(64px) saturate(1.20) !important;
+    filter: blur(64px) saturate(1.2) !important;
   }
 
   html.dark-mode .auth-selector .login-panel .gradient-orb {
@@ -907,31 +838,10 @@ html.dark-mode .reset-password-page footer {
 
 /* =========================================================
    STOCKWELL AUTH / THEME VISUAL UPDATE — REVISION 3
-   =========================================================
-   This block is intentionally at the end of theme.css so it
-   overrides the previous auth/theme revision cleanly.
-
-   Fixes:
-   - Removes the brief theme-switch visual glitch by disabling
-     background/color transitions that can expose an intermediate
-     paint during the html.dark-mode class swap.
-   - AuthSelector dark login text now uses the same deep StockWell
-     purple used by the light-theme signup side.
-   - Restores a slightly brighter dark login side with gold + red
-     atmosphere instead of a pale/white-looking center.
-   - Keeps the login-side floating orbs moving.
-   - Makes the mouse-follow glow visible on the dark login side.
-   - Keeps the dark login orbs controlled rather than overbearing.
    ========================================================= */
-
 
 /* =========================================================
    1. THEME SWITCH — REMOVE PAINTING GLITCH
-   =========================================================
-   The theme itself still changes instantly. The visual surfaces
-   remain animated for their normal hover/motion effects, but the
-   theme-dependent background/color properties no longer crossfade.
-   This prevents the brief "in-between" frame seen during a toggle.
    ========================================================= */
 
 html,
@@ -940,7 +850,6 @@ body,
   transition: none !important;
 }
 
-/* Auth selector theme surfaces */
 .auth-selector {
   transition: none !important;
 }
@@ -954,7 +863,6 @@ body,
     color 600ms ease !important;
 }
 
-/* Auth pages */
 .signup-page,
 .forgot-password-page,
 .reset-password-page {
@@ -964,8 +872,6 @@ body,
     filter 450ms ease !important;
 }
 
-/* PageBackground itself should not crossfade its base/gradient when
-   the theme class changes. */
 .page-background,
 .page-background .page-base,
 .page-background .page-gradient,
@@ -975,16 +881,12 @@ body,
   transition: none !important;
 }
 
-
 /* =========================================================
-   2. AUTHSELECTOR DARK LOGIN — DEEP PURPLE TEXT
-   =========================================================
-   Match the dark login-side text to the light signup-side's
-   StockWell purple instead of white.
+   2. AUTHSELECTOR DARK LOGIN — LIGHT PURPLE TEXT
    ========================================================= */
 
 html.dark-mode .auth-selector .login-panel {
-  color: var(--sw-purple-900) !important;
+  color: #d9c9e8 !important;
 }
 
 html.dark-mode .auth-selector .login-panel .panel-content,
@@ -993,65 +895,51 @@ html.dark-mode .auth-selector .login-panel .main-title,
 html.dark-mode .auth-selector .login-panel .sub-title,
 html.dark-mode .auth-selector .login-panel p,
 html.dark-mode .auth-selector .login-panel .interaction-hint {
-  color: var(--sw-purple-900) !important;
+  color: #c796f5 !important;
 }
 
 html.dark-mode .auth-selector .login-panel .title-line {
-  background: var(--sw-purple-900) !important;
-  opacity: 0.62 !important;
+  background: #c796f5 !important;
+  opacity: 0.72 !important;
 }
 
 html.dark-mode .auth-selector .login-panel .panel-content {
-  text-shadow: 0 2px 14px rgba(255, 255, 255, 0.10) !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.35) !important;
 }
-
 
 /* =========================================================
    3. AUTHSELECTOR DARK LOGIN — BRIGHTER GOLD/RED ATMOSPHERE
-   =========================================================
-   Restore the warmer character of the login side. The center is
-   deliberately gold/red rather than white.
    ========================================================= */
 
 html.dark-mode .auth-selector .login-panel {
   background:
     radial-gradient(
       circle at var(--mouse-x) var(--mouse-y),
-      rgba(227, 200, 79, 0.46) 0%,
-      rgba(227, 200, 79, 0.28) 9%,
-      rgba(227, 200, 79, 0.10) 20%,
-      transparent 38%
+      rgba(227, 200, 79, 0.2) 0%,
+      rgba(227, 200, 79, 0.11) 9%,
+      rgba(227, 200, 79, 0.04) 18%,
+      transparent 30%
     ),
     radial-gradient(
       circle at calc(var(--mouse-x) + 24%) calc(var(--mouse-y) - 8%),
-      rgba(239, 104, 73, 0.34) 0%,
-      rgba(239, 104, 73, 0.20) 12%,
-      rgba(239, 104, 73, 0.07) 25%,
-      transparent 42%
+      rgba(239, 104, 73, 0.16) 0%,
+      rgba(239, 104, 73, 0.09) 12%,
+      rgba(239, 104, 73, 0.03) 20%,
+      transparent 34%
     ),
     radial-gradient(
       circle at calc(var(--mouse-x) - 18%) calc(var(--mouse-y) + 24%),
-      rgba(121, 93, 137, 0.22) 0%,
-      rgba(121, 93, 137, 0.12) 16%,
-      transparent 42%
+      rgba(121, 93, 137, 0.12) 0%,
+      rgba(121, 93, 137, 0.06) 16%,
+      transparent 34%
     ),
-    linear-gradient(
-      135deg,
-      #1a1124 0%,
-      #291a36 44%,
-      #48202a 100%
-    ) !important;
+    linear-gradient(135deg, #1a1124 0%, #291a36 44%, #48202a 100%) !important;
 
-  filter: saturate(1.12) brightness(1.04) !important;
+  filter: saturate(1.05) brightness(0.96) !important;
 }
-
 
 /* =========================================================
    4. LOGIN-SIDE MOUSE GLOW
-   =========================================================
-   The component already supplies --mouse-x / --mouse-y.
-   This uses those values so the warm glow visibly follows
-   the cursor instead of producing a pale center.
    ========================================================= */
 
 html.dark-mode .auth-selector .login-panel::before {
@@ -1064,59 +952,53 @@ html.dark-mode .auth-selector .login-panel::before {
   background:
     radial-gradient(
       circle at var(--mouse-x) var(--mouse-y),
-      rgba(255, 213, 92, 0.34) 0%,
-      rgba(255, 213, 92, 0.16) 12%,
-      transparent 34%
+      rgba(255, 213, 92, 0.22) 0%,
+      rgba(255, 213, 92, 0.1) 12%,
+      transparent 30%
     ),
     radial-gradient(
       circle at calc(var(--mouse-x) + 12%) calc(var(--mouse-y) + 4%),
-      rgba(238, 89, 61, 0.24) 0%,
-      rgba(238, 89, 61, 0.10) 16%,
-      transparent 38%
+      rgba(238, 89, 61, 0.16) 0%,
+      rgba(238, 89, 61, 0.07) 16%,
+      transparent 34%
     );
 
   filter: blur(26px);
-  opacity: 0.90;
+  opacity: 0.45;
   mix-blend-mode: screen;
 
   transform: translateZ(0);
   will-change: background;
 }
 
-
 /* =========================================================
    5. KEEP THE FLOATING LOGIN ORBS MOVING
-   =========================================================
-   Do not override their animation; just tune their strength.
-   The existing floatOne / floatTwo / floatThree animations
-   continue running underneath the mouse-follow glow.
    ========================================================= */
 
 html.dark-mode .auth-selector .login-panel .gradient-orb {
   display: block;
   animation-play-state: running !important;
   will-change: transform;
-  filter: blur(54px) saturate(1.10) !important;
+  filter: blur(54px) saturate(1.1) !important;
 }
 
 html.dark-mode .auth-selector .login-panel .orb-one {
   background: #e3c84f !important;
-  opacity: 0.54 !important;
+  opacity: 0.26 !important;
   mix-blend-mode: screen !important;
 }
 
 html.dark-mode .auth-selector .login-panel .orb-two {
   background: #ef6849 !important;
-  opacity: 0.50 !important;
+  opacity: 0.22 !important;
   mix-blend-mode: screen !important;
 }
 
 html.dark-mode .auth-selector .login-panel .orb-three {
   background: #795d89 !important;
-  opacity: 0.34 !important;
+  opacity: 0.16 !important;
   mix-blend-mode: screen !important;
 }
-
 
 /* =========================================================
    6. KEEP LOGIN CONTENT ABOVE THE MOUSE GLOW
@@ -1130,7 +1012,6 @@ html.dark-mode .auth-selector .login-panel .panel-content {
   z-index: 10;
 }
 
-
 /* =========================================================
    7. MOBILE
    ========================================================= */
@@ -1142,10 +1023,9 @@ html.dark-mode .auth-selector .login-panel .panel-content {
 
   html.dark-mode .auth-selector .login-panel::before {
     filter: blur(22px);
-    opacity: 0.78;
+    opacity: 0.4;
   }
 }
-
 
 /* =========================================================
    8. REDUCED MOTION
