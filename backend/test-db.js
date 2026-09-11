@@ -1,13 +1,16 @@
 import pool from "./config/db.js";
 
 try {
-    const [rows] = await pool.query("SELECT 1 AS result");
+    const [result] = await pool.query(
+        "SELECT 1 AS connected"
+    );
 
-    console.log("Database connection successful!");
-    console.log(rows);
+    console.log("Database connection successful:", result);
 } catch (error) {
-    console.error("Database connection failed!");
-    console.error(error.message);
+    console.error(
+        "Database connection failed:",
+        error.message
+    );
 } finally {
     await pool.end();
 }
