@@ -97,17 +97,6 @@ export const signup = async (req, res) => {
 
     connection = await pool.getConnection();
 
-    const [dbCheck] = await connection.query(`
-    SELECT
-        DATABASE() AS database_name,
-        @@hostname AS hostname,
-        @@port AS port
-`);
-
-    console.log("=== SIGNUP DATABASE CONNECTION ===");
-    console.log(dbCheck[0]);
-    console.log("==================================");
-
     await connection.beginTransaction();
 
     // ----------------------------------------
