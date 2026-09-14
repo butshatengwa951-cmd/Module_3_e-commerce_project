@@ -226,7 +226,7 @@ onBeforeUnmount(() => {
     >
       <span class="back-arrow" aria-hidden="true"> ← </span>
 
-      <span> Back to Auth </span>
+      <span> Back to Select </span>
     </button>
 
     <!-- ==================================================
