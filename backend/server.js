@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 import authRoutes from "./routes/authRoutes.js";
 import stokvelRoutes from "./routes/stokvelRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -38,6 +39,8 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 
 app.use("/api/stokvels", stokvelRoutes);
+
+app.use("/api/users", userRoutes);
 
 
 // ----------------------------------------
