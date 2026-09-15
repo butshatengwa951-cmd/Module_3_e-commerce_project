@@ -45,7 +45,7 @@
 
         <div class="image-circle">
           <img
-            src="/images/unity.jpg"
+            src="/images/unityHome.png"
             alt="People joining hands in unity"
             @error="handleImageError"
           />
@@ -175,7 +175,7 @@
 
       <div class="why-image">
         <img
-          src="/images/unity.jpg"
+          src="/images/unityHome.png"
           alt="StockWell community"
           @error="handleImageError"
         />
@@ -775,7 +775,6 @@ function handleImageError(event) {
 
   font-size: 10px;
 }
-
 
 /* CTA */
 

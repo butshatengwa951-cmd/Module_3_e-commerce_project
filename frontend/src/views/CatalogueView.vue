@@ -3,6 +3,7 @@
   <div class="catalogue-page" :class="theme">
 
     <!-- TOP INTRO -->
+
     <section class="catalogue-hero">
 
       <div>
@@ -23,6 +24,7 @@
 
       </div>
 
+
       <div class="basket-summary">
 
         <span>GROUP BASKET</span>
@@ -40,13 +42,16 @@
     </section>
 
 
+
     <!-- SHOP TOOLBAR -->
+
     <section class="shop-toolbar">
 
       <button
         class="category-button"
         @click="showCategories = !showCategories"
       >
+
         <span>☰</span>
 
         Categories
@@ -54,6 +59,7 @@
         <b>
           {{ showCategories ? "↑" : "↓" }}
         </b>
+
       </button>
 
 
@@ -93,7 +99,9 @@
     </section>
 
 
+
     <!-- CATEGORY DROPDOWN -->
+
     <transition name="category-slide">
 
       <section
@@ -140,7 +148,9 @@
     </transition>
 
 
+
     <!-- ACTIVE FILTER -->
+
     <div
       v-if="selectedCategory !== 'All Products'"
       class="active-filter"
@@ -159,8 +169,13 @@
     </div>
 
 
+
     <!-- PRODUCT AREA -->
-    <main class="products-area">
+
+    <main
+      id="compare-prices"
+      class="products-area"
+    >
 
       <div
         v-if="message"
@@ -174,9 +189,11 @@
         v-if="loading"
         class="state"
       >
+
         <div class="loader"></div>
 
         <p>Loading StockWell groceries...</p>
+
       </div>
 
 
@@ -184,6 +201,7 @@
         v-else-if="errorMessage"
         class="state error"
       >
+
         <strong>We couldn't load the catalogue.</strong>
 
         <p>{{ errorMessage }}</p>
@@ -203,6 +221,7 @@
         >
 
           <!-- IMAGE -->
+
           <div class="product-image">
 
             <span
@@ -225,7 +244,9 @@
           </div>
 
 
+
           <!-- INFO -->
+
           <div class="product-info">
 
             <span class="category-label">
@@ -241,7 +262,9 @@
             </p>
 
 
+
             <!-- PRICE -->
+
             <div class="price-row">
 
               <div>
@@ -256,6 +279,7 @@
 
               </div>
 
+
               <div
                 v-if="getSaving(product) > 0"
                 class="saving"
@@ -266,7 +290,9 @@
             </div>
 
 
+
             <!-- SUPPLIER -->
+
             <div class="best-supplier">
 
               <span>BEST SUPPLIER</span>
@@ -278,7 +304,9 @@
             </div>
 
 
+
             <!-- STOCK -->
+
             <div class="stock-row">
 
               <span>
@@ -302,7 +330,9 @@
             </div>
 
 
+
             <!-- COMPARE -->
+
             <button
               class="compare-button"
               @click="toggleProduct(product.product_id)"
@@ -321,7 +351,9 @@
             </button>
 
 
+
             <!-- SUPPLIERS -->
+
             <div
               v-if="expandedProduct === product.product_id"
               class="supplier-list"
@@ -359,7 +391,9 @@
             </div>
 
 
+
             <!-- ADD -->
+
             <button
               class="add-button"
               @click="addToBasket(product)"
@@ -378,7 +412,9 @@
       </div>
 
 
+
       <!-- NO PRODUCTS -->
+
       <div
         v-else
         class="empty-state"
@@ -407,6 +443,7 @@
 </template>
 
 
+
 <script setup>
 
 import {
@@ -416,15 +453,21 @@ import {
 } from "vue";
 
 import {
+  RouterLink
+} from "vue-router";
+
+import {
   getProducts
 } from "../services/api.js";
 
 
 defineProps({
+
   theme: {
     type: String,
     default: "light"
   }
+
 });
 
 
@@ -451,33 +494,55 @@ const basketCount = ref(
 );
 
 
+
 const categories = [
+
   "All Products",
+
   "Staples",
+
   "Cooking Essentials",
+
   "Food",
+
   "Canned Food",
+
   "Spices",
+
   "Breakfast",
+
   "Beverages"
+
 ];
+
 
 
 function getCategoryIcon(category) {
 
   const icons = {
+
     "All Products": "🛍️",
+
     "Staples": "🌾",
+
     "Cooking Essentials": "🍳",
+
     "Food": "🍎",
+
     "Canned Food": "🥫",
+
     "Spices": "🌶️",
+
     "Breakfast": "🥣",
+
     "Beverages": "☕"
+
   };
 
   return icons[category] || "🛍️";
+
 }
+
 
 
 function selectCategory(category) {
@@ -489,6 +554,7 @@ function selectCategory(category) {
 }
 
 
+
 function resetFilters() {
 
   search.value = "";
@@ -498,6 +564,7 @@ function resetFilters() {
   sortOption.value = "default";
 
 }
+
 
 
 function getProductImage(product) {
@@ -528,6 +595,7 @@ function getProductImage(product) {
 }
 
 
+
 function getFallbackImage(product) {
 
   const name =
@@ -536,17 +604,14 @@ function getFallbackImage(product) {
 
   if (name.includes("rice")) {
 
-    return "https://ibb.co/x8KP6fPj";
+    return "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=700&h=700&fit=crop";
 
   }
 
 
-  if (
-    name.includes("oil")
-  
-  ) {
+  if (name.includes("oil")) {
 
-    return "https://ibb.co/LXFJKGV2";
+    return "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=700&h=700&fit=crop";
 
   }
 
@@ -560,8 +625,19 @@ function getFallbackImage(product) {
 
   }
 
+
+  return "https://images.unsplash.com/photo-1542838132-92c53300491e?w=700&h=700&fit=crop";
+
 }
 
+
+
+function handleImageError(event) {
+
+  event.target.src =
+    "https://images.unsplash.com/photo-1542838132-92c53300491e?w=700&h=700&fit=crop";
+
+}
 
 
 
@@ -578,12 +654,17 @@ function getLowestPrice(product) {
 
 
   return Math.min(
+
     ...product.supplier_prices.map(
+
       supplier => Number(supplier.price)
+
     )
+
   );
 
 }
+
 
 
 function getHighestPrice(product) {
@@ -599,12 +680,17 @@ function getHighestPrice(product) {
 
 
   return Math.max(
+
     ...product.supplier_prices.map(
+
       supplier => Number(supplier.price)
+
     )
+
   );
 
 }
+
 
 
 function getSaving(product) {
@@ -627,6 +713,7 @@ function getSaving(product) {
 }
 
 
+
 function getCheapestSupplier(product) {
 
   if (
@@ -641,6 +728,7 @@ function getCheapestSupplier(product) {
 
   const cheapest =
     product.supplier_prices.reduce(
+
       (lowest, supplier) => {
 
         return Number(supplier.price) <
@@ -649,12 +737,14 @@ function getCheapestSupplier(product) {
           : lowest;
 
       }
+
     );
 
 
   return cheapest.supplier_name;
 
 }
+
 
 
 function toggleProduct(id) {
@@ -672,56 +762,73 @@ function toggleProduct(id) {
 }
 
 
+
 const filteredProducts = computed(() => {
 
   let result = products.value.filter(product => {
 
+    const productName =
+      product.product_name || "";
+
+    const productCategory =
+      product.category || "";
+
     const matchesSearch =
-      product.product_name
+      productName
         .toLowerCase()
         .includes(search.value.toLowerCase());
 
     const matchesCategory =
       selectedCategory.value === "All Products" ||
-      product.category === selectedCategory.value;
+      productCategory === selectedCategory.value;
 
     return matchesSearch && matchesCategory;
 
   });
 
 
+
   if (sortOption.value === "price-low") {
 
     result.sort(
+
       (a, b) =>
         getLowestPrice(a) -
         getLowestPrice(b)
+
     );
 
   }
+
 
 
   if (sortOption.value === "price-high") {
 
     result.sort(
+
       (a, b) =>
         getLowestPrice(b) -
         getLowestPrice(a)
+
     );
 
   }
+
 
 
   if (sortOption.value === "name") {
 
     result.sort(
+
       (a, b) =>
-        a.product_name.localeCompare(
-          b.product_name
+        (a.product_name || "").localeCompare(
+          b.product_name || ""
         )
+
     );
 
   }
+
 
 
   return result;
@@ -729,9 +836,11 @@ const filteredProducts = computed(() => {
 });
 
 
+
 function addToBasket(product) {
 
   basketCount.value++;
+
 
   localStorage.setItem(
     "basketCount",
@@ -740,12 +849,14 @@ function addToBasket(product) {
 
 
   window.dispatchEvent(
+
     new CustomEvent(
       "basket-updated",
       {
         detail: basketCount.value
       }
     )
+
   );
 
 
@@ -762,6 +873,7 @@ function addToBasket(product) {
 }
 
 
+
 async function loadProducts() {
 
   try {
@@ -770,8 +882,11 @@ async function loadProducts() {
 
     errorMessage.value = "";
 
-    products.value =
-      await getProducts();
+    const data = await getProducts();
+
+    products.value = Array.isArray(data)
+      ? data
+      : [];
 
   } catch (error) {
 
@@ -789,9 +904,11 @@ async function loadProducts() {
 }
 
 
+
 onMounted(loadProducts);
 
 </script>
+
 
 
 <style scoped>
@@ -799,12 +916,19 @@ onMounted(loadProducts);
 .catalogue-page {
 
   --bg: #f5f1e8;
+
   --card: #ffffff;
+
   --text: #211a2d;
+
   --muted: #756c80;
+
   --gold: #c8b019;
+
   --purple: #795d89;
+
   --terra: #c2583d;
+
   --line: #ddd5e3;
 
   min-height: 100vh;
@@ -818,15 +942,21 @@ onMounted(loadProducts);
 }
 
 
+
 .catalogue-page.dark {
 
   --bg: #130e23;
+
   --card: #211a31;
+
   --text: #f4eff8;
+
   --muted: #aaa0b7;
+
   --line: rgba(255,255,255,0.12);
 
 }
+
 
 
 /* INTRO */
@@ -850,6 +980,7 @@ onMounted(loadProducts);
 }
 
 
+
 .eyebrow {
 
   color: var(--purple);
@@ -861,6 +992,7 @@ onMounted(loadProducts);
   letter-spacing: 1.5px;
 
 }
+
 
 
 .catalogue-hero h1 {
@@ -876,11 +1008,13 @@ onMounted(loadProducts);
 }
 
 
+
 .catalogue-hero h1 span {
 
   color: var(--purple);
 
 }
+
 
 
 .catalogue-hero p {
@@ -894,6 +1028,7 @@ onMounted(loadProducts);
   line-height: 1.6;
 
 }
+
 
 
 .basket-summary {
@@ -911,6 +1046,7 @@ onMounted(loadProducts);
 }
 
 
+
 .basket-summary span {
 
   display: block;
@@ -924,6 +1060,7 @@ onMounted(loadProducts);
 }
 
 
+
 .basket-summary strong {
 
   display: inline-block;
@@ -935,6 +1072,7 @@ onMounted(loadProducts);
 }
 
 
+
 .basket-summary small {
 
   color: var(--muted);
@@ -942,6 +1080,7 @@ onMounted(loadProducts);
   font-size: 10px;
 
 }
+
 
 
 .basket-summary a {
@@ -961,6 +1100,7 @@ onMounted(loadProducts);
 }
 
 
+
 /* TOOLBAR */
 
 .shop-toolbar {
@@ -978,6 +1118,7 @@ onMounted(loadProducts);
   gap: 10px;
 
 }
+
 
 
 .category-button {
@@ -1007,11 +1148,13 @@ onMounted(loadProducts);
 }
 
 
+
 .category-button span {
 
   color: var(--purple);
 
 }
+
 
 
 .category-button b {
@@ -1021,6 +1164,7 @@ onMounted(loadProducts);
   color: var(--gold);
 
 }
+
 
 
 .search-box {
@@ -1042,6 +1186,7 @@ onMounted(loadProducts);
 }
 
 
+
 .search-box span {
 
   color: var(--purple);
@@ -1049,6 +1194,7 @@ onMounted(loadProducts);
   font-size: 18px;
 
 }
+
 
 
 .search-box input {
@@ -1072,6 +1218,7 @@ onMounted(loadProducts);
 }
 
 
+
 .shop-toolbar select {
 
   border: 1px solid var(--line);
@@ -1089,6 +1236,7 @@ onMounted(loadProducts);
   font-size: 11px;
 
 }
+
 
 
 /* CATEGORY PANEL */
@@ -1110,11 +1258,13 @@ onMounted(loadProducts);
 }
 
 
+
 .category-title {
 
   margin-bottom: 15px;
 
 }
+
 
 
 .category-title span {
@@ -1132,6 +1282,7 @@ onMounted(loadProducts);
 }
 
 
+
 .category-title small {
 
   display: block;
@@ -1145,6 +1296,7 @@ onMounted(loadProducts);
 }
 
 
+
 .category-list {
 
   display: flex;
@@ -1154,6 +1306,7 @@ onMounted(loadProducts);
   gap: 8px;
 
 }
+
 
 
 .category-list button {
@@ -1181,6 +1334,7 @@ onMounted(loadProducts);
 }
 
 
+
 .category-list button.active {
 
   background: var(--gold);
@@ -1194,6 +1348,7 @@ onMounted(loadProducts);
 }
 
 
+
 .category-icon {
 
   font-size: 15px;
@@ -1201,7 +1356,9 @@ onMounted(loadProducts);
 }
 
 
+
 .category-slide-enter-active,
+
 .category-slide-leave-active {
 
   transition: all .2s ease;
@@ -1209,7 +1366,9 @@ onMounted(loadProducts);
 }
 
 
+
 .category-slide-enter-from,
+
 .category-slide-leave-to {
 
   opacity: 0;
@@ -1217,6 +1376,7 @@ onMounted(loadProducts);
   transform: translateY(-8px);
 
 }
+
 
 
 /* FILTER */
@@ -1238,11 +1398,13 @@ onMounted(loadProducts);
 }
 
 
+
 .active-filter strong {
 
   color: var(--purple);
 
 }
+
 
 
 .active-filter button {
@@ -1262,6 +1424,7 @@ onMounted(loadProducts);
 }
 
 
+
 /* PRODUCTS */
 
 .products-area {
@@ -1275,6 +1438,7 @@ onMounted(loadProducts);
 }
 
 
+
 .product-grid {
 
   display: grid;
@@ -1284,6 +1448,7 @@ onMounted(loadProducts);
   gap: 18px;
 
 }
+
 
 
 .product-card {
@@ -1303,6 +1468,7 @@ onMounted(loadProducts);
 }
 
 
+
 .product-card:hover {
 
   transform: translateY(-5px);
@@ -1310,6 +1476,7 @@ onMounted(loadProducts);
   box-shadow: 0 18px 40px rgba(50, 35, 70, .12);
 
 }
+
 
 
 /* PRODUCT IMAGE */
@@ -1331,6 +1498,7 @@ onMounted(loadProducts);
 }
 
 
+
 .product-image img {
 
   width: 85%;
@@ -1344,6 +1512,7 @@ onMounted(loadProducts);
 }
 
 
+
 .product-card:hover .product-image img {
 
   transform: scale(1.05);
@@ -1351,7 +1520,9 @@ onMounted(loadProducts);
 }
 
 
+
 .deal-badge,
+
 .bulk-badge {
 
   position: absolute;
@@ -1373,6 +1544,7 @@ onMounted(loadProducts);
 }
 
 
+
 .deal-badge {
 
   left: 12px;
@@ -1382,6 +1554,7 @@ onMounted(loadProducts);
   color: #211a2d;
 
 }
+
 
 
 .bulk-badge {
@@ -1395,6 +1568,7 @@ onMounted(loadProducts);
 }
 
 
+
 /* INFO */
 
 .product-info {
@@ -1402,6 +1576,7 @@ onMounted(loadProducts);
   padding: 18px;
 
 }
+
 
 
 .category-label {
@@ -1417,6 +1592,7 @@ onMounted(loadProducts);
 }
 
 
+
 .product-info h2 {
 
   font-size: 15px;
@@ -1424,6 +1600,7 @@ onMounted(loadProducts);
   margin: 7px 0;
 
 }
+
 
 
 .description {
@@ -1437,6 +1614,7 @@ onMounted(loadProducts);
   min-height: 31px;
 
 }
+
 
 
 /* PRICE */
@@ -1454,6 +1632,7 @@ onMounted(loadProducts);
 }
 
 
+
 .price-row small {
 
   display: block;
@@ -1467,6 +1646,7 @@ onMounted(loadProducts);
 }
 
 
+
 .price-row strong {
 
   display: block;
@@ -1476,6 +1656,7 @@ onMounted(loadProducts);
   margin-top: 3px;
 
 }
+
 
 
 .saving {
@@ -1493,6 +1674,7 @@ onMounted(loadProducts);
   font-weight: 700;
 
 }
+
 
 
 /* SUPPLIER */
@@ -1516,6 +1698,7 @@ onMounted(loadProducts);
 }
 
 
+
 .best-supplier span {
 
   color: var(--muted);
@@ -1527,6 +1710,7 @@ onMounted(loadProducts);
 }
 
 
+
 .best-supplier strong {
 
   color: var(--purple);
@@ -1534,6 +1718,7 @@ onMounted(loadProducts);
   font-size: 10px;
 
 }
+
 
 
 /* STOCK */
@@ -1555,6 +1740,7 @@ onMounted(loadProducts);
 }
 
 
+
 .in-stock {
 
   color: #168348;
@@ -1564,6 +1750,7 @@ onMounted(loadProducts);
 }
 
 
+
 .low-stock {
 
   color: #d53f35;
@@ -1571,6 +1758,7 @@ onMounted(loadProducts);
   font-weight: 700;
 
 }
+
 
 
 /* COMPARE */
@@ -1596,6 +1784,7 @@ onMounted(loadProducts);
 }
 
 
+
 .compare-button span {
 
   float: right;
@@ -1603,6 +1792,7 @@ onMounted(loadProducts);
   color: var(--gold);
 
 }
+
 
 
 /* SUPPLIERS */
@@ -1620,6 +1810,7 @@ onMounted(loadProducts);
 }
 
 
+
 .supplier-row {
 
   display: flex;
@@ -1635,11 +1826,13 @@ onMounted(loadProducts);
 }
 
 
+
 .supplier-row:last-child {
 
   border-bottom: none;
 
 }
+
 
 
 .supplier-row.cheapest {
@@ -1649,6 +1842,7 @@ onMounted(loadProducts);
 }
 
 
+
 .supplier-row strong {
 
   display: block;
@@ -1656,6 +1850,7 @@ onMounted(loadProducts);
   font-size: 10px;
 
 }
+
 
 
 .supplier-row small {
@@ -1669,6 +1864,7 @@ onMounted(loadProducts);
 }
 
 
+
 .supplier-row > span {
 
   font-weight: 700;
@@ -1676,6 +1872,7 @@ onMounted(loadProducts);
   font-size: 10px;
 
 }
+
 
 
 /* ADD BUTTON */
@@ -1707,6 +1904,7 @@ onMounted(loadProducts);
 }
 
 
+
 .add-button span {
 
   color: var(--gold);
@@ -1718,6 +1916,7 @@ onMounted(loadProducts);
 }
 
 
+
 .add-button:hover {
 
   background: var(--gold);
@@ -1725,6 +1924,7 @@ onMounted(loadProducts);
   color: #211a2d;
 
 }
+
 
 
 /* TOAST */
@@ -1756,6 +1956,7 @@ onMounted(loadProducts);
 }
 
 
+
 /* STATES */
 
 .state {
@@ -1767,6 +1968,7 @@ onMounted(loadProducts);
   color: var(--muted);
 
 }
+
 
 
 .loader {
@@ -1788,13 +1990,17 @@ onMounted(loadProducts);
 }
 
 
+
 @keyframes spin {
 
   to {
+
     transform: rotate(360deg);
+
   }
 
 }
+
 
 
 .empty-state {
@@ -1806,11 +2012,13 @@ onMounted(loadProducts);
 }
 
 
+
 .empty-state > div {
 
   font-size: 45px;
 
 }
+
 
 
 .empty-state h2 {
@@ -1820,6 +2028,7 @@ onMounted(loadProducts);
 }
 
 
+
 .empty-state p {
 
   color: var(--muted);
@@ -1827,6 +2036,7 @@ onMounted(loadProducts);
   font-size: 12px;
 
 }
+
 
 
 .empty-state button {
@@ -1848,6 +2058,7 @@ onMounted(loadProducts);
 }
 
 
+
 /* RESPONSIVE */
 
 @media (max-width: 950px) {
@@ -1861,6 +2072,7 @@ onMounted(loadProducts);
 }
 
 
+
 @media (max-width: 750px) {
 
   .catalogue-hero {
@@ -1871,11 +2083,13 @@ onMounted(loadProducts);
 
   }
 
+
   .shop-toolbar {
 
     grid-template-columns: 1fr;
 
   }
+
 
   .shop-toolbar select {
 
@@ -1886,6 +2100,7 @@ onMounted(loadProducts);
 }
 
 
+
 @media (max-width: 600px) {
 
   .product-grid {
@@ -1894,19 +2109,24 @@ onMounted(loadProducts);
 
   }
 
+
   .catalogue-hero {
 
     padding: 40px 20px 25px;
 
   }
 
+
   .shop-toolbar,
+
   .products-area {
 
     padding-left: 20px;
+
     padding-right: 20px;
 
   }
+
 
   .product-image {
 
