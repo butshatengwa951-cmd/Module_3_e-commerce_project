@@ -28,8 +28,9 @@ export const authApi = {
 };
 
 export const orderApi = {
-  getOrders: (stokvelId) => api.get(`/orders?stokvel_id=${stokvelId}`),
-  getOrder: (orderId) => api.get(`/orders/${orderId}`),
+  getOrders: (stokvelId) =>
+    api.get(`/order_details${stokvelId ? `?stokvel_id=${stokvelId}` : ""}`),
+  getOrder: (orderId) => api.get(`/order_details/${orderId}`),
   confirmOrder: (orderId) => api.put(`/orders/${orderId}/confirm`),
   createOrder: (payload) => api.post("/orders", payload),
 };
