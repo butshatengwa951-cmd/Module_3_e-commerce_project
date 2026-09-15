@@ -35,7 +35,7 @@ npm install
 - Copy .env.example to .env and set DB_PASSWORD
 
 ### 4. Run Both
-Backend: npm run dev  -> http://localhost:5000
+Backend: npm run dev  -> http://localhost:4040
 Frontend: npm run dev -> http://localhost:5173
 
 API Base: http://localhost:5000/api
