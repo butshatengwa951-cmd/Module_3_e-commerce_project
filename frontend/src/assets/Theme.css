@@ -1,34 +1,33 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
 :root {
-  --olive: #948419;
-  --brick: #863e2d;
-  --violet: #63579e;
-  --lilac: #ae88c3;
+  --gold: #c8b019;
+  --purple: #795d89;
+  --terra: #c2583d;
   --black: #000000;
 
-  --bg: #050608;
-  --bg-secondary: #0c0e12;
-  --card: #11141a;
-  --card-hover: #171b22;
+  --bg: #130e23;
+  --bg-secondary: #1a1428;
+  --card: #211a31;
+  --card-hover: #2b2340;
 
-  --text: #f5f5f5;
-  --text-soft: #a9adb7;
-  --border: rgba(255, 255, 255, 0.1);
+  --text: #f4eff8;
+  --text-soft: #aaa0b7;
+  --border: rgba(255, 255, 255, 0.12);
 
-  font-family: "DM Mono", monospace;
+  font-family: "Space Grotesk", sans-serif;
 }
 
 /* LIGHT MODE */
 .light-mode {
-  --bg: #f5f3ed;
+  --bg: #f5f1e8;
   --bg-secondary: #ffffff;
   --card: #ffffff;
-  --card-hover: #f0eee8;
+  --card-hover: #f5f1e8;
 
-  --text: #111111;
-  --text-soft: #666666;
-  --border: rgba(0, 0, 0, 0.1);
+  --text: #211a2d;
+  --text-soft: #756c80;
+  --border: #ddd5e3;
 }
 
 /* RESET */
@@ -71,38 +70,36 @@ a {
   text-decoration: none;
 }
 
-/* SHARED COMPONENTS - uses your new palette */
+/* SHARED COMPONENTS - matches the StockWell design system */
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 16px;
   transition:
     background 0.2s ease,
     border-color 0.2s ease;
 }
 .card:hover {
   background: var(--card-hover);
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 .light-mode .card:hover {
   border-color: rgba(0, 0, 0, 0.14);
 }
 
 .btn-primary {
-  background: var(--violet);
-  color: var(--text);
-  border: 1px solid var(--violet);
-  border-radius: 999px;
+  background: var(--gold);
+  color: #211a2d;
+  border: 1px solid var(--gold);
+  border-radius: 12px;
   padding: 14px 22px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-size: 0.8rem;
   transition: all 0.2s ease;
 }
 .btn-primary:hover {
-  background: var(--lilac);
-  border-color: var(--lilac);
+  filter: brightness(1.08);
   transform: translateY(-1px);
 }
 
@@ -110,11 +107,10 @@ a {
   background: var(--bg-secondary);
   color: var(--text-soft);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 12px;
   padding: 12px 18px;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 .btn-ghost:hover {
   background: var(--card-hover);
@@ -137,7 +133,7 @@ a {
   color: var(--text-soft);
 }
 .input-field:focus {
-  border-color: var(--violet);
+  border-color: var(--gold);
   background: var(--card);
 }
 
@@ -149,6 +145,7 @@ a {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
+  font-family: "DM Mono", monospace;
 }
 
 .pill {
@@ -160,19 +157,20 @@ a {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 10px 14px;
+  font-family: "DM Mono", monospace;
 }
 .pill.active {
-  background: var(--violet);
-  color: var(--text);
-  border-color: var(--violet);
+  background: var(--gold);
+  color: #211a2d;
+  border-color: var(--gold);
 }
-.pill.olive.active {
-  background: var(--olive);
-  border-color: var(--olive);
+.pill.purple.active {
+  background: var(--purple);
+  border-color: var(--purple);
   color: #fff;
 }
-.pill.brick.active {
-  background: var(--brick);
-  border-color: var(--brick);
+.pill.terra.active {
+  background: var(--terra);
+  border-color: var(--terra);
   color: #fff;
 }

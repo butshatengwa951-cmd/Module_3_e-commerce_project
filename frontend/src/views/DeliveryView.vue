@@ -10,7 +10,7 @@
       padding: 48px 24px;
       position: relative;
       z-index: 2;
-      font-family: &quot;DM Mono&quot;, monospace;
+      font-family: 'DM Mono', monospace;
     "
   >
     <div
@@ -23,7 +23,7 @@
         border: 1px solid rgba(255, 255, 255, 0.12);
         font-size: 11px;
         color: white;
-        font-family: &quot;DM Mono&quot;, monospace;
+        font-family: 'DM Mono', monospace;
       "
     >
       👤 {{ auth.fullName }} • {{ auth.email }}
@@ -54,19 +54,20 @@
               font-size: 11px;
               letter-spacing: 0.18em;
               text-transform: uppercase;
-              color: rgba(30, 27, 58, 0.6);
-              font-family: &quot;DM Mono&quot;, monospace;
+              color: rgba(244, 239, 248, 0.6);
+              font-family: 'DM Mono', monospace;
             "
           >
             STOCKWELL EXPRESS
           </div>
           <div
             style="
-              font-size: 24px;
-              font-weight: 500;
+              font-size: 26px;
+              font-weight: 600;
               margin-top: 8px;
-              color: #1e1b3a;
-              font-family: &quot;DM Mono&quot;, monospace;
+              color: #f4eff8;
+              font-family: 'Space Grotesk', sans-serif;
+              letter-spacing: -0.5px;
             "
           >
             Delivery Tracking
@@ -76,22 +77,22 @@
               style="
                 padding: 7px 14px;
                 border-radius: 999px;
-                background: rgba(255, 255, 255, 0.6);
-                border: 1px solid rgba(0, 0, 0, 0.08);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.12);
                 font-size: 11px;
-                color: #1e1b3a;
-                font-family: &quot;DM Mono&quot;, monospace;
+                color: #f4eff8;
+                font-family: 'DM Mono', monospace;
               "
               >{{ tid }}</span
             ><span
               style="
                 padding: 7px 14px;
                 border-radius: 999px;
-                background: #1e1b3a;
-                color: white;
+                background: #c8b019;
+                color: #211a2d;
                 font-size: 11px;
                 font-weight: 500;
-                font-family: &quot;DM Mono&quot;, monospace;
+                font-family: 'DM Mono', monospace;
               "
               >{{ status }}</span
             >
@@ -102,8 +103,8 @@
             style="
               font-size: 11px;
               letter-spacing: 0.12em;
-              color: rgba(30, 27, 58, 0.5);
-              font-family: &quot;DM Mono&quot;, monospace;
+              color: rgba(244, 239, 248, 0.55);
+              font-family: 'DM Mono', monospace;
             "
           >
             ETA
@@ -112,9 +113,9 @@
             style="
               font-size: 14px;
               font-weight: 500;
-              color: #1e1b3a;
+              color: #f4eff8;
               margin-top: 4px;
-              font-family: &quot;DM Mono&quot;, monospace;
+              font-family: 'DM Mono', monospace;
             "
           >
             Tomorrow by 18:00
@@ -126,8 +127,8 @@
           style="
             height: 64px;
             border-radius: 18px;
-            background: rgba(200, 200, 220, 0.6);
-            border: 1px solid rgba(0, 0, 0, 0.06);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
             overflow: hidden;
           "
@@ -139,7 +140,7 @@
               top: 0;
               bottom: 0;
               border-radius: 18px 0 0 18px;
-              background: linear-gradient(90deg, #4a3e72, #c07a4a);
+              background: linear-gradient(90deg, #795d89, #c8b019);
               transition: width.6s;
             "
             :style="{ width: progress + '%' }"
@@ -150,7 +151,7 @@
               left: 16px;
               right: 16px;
               top: 50%;
-              border-top: 2px dashed rgba(0, 0, 0, 0.2);
+              border-top: 2px dashed rgba(255, 255, 255, 0.22);
               transform: translateY(-50%);
             "
           ></div>
@@ -175,7 +176,7 @@
           style="
             width: 100%;
             margin-top: 16px;
-            accent-color: #1e1b3a;
+            accent-color: #c8b019;
             height: 6px;
           "
         />
@@ -185,28 +186,28 @@
           style="
             font-size: 13px;
             font-weight: 500;
-            color: #1e1b3a;
-            font-family: &quot;DM Mono&quot;, monospace;
+            color: #f4eff8;
+            font-family: 'DM Mono', monospace;
           "
         >
-          Mock - DB not reachable
+          No live tracking yet
         </div>
         <div style="margin-top: 6px">
           <button
             @click="createDemoDelivery"
             style="
-              background: #3b5bff;
-              color: white;
+              background: #c8b019;
+              color: #211a2d;
               border: none;
               padding: 4px 8px;
               border-radius: 4px;
               font-size: 11px;
-              font-family: &quot;DM Mono&quot;, monospace;
+              font-family: 'DM Mono', monospace;
               cursor: pointer;
               text-decoration: underline;
             "
           >
-            Connect backend on 4040
+            Start a Demo Delivery
           </button>
         </div>
       </div>
@@ -219,7 +220,7 @@
         style="
           padding: 28px 28px 24px;
           border-radius: 28px;
-          background: rgba(255, 255, 255, 0.14);
+          background: rgba(255, 255, 255, 0.06);
           backdrop-filter: blur(20px);
         "
       >
@@ -228,8 +229,8 @@
             style="
               font-size: 11px;
               letter-spacing: 0.12em;
-              color: rgba(30, 27, 58, 0.6);
-              font-family: &quot;DM Mono&quot;, monospace;
+              color: rgba(244, 239, 248, 0.6);
+              font-family: 'DM Mono', monospace;
             "
           >
             STOCKWELL EXPRESS • STOCKWELL GLOBAL
@@ -239,8 +240,8 @@
               style="
                 font-size: 10px;
                 letter-spacing: 0.12em;
-                color: rgba(30, 27, 58, 0.6);
-                font-family: &quot;DM Mono&quot;, monospace;
+                color: rgba(244, 239, 248, 0.6);
+                font-family: 'DM Mono', monospace;
               "
             >
               ESTIMATED DELIVERY
@@ -249,9 +250,9 @@
               style="
                 font-size: 14px;
                 font-weight: 500;
-                color: #1e1b3a;
+                color: #f4eff8;
                 margin-top: 4px;
-                font-family: &quot;DM Mono&quot;, monospace;
+                font-family: 'DM Mono', monospace;
               "
             >
               Tomorrow by 18:00
@@ -260,11 +261,12 @@
         </div>
         <div
           style="
-            font-size: 22px;
-            font-weight: 500;
-            color: #1e1b3a;
+            font-size: 24px;
+            font-weight: 600;
+            color: #f4eff8;
             margin-top: 8px;
-            font-family: &quot;DM Mono&quot;, monospace;
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.5px;
           "
         >
           Delivery Tracking
@@ -275,8 +277,8 @@
             gap: 8px;
             margin-top: 6px;
             font-size: 11px;
-            color: rgba(30, 27, 58, 0.6);
-            font-family: &quot;DM Mono&quot;, monospace;
+            color: rgba(244, 239, 248, 0.6);
+            font-family: 'DM Mono', monospace;
           "
         >
           StockWell Express ZA • Updated just now
@@ -286,10 +288,10 @@
             style="
               padding: 7px 12px;
               border-radius: 999px;
-              background: rgba(255, 255, 255, 0.7);
-              border: 1px solid rgba(0, 0, 0, 0.08);
+              background: rgba(255, 255, 255, 0.08);
+              border: 1px solid rgba(255, 255, 255, 0.12);
               font-size: 11px;
-              font-family: &quot;DM Mono&quot;, monospace;
+              font-family: 'DM Mono', monospace;
             "
             >{{ tid }}</span
           ><button
@@ -297,11 +299,11 @@
             style="
               padding: 7px 12px;
               border-radius: 999px;
-              background: rgba(255, 255, 255, 0.7);
-              border: 1px solid rgba(0, 0, 0, 0.08);
+              background: rgba(255, 255, 255, 0.08);
+              border: 1px solid rgba(255, 255, 255, 0.12);
               font-size: 11px;
               cursor: pointer;
-              font-family: &quot;DM Mono&quot;, monospace;
+              font-family: 'DM Mono', monospace;
             "
           >
             COPY</button
@@ -309,11 +311,11 @@
             style="
               padding: 7px 12px;
               border-radius: 999px;
-              background: #1e1b3a;
-              color: white;
+              background: #c8b019;
+              color: #211a2d;
               font-size: 11px;
               font-weight: 500;
-              font-family: &quot;DM Mono&quot;, monospace;
+              font-family: 'DM Mono', monospace;
             "
             >{{ status }}</span
           >
@@ -323,8 +325,8 @@
             margin-top: 22px;
             height: 64px;
             border-radius: 18px;
-            background: rgba(220, 220, 230, 0.8);
-            border: 1px solid rgba(0, 0, 0, 0.06);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
             overflow: hidden;
             display: flex;
@@ -340,9 +342,8 @@
               border-radius: 18px 0 0 18px;
               background: linear-gradient(
                 90deg,
-                #4a3e72,
-                #a05a5a 50%,
-                #c67a3a 100%
+                #795d89,
+                #c8b019 100%
               );
               transition: width.6s;
             "
@@ -356,8 +357,9 @@
               transform: translateY(-50%);
               padding: 6px 10px;
               border-radius: 999px;
-              background: white;
-              border: 1px solid rgba(0, 0, 0, 0.08);
+              background: #211a31;
+              border: 1px solid #c8b019;
+              color: #f4eff8;
               font-size: 11px;
               font-weight: 500;
             "
@@ -372,8 +374,8 @@
               transform: translateY(-50%);
               padding: 6px 10px;
               border-radius: 999px;
-              background: #111;
-              color: white;
+              background: #795d89;
+              color: #f4eff8;
               font-size: 11px;
               font-weight: 500;
             "
@@ -386,7 +388,7 @@
               left: 48px;
               right: 48px;
               top: 50%;
-              border-top: 2px dashed rgba(0, 0, 0, 0.25);
+              border-top: 2px dashed rgba(255, 255, 255, 0.25);
               transform: translateY(-50%);
             "
           ></div>
@@ -416,8 +418,8 @@
             <div
               :style="
                 i <= currentStep
-                  ? 'width:32px; height:32px; border-radius:999px; background:#1e1b3a; color:white; display:grid; place-items:center; margin:0 auto; font-size:12px'
-                  : 'width:32px; height:32px; border-radius:999px; background:rgba(0,0,0,0.08); color:rgba(0,0,0,0.4); display:grid; place-items:center; margin:0 auto'
+                  ? 'width:32px; height:32px; border-radius:999px; background:#c8b019; color:#211a2d; display:grid; place-items:center; margin:0 auto; font-size:12px'
+                  : 'width:32px; height:32px; border-radius:999px; background:rgba(255,255,255,0.08); color:rgba(244,239,248,0.4); display:grid; place-items:center; margin:0 auto'
               "
             >
               {{ i <= currentStep ? "✓" : "○" }}
@@ -427,8 +429,8 @@
                 font-size: 10px;
                 font-weight: 500;
                 margin-top: 8px;
-                color: #1e1b3a;
-                font-family: &quot;DM Mono&quot;, monospace;
+                color: #f4eff8;
+                font-family: 'DM Mono', monospace;
               "
             >
               {{ s.label }}
@@ -436,9 +438,9 @@
             <div
               style="
                 font-size: 9px;
-                color: rgba(0, 0, 0, 0.5);
+                color: rgba(244, 239, 248, 0.5);
                 margin-top: 2px;
-                font-family: &quot;DM Mono&quot;, monospace;
+                font-family: 'DM Mono', monospace;
               "
             >
               {{ s.date }}
@@ -460,7 +462,7 @@
           style="
             padding: 22px 24px;
             border-radius: 24px;
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.06);
           "
         >
           <div style="display: flex; justify-content: space-between">
@@ -468,8 +470,8 @@
               style="
                 font-size: 11px;
                 letter-spacing: 0.12em;
-                color: #1e1b3a;
-                font-family: &quot;DM Mono&quot;, monospace;
+                color: #f4eff8;
+                font-family: 'DM Mono', monospace;
               "
             >
               LOGISTICS TIMELINE
@@ -479,11 +481,11 @@
               style="
                 padding: 8px 14px;
                 border-radius: 999px;
-                background: rgba(255, 255, 255, 0.7);
-                border: 1px solid rgba(0, 0, 0, 0.08);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.12);
                 font-size: 11px;
                 cursor: pointer;
-                font-family: &quot;DM Mono&quot;, monospace;
+                font-family: 'DM Mono', monospace;
               "
             >
               SIMULATE NEXT →
@@ -497,7 +499,7 @@
                 display: flex;
                 gap: 12px;
                 padding: 14px 0;
-                border-left: 1px solid rgba(0, 0, 0, 0.08);
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
                 margin-left: 8px;
                 padding-left: 20px;
                 position: relative;
@@ -511,8 +513,8 @@
                   width: 12px;
                   height: 12px;
                   border-radius: 999px;
-                  background: white;
-                  border: 2px solid #1e1b3a;
+                  background: #c8b019;
+                  border: 2px solid #211a31;
                 "
               ></div>
               <div style="flex: 1">
@@ -520,23 +522,23 @@
                   style="
                     font-size: 13px;
                     font-weight: 500;
-                    color: #1e1b3a;
+                    color: #f4eff8;
                     display: flex;
                     justify-content: space-between;
-                    font-family: &quot;DM Mono&quot;, monospace;
+                    font-family: 'DM Mono', monospace;
                   "
                 >
                   <span>{{ l.title }}</span
-                  ><span style="font-size: 11px; color: rgba(0, 0, 0, 0.5)">{{
+                  ><span style="font-size: 11px; color: rgba(244, 239, 248, 0.5)">{{
                     l.time
                   }}</span>
                 </div>
                 <div
                   style="
                     font-size: 11px;
-                    color: rgba(0, 0, 0, 0.6);
+                    color: rgba(244, 239, 248, 0.62);
                     margin-top: 4px;
-                    font-family: &quot;DM Mono&quot;, monospace;
+                    font-family: 'DM Mono', monospace;
                   "
                 >
                   {{ l.desc }}
@@ -548,10 +550,10 @@
                     display: inline-block;
                     padding: 4px 8px;
                     border-radius: 999px;
-                    background: rgba(255, 255, 255, 0.7);
-                    border: 1px solid rgba(0, 0, 0, 0.08);
+                    background: rgba(255, 255, 255, 0.08);
+                    border: 1px solid rgba(255, 255, 255, 0.12);
                     font-size: 10px;
-                    font-family: &quot;DM Mono&quot;, monospace;
+                    font-family: 'DM Mono', monospace;
                   "
                 >
                   {{ l.tag }}
@@ -567,8 +569,8 @@
             border-radius: 24px;
             background: linear-gradient(
               135deg,
-              rgba(255, 255, 255, 0.18),
-              rgba(255, 180, 150, 0.25)
+              rgba(121, 93, 137, 0.28),
+              rgba(200, 176, 25, 0.16)
             );
             height: fit-content;
           "
@@ -577,8 +579,8 @@
             style="
               font-size: 11px;
               letter-spacing: 0.12em;
-              color: #1e1b3a;
-              font-family: &quot;DM Mono&quot;, monospace;
+              color: #f4eff8;
+              font-family: 'DM Mono', monospace;
             "
           >
             DELIVERY ADDRESS
@@ -587,9 +589,9 @@
             style="
               font-size: 13px;
               font-weight: 500;
-              color: #1e1b3a;
+              color: #f4eff8;
               margin-top: 12px;
-              font-family: &quot;DM Mono&quot;, monospace;
+              font-family: 'DM Mono', monospace;
             "
           >
             N. Dlamini • +27 82 123 4567
@@ -597,10 +599,10 @@
           <div
             style="
               font-size: 11px;
-              color: rgba(0, 0, 0, 0.6);
+              color: rgba(244, 239, 248, 0.62);
               margin-top: 8px;
               line-height: 1.6;
-              font-family: &quot;DM Mono&quot;, monospace;
+              font-family: 'DM Mono', monospace;
             "
           >
             12 Loop Street, Cape Town, 8001, South Africa. Gate code: 4321.
@@ -611,16 +613,16 @@
               margin-top: 16px;
               padding: 14px;
               border-radius: 14px;
-              background: rgba(255, 255, 255, 0.6);
-              border: 1px dashed rgba(0, 0, 0, 0.12);
+              background: rgba(255, 255, 255, 0.08);
+              border: 1px dashed rgba(255, 255, 255, 0.16);
             "
           >
             <div
               style="
                 font-size: 11px;
                 font-weight: 500;
-                color: #1e1b3a;
-                font-family: &quot;DM Mono&quot;, monospace;
+                color: #f4eff8;
+                font-family: 'DM Mono', monospace;
               "
             >
               TIP
@@ -628,10 +630,10 @@
             <div
               style="
                 font-size: 11px;
-                color: rgba(0, 0, 0, 0.6);
+                color: rgba(244, 239, 248, 0.62);
                 margin-top: 6px;
                 line-height: 1.5;
-                font-family: &quot;DM Mono&quot;, monospace;
+                font-family: 'DM Mono', monospace;
               "
             >
               Truck moves based on progress %. Change progress slider to see
@@ -642,8 +644,8 @@
             style="
               margin-top: 16px;
               font-size: 11px;
-              color: #1e1b3a;
-              font-family: &quot;DM Mono&quot;, monospace;
+              color: #f4eff8;
+              font-family: 'DM Mono', monospace;
             "
           >
             PROGRESS {{ progress }}%
@@ -662,11 +664,12 @@
   </div>
 </template>
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, inject } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import api from "../services/api.js";
 import { useAuthStore } from "../stores/auth.js";
 const auth = useAuthStore();
+const showConfirm = inject("showConfirm");
 const route = useRoute();
 const router = useRouter();
 const tid = ref(route.params.id || "SW-DEMO-ZA");
@@ -756,7 +759,10 @@ async function createDemoDelivery() {
     })),
     address: "12 Loop Street, Cape Town",
   });
-  router.push("/delivery/" + data.tracking_number);
+  showConfirm.value = true;
+  setTimeout(() => {
+    router.push("/delivery/" + data.tracking_number);
+  }, 1800);
 }
 onMounted(() => {
   auth.syncFromStorage();

@@ -18,7 +18,7 @@
         border: 1px solid rgba(255, 255, 255, 0.12);
         font-size: 11px;
         color: white;
-        font-family: ui-monospace;
+        font-family: 'DM Mono', monospace;
       "
     >
       👤 {{ auth.fullName }} ({{ auth.email }})
@@ -41,7 +41,7 @@
               letter-spacing: 0.14em;
               font-weight: 700;
               color: rgba(255, 255, 255, 0.9);
-              font-family: ui-monospace;
+              font-family: 'DM Mono', monospace;
             "
           >
             ORDER SUMMARY
@@ -54,7 +54,7 @@
               background: rgba(255, 255, 255, 0.08);
               border: 1px solid rgba(255, 255, 255, 0.14);
               color: white;
-              font-family: ui-monospace;
+              font-family: 'DM Mono', monospace;
             "
           >
             {{ items.length }} ITEMS • LIVE
@@ -94,10 +94,10 @@
               font-size: 11px;
               font-weight: 600;
               cursor: pointer;
-              font-family: ui-monospace;
+              font-family: 'DM Mono', monospace;
             "
           >
-            {{ addingDemo ? "ADDING..." : "+ ADD DEMO PRODUCT" }}
+            {{ addingDemo ? "ADDING..." : "+ ADD AN ITEM" }}
           </button>
           <div
             style="
@@ -110,7 +110,7 @@
               border: 1px solid rgba(255, 255, 255, 0.1);
               font-size: 11px;
               color: rgba(255, 255, 255, 0.6);
-              font-family: ui-monospace;
+              font-family: 'DM Mono', monospace;
             "
           >
             <span
@@ -121,7 +121,7 @@
                 background: #2dd4bf;
               "
             ></span
-            >LISTENING /API/CART • {{ items.length }} ITEMS
+            >CART SYNCED • {{ items.length }} ITEMS
           </div>
         </div>
         <div v-else>
@@ -193,7 +193,7 @@
               letter-spacing: 0.14em;
               font-weight: 700;
               color: white;
-              font-family: ui-monospace;
+              font-family: 'DM Mono', monospace;
             "
           >
             PAYMENT METHOD
@@ -202,7 +202,7 @@
             style="
               font-size: 10px;
               color: rgba(255, 255, 255, 0.45);
-              font-family: ui-monospace;
+              font-family: 'DM Mono', monospace;
             "
           >
             PCI • 3D SECURE • POPIA
@@ -273,7 +273,7 @@
                 Auto-fill from browser • Google Pay
               </div>
               <div style="font-size: 10px; color: rgba(255, 255, 255, 0.45)">
-                Uses standard autocomplete: cc-name, cc-number, cc-exp, cc-csc
+                Your details are saved securely for faster checkout next time
               </div>
             </div>
           </div>
@@ -367,48 +367,46 @@
           </form>
         </div>
 
-        <!-- BANK TAB - REAL DB card_details -->
+        <!-- BANK TAB - manual card entry, matched against your saved card -->
         <div v-if="method === 'bank'">
+          <label class="lbl">CARD OR VOUCHER NUMBER *</label>
+          <input
+            class="inp"
+            v-model="manualCardInput"
+            placeholder="Enter your card or voucher number"
+            autocomplete="off"
+          />
           <div
+            v-if="manualCardInput && recognizedCard"
             style="
-              font-size: 11px;
-              color: rgba(255, 255, 255, 0.7);
-              margin-bottom: 12px;
+              margin-top: 14px;
+              padding: 14px;
+              border-radius: 12px;
+              background: linear-gradient(90deg, #795d89, #c8b019);
+              color: #211a2d;
             "
           >
-            Select from card_details table (real balances):
+            <div style="display: flex; justify-content: space-between; font-weight: 600">
+              <span>{{ recognizedCard.card_type }} • **** {{ recognizedCard.last_four_digits }}</span
+              ><span>R{{ Number(recognizedCard.available_amount).toFixed(2) }}</span>
+            </div>
+            <div style="font-size: 10px; opacity: 0.8; margin-top: 4px">
+              Card recognised • Expires {{ recognizedCard.expiry_date?.slice(0, 10) }}
+            </div>
           </div>
           <div
-            v-if="!bankCards.length"
+            v-else-if="manualCardInput"
             style="
-              padding: 20px;
-              text-align: center;
-              color: rgba(255, 255, 255, 0.5);
+              margin-top: 14px;
+              padding: 12px 14px;
+              border-radius: 12px;
+              background: rgba(255, 100, 100, 0.1);
+              border: 1px solid rgba(255, 100, 100, 0.3);
+              color: #ffb4b4;
               font-size: 11px;
             "
           >
-            Loading bank cards from DB...
-          </div>
-          <div
-            v-for="c in bankCards"
-            :key="c.card_id"
-            @click="selectedCard = c.card_id"
-            :style="
-              selectedCard === c.card_id
-                ? 'padding:14px; border-radius:12px; background:linear-gradient(90deg,#4a3e72,#c26b56); border:1px solid transparent; color:white; margin-bottom:10px; cursor:pointer'
-                : 'padding:14px; border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:white; margin-bottom:10px; cursor:pointer'
-            "
-          >
-            <div style="display: flex; justify-content: space-between">
-              <span>{{ c.card_type }} • **** {{ c.last_four_digits }}</span
-              ><span>R{{ Number(c.available_amount).toFixed(2) }}</span>
-            </div>
-            <div style="font-size: 10px; opacity: 0.7; margin-top: 4px">
-              Voucher: {{ c.voucher_number }} • Exp:
-              {{ c.expiry_date?.slice(0, 10) }} • Balance: R{{
-                Number(c.available_amount).toFixed(2)
-              }}
-            </div>
+            We couldn't recognise that card. Please check the number and try again.
           </div>
           <div
             style="
@@ -451,14 +449,13 @@
               margin-bottom: 12px;
             "
           >
-            Real vouchers from DB: STOCK10 (10% off), WELCOME50 (R50 off),
-            GLOBAL20 (20% off)
+            Have a promo code? Enter it below to apply your discount.
           </div>
           <div style="display: flex; gap: 10px">
             <input
               class="inp"
               v-model="voucherCode"
-              placeholder="Enter code e.g. STOCK10"
+              placeholder="Enter promo code"
               style="flex: 1"
             /><button
               @click="verifyVoucher"
@@ -521,11 +518,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch, onMounted, inject } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import api from "../services/api.js";
 import { useAuthStore } from "../stores/auth.js";
 const auth = useAuthStore();
+const showConfirm = inject("showConfirm");
 const route = useRoute();
 const router = useRouter();
 // An order built on the catalogue/cart branches (order_details.order_id)
@@ -549,12 +547,27 @@ const total = computed(() =>
   items.value.reduce((a, b) => a + Number(b.price) * (b.qty || 1), 0),
 );
 const active =
-  "padding:14px; border-radius:999px; background:linear-gradient(90deg,#4a3e72,#c26b56); color:white; border:none; font-weight:600";
+  "padding:14px; border-radius:999px; background:linear-gradient(90deg,#795d89,#c8b019); color:#211a2d; border:none; font-weight:700";
 const inactive =
   "padding:14px; border-radius:999px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14); color:rgba(255,255,255,0.6)";
 const bankCards = ref([]);
 const selectedCard = ref(null);
 const bankError = ref("");
+const manualCardInput = ref("");
+const recognizedCard = computed(() => {
+  const q = manualCardInput.value.trim().toLowerCase();
+  if (!q) return null;
+  return (
+    bankCards.value.find(
+      (c) =>
+        (c.voucher_number || "").toLowerCase() === q ||
+        (c.last_four_digits || "").toLowerCase() === q,
+    ) || null
+  );
+});
+watch(recognizedCard, (c) => {
+  selectedCard.value = c ? c.card_id : null;
+});
 const voucherCode = ref("");
 const voucherDiscount = ref(0);
 const voucherMsg = ref("");
@@ -603,8 +616,6 @@ async function loadBankCards() {
   try {
     const { data } = await api.get("/cards");
     bankCards.value = data;
-    if (data.length && !selectedCard.value)
-      selectedCard.value = data[0].card_id;
   } catch (e) {
     bankError.value = e.message;
   }
@@ -658,7 +669,10 @@ async function pay() {
       card_id: method.value === "bank" ? selectedCard.value : null,
     };
     const { data } = await api.post("/pay", payload);
-    router.push("/delivery/" + data.tracking_number);
+    showConfirm.value = true;
+    setTimeout(() => {
+      router.push("/delivery/" + data.tracking_number);
+    }, 1800);
   } catch (e) {
     err.value = e.response?.data?.error || e.message;
     bankError.value = err.value;
@@ -677,7 +691,7 @@ onMounted(() => {
   color: rgba(255, 255, 255, 0.55);
   display: block;
   margin-bottom: 8px;
-  font-family: ui-monospace;
+  font-family: 'DM Mono', monospace;
 }
 .inp {
   width: 100%;
@@ -693,7 +707,7 @@ onMounted(() => {
   padding: 16px;
   border-radius: 999px;
   border: none;
-  background: linear-gradient(90deg, #6a5da0, #c47a6a);
+  background: linear-gradient(90deg, #795d89, #c8b019);
   color: white;
   font-weight: 700;
   cursor: pointer;
