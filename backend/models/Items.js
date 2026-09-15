@@ -1,6 +1,6 @@
 import { pool } from "../config/db.js";
 
-//view order items by order ID with product and supplier lookup details
+// view order items by order ID with product and supplier lookup details
 export const getItemsByOrderId = async (order_id) => {
   const [rows] = await pool.query(
     `SELECT
@@ -19,6 +19,30 @@ export const getItemsByOrderId = async (order_id) => {
     WHERE oi.order_id = ?`,
     [order_id],
   );
+  return rows;
+};
+
+export const getCartItemsByStokvelId = async (stokvel_id) => {
+  const [rows] = await pool.query(
+    `SELECT
+      oi.order_item_id,
+      oi.order_id,
+      oi.product_id,
+      oi.supplier_price_id,
+      oi.quantity,
+      oi.unit_price,
+      oi.subtotal,
+      p.product_name,
+      sp.supplier_name,
+      sp.price AS supplier_price
+    FROM order_items oi
+    JOIN order_details od ON od.order_id = oi.order_id
+    JOIN supplier_prices sp ON oi.supplier_price_id = sp.supplier_price_id
+    JOIN products p ON oi.product_id = p.product_id
+    WHERE od.stokvel_id = ?`,
+    [stokvel_id],
+  );
+
   return rows;
 };
 

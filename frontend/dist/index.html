@@ -5,8 +5,23 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>New Stock</title>
-    <script type="module" crossorigin src="/assets/index-CHRVlWkz.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BVPoRd3h.css">
+    <script>
+      (function () {
+        try {
+          const saved = localStorage.getItem("theme");
+          const prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+          ).matches;
+          const shouldBeDark = saved === "dark" || (!saved && prefersDark);
+
+          document.documentElement.classList.toggle("dark", shouldBeDark);
+        } catch (error) {
+          // Theme initialization should never prevent the app from loading.
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-BBUU5d0z.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CUglIyt8.css">
   </head>
   <body>
     <div id="app"></div>
