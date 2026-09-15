@@ -19,8 +19,10 @@ async function testConnection() {
     const c = await pool.getConnection();
     console.log(`✅ MySQL ${process.env.DB_NAME} connected`);
     c.release();
-  } catch (e) {
-    console.error("❌ DB", e.message);
+  } catch (err) {
+    console.log("❌ DB CONNECTION FAILED");
+    console.error(err.message);
+    console.error(err);
   }
 }
 module.exports = { pool, testConnection };

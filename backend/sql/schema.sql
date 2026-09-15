@@ -309,48 +309,11 @@ CREATE TABLE IF NOT EXISTS cart_items (
   UNIQUE KEY uniq_cart_product (cart_id, product_id)
 );
 
-CREATE TABLE IF NOT EXISTS orders (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NULL,
-  tracking_number VARCHAR(50) NOT NULL UNIQUE,
-  total_amount DECIMAL(10,2) NOT NULL,
-  shipping_fee DECIMAL(10,2) DEFAULT 25.00,
-  discount DECIMAL(10,2) DEFAULT 0,
-  final_amount DECIMAL(10,2) NOT NULL,
-  email VARCHAR(150) NOT NULL,
-  member_name VARCHAR(150) NOT NULL,
-  delivery_address TEXT NOT NULL,
-  status ENUM('pending','paid','shipped','in_transit','out_for_delivery','delivered','cancelled') DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
-);
-
-CREATE TABLE IF NOT EXISTS order_items_ecom (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  order_id INT NOT NULL,
-  product_id INT NOT NULL,
-  qty INT NOT NULL,
-  price DECIMAL(10,2) NOT NULL,
-  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-  FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS payments (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  order_id INT NOT NULL,
-  reference VARCHAR(100) NOT NULL UNIQUE,
-  paystack_reference VARCHAR(100),
-  amount DECIMAL(10,2) NOT NULL,
-  currency VARCHAR(10) DEFAULT 'ZAR',
-  method ENUM('card','bank','voucher') DEFAULT 'card',
-  status ENUM('pending','success','failed','abandoned') DEFAULT 'pending',
-  card_last4 VARCHAR(10),
-  card_type VARCHAR(20),
-  verified_at DATETIME NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
-);
+-- NOTE: payment and delivery run on the SHARED order_details /
+-- order_items / card_details / money_contributions / delivery_details
+-- tables above (same ones Kanya-dev's catalogue and Cial-dev's group cart
+-- use) rather than a separate parallel "orders" table, so an order built
+-- on another branch can actually be paid for and tracked here.
 
 CREATE TABLE IF NOT EXISTS vouchers (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -385,7 +348,7 @@ CREATE TABLE IF NOT EXISTS deliveries (
   delivered_at DATETIME NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+  FOREIGN KEY (order_id) REFERENCES order_details(order_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS delivery_logs (

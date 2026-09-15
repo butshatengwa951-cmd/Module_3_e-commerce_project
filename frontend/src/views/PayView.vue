@@ -522,11 +522,16 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import api from "../services/api.js";
 import { useAuthStore } from "../stores/auth.js";
 const auth = useAuthStore();
+const route = useRoute();
 const router = useRouter();
+// An order built on the catalogue/cart branches (order_details.order_id)
+// can be handed off here via ?order_id=5 to pay for exactly that order,
+// instead of the local guest demo cart.
+const orderId = ref(route.query.order_id ? Number(route.query.order_id) : null);
 const method = ref("card");
 const items = ref([]);
 const addingDemo = ref(false);
@@ -562,9 +567,21 @@ async function load() {
     form.value.member = auth.fullName || form.value.member;
   }
   const p = new URLSearchParams({ email: form.value.email });
-  if (auth.userId) p.set("user_id", auth.userId);
+  if (orderId.value) {
+    // Paying for an existing shared order (built via the catalogue/cart
+    // branches) - load its real items instead of the local demo cart.
+    p.set("order_id", orderId.value);
+  } else if (auth.userId) {
+    p.set("user_id", auth.userId);
+  }
   const { data } = await api.get("/cart?" + p);
   items.value = data;
+  // If this came from the member's shared cart (a Pending order_details
+  // row), remember its order_id so pay() settles that same order instead
+  // of creating a duplicate one.
+  if (!orderId.value && data.length && data[0].order_id) {
+    orderId.value = data[0].order_id;
+  }
 }
 async function addDemo() {
   addingDemo.value = true;
@@ -624,6 +641,7 @@ async function pay() {
   bankError.value = "";
   try {
     const payload = {
+      order_id: orderId.value,
       email: form.value.email,
       user_id: auth.userId,
       member_name: form.value.member,

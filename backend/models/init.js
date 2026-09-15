@@ -39,40 +39,11 @@ async function initDB() {
       FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
       UNIQUE KEY uniq_cart_product (cart_id, product_id)
     );
-    CREATE TABLE IF NOT EXISTS orders (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      user_id INT NULL,
-      tracking_number VARCHAR(50) NOT NULL UNIQUE,
-      total_amount DECIMAL(10,2) NOT NULL,
-      final_amount DECIMAL(10,2) NOT NULL,
-      email VARCHAR(150) NOT NULL,
-      member_name VARCHAR(150) NOT NULL,
-      delivery_address TEXT NOT NULL,
-      status ENUM('pending','paid','shipped','in_transit','out_for_delivery','delivered','cancelled') DEFAULT 'pending',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
-    );
-    CREATE TABLE IF NOT EXISTS order_items_ecom (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      order_id INT NOT NULL,
-      product_id INT NOT NULL,
-      qty INT NOT NULL,
-      price DECIMAL(10,2) NOT NULL,
-      FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-      FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
-    );
-    CREATE TABLE IF NOT EXISTS payments (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      order_id INT NOT NULL,
-      reference VARCHAR(100) NOT NULL UNIQUE,
-      amount DECIMAL(10,2) NOT NULL,
-      method ENUM('card','bank','voucher') DEFAULT 'card',
-      status ENUM('pending','success','failed','abandoned') DEFAULT 'pending',
-      card_last4 VARCHAR(10),
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
-    );
+    -- Payment/delivery now run on the shared order_details/order_items/
+    -- card_details/money_contributions/delivery_details tables from
+    -- schema.sql (same ones the catalogue + group cart branches use), so
+    -- there's no separate "orders" table here any more - just Butsha-dev's
+    -- own richer tracking layer, linked straight to order_details.order_id.
     CREATE TABLE IF NOT EXISTS deliveries (
       id INT AUTO_INCREMENT PRIMARY KEY,
       order_id INT NOT NULL UNIQUE,
@@ -84,7 +55,7 @@ async function initDB() {
       delivery_address TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+      FOREIGN KEY (order_id) REFERENCES order_details(order_id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS delivery_logs (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -99,7 +70,7 @@ async function initDB() {
     );
     `;
     await pool.query(extra);
-    console.log("✅ carts/cart_items/orders/deliveries ensured");
+    console.log("✅ carts/cart_items/deliveries ensured (shared order_details schema)");
   } catch (e) {
     console.error("init error", e.message.slice(0, 500));
   }
