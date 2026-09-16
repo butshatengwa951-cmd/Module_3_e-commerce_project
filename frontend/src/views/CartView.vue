@@ -604,9 +604,8 @@ function goToCatalogue() {
 }
 
 .cart-page.dark .step-btn {
-  background: rgba(255, 255, 255, 0.08);
+  background: white;
   border-color: rgba(211, 200, 233, 0.35);
-  color: #f5f0ff;
 }
 
 .step-btn:hover {

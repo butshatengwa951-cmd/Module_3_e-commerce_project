@@ -2,7 +2,10 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import { getItemsByOrderId, getCartItemsByStokvelId } from "./models/Items.js";
+import {
+  getItemsByOrderId,
+  getOrCreatePendingCartByStokvelId,
+} from "./models/Items.js";
 import {
   getOrderCon,
   getOrderByIdCon,
@@ -25,9 +28,11 @@ app.use(express.json());
 
 //Get order details
 app.get("/order_details", getOrderCon);
+app.get("/api/order_details", getOrderCon);
 
 //Get order by order ID
 app.get("/order_details/:order_id", getOrderByIdCon);
+app.get("/api/order_details/:order_id", getOrderByIdCon);
 
 //Add an order
 app.post("/order_details", postOrderCon);
@@ -42,16 +47,13 @@ app.get("/order_details/:order_id/items", getItemsByOrderIdCon);
 app.get("/api/stokvels/:stokvelId/cart", async (req, res) => {
   try {
     const stokvelId = Number(req.params.stokvelId);
-    let items = await getCartItemsByStokvelId(stokvelId);
-
-    if (!items.length) {
-      items = await getItemsByOrderId(1);
-    }
+    const { orderId, items } =
+      await getOrCreatePendingCartByStokvelId(stokvelId);
 
     res.json({
       success: "Request successful: Cart retrieved",
       items,
-      order_id: 1,
+      order_id: orderId,
       stokvel_id: stokvelId,
     });
   } catch (error) {

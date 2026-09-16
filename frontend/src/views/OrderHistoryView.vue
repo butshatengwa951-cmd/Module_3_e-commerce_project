@@ -8,10 +8,28 @@ const orders = ref([]);
 const loading = ref(true);
 const error = ref("");
 const theme = ref("light");
+const selectedCardId = ref("");
 const stokvelId = 1;
 
+const cardOptions = computed(() =>
+  [...new Set(orders.value.map((order) => order.card_id).filter(Boolean))].sort(
+    (first, second) => Number(first) - Number(second),
+  ),
+);
+
+const displayedOrders = computed(() => {
+  if (!selectedCardId.value) return orders.value;
+
+  return orders.value.filter(
+    (order) => String(order.card_id) === String(selectedCardId.value),
+  );
+});
+
 const totalSpent = computed(() =>
-  orders.value.reduce((sum, order) => sum + Number(order.total_amount || 0), 0),
+  displayedOrders.value.reduce(
+    (sum, order) => sum + Number(order.total_amount || 0),
+    0,
+  ),
 );
 
 onMounted(async () => {
@@ -39,8 +57,7 @@ async function fetchOrders() {
     const { data } = await orderApi.getOrders(stokvelId);
     orders.value = Array.isArray(data) ? data : data.data || [];
     orders.value.sort(
-      (first, second) =>
-        new Date(second.order_date || 0) - new Date(first.order_date || 0),
+      (first, second) => Number(first.order_id) - Number(second.order_id),
     );
     error.value = "";
   } catch (err) {
@@ -72,6 +89,19 @@ function statusClass(status) {
     .replace(/\s+/g, "-");
 }
 
+function isPendingOrder(order) {
+  return String(order.order_status || "Pending").toLowerCase() === "pending";
+}
+
+function goToPayment(order) {
+  if (!isPendingOrder(order)) return;
+
+  router.push({
+    path: "/payment",
+    query: { order_id: String(order.order_id) },
+  });
+}
+
 function goToCatalogue() {
   router.push("/catalogue");
 }
@@ -85,9 +115,18 @@ function goToCatalogue() {
           <h1>Order History</h1>
           <p class="subtitle">A record of everything your group has ordered.</p>
         </div>
+        <label class="card-filter">
+          <span>Card</span>
+          <select v-model="selectedCardId" aria-label="Filter by card">
+            <option value="">All cards</option>
+            <option v-for="cardId in cardOptions" :key="cardId" :value="cardId">
+              Card {{ cardId }}
+            </option>
+          </select>
+        </label>
         <div class="order-badge">
-          <span>Completed orders</span>
-          <span class="item-count">{{ orders.length }}</span>
+          <span>Orders</span>
+          <span class="item-count">{{ displayedOrders.length }}</span>
         </div>
       </section>
 
@@ -97,7 +136,7 @@ function goToCatalogue() {
 
           <div v-if="loading" class="loader">Loading order history...</div>
           <div v-else-if="error" class="loader">{{ error }}</div>
-          <div v-else-if="!orders.length" class="empty-state">
+          <div v-else-if="!displayedOrders.length" class="empty-state">
             <span class="empty-icon">✦</span>
             <strong>No orders yet</strong>
             <p>Your confirmed orders will appear here.</p>
@@ -117,7 +156,15 @@ function goToCatalogue() {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="order in orders" :key="order.order_id">
+                <tr
+                  v-for="order in displayedOrders"
+                  :key="order.order_id"
+                  :class="{ 'pending-order': isPendingOrder(order) }"
+                  :tabindex="isPendingOrder(order) ? 0 : undefined"
+                  @click="goToPayment(order)"
+                  @keydown.enter="goToPayment(order)"
+                  @keydown.space.prevent="goToPayment(order)"
+                >
                   <td class="order-cell">
                     <span class="product-icon">✦</span>
                     <strong>#{{ order.order_id }}</strong>
@@ -145,7 +192,7 @@ function goToCatalogue() {
             <div class="summary-title">History Summary</div>
             <div class="summary-row">
               <span>Total orders</span>
-              <span>{{ orders.length }}</span>
+              <span>{{ displayedOrders.length }}</span>
             </div>
             <div class="summary-total">
               <span>Total spent</span>
@@ -223,6 +270,26 @@ function goToCatalogue() {
   color: #667085;
   font-family: "Trebuchet MS", Arial, sans-serif;
   font-size: 17px;
+}
+
+.card-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #667085;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.card-filter select {
+  min-width: 120px;
+  padding: 9px 12px;
+  border: 1px solid #d8d1ca;
+  border-radius: 8px;
+  background: #fffdfa;
+  color: #1f2435;
+  font: inherit;
 }
 
 .order-badge {
@@ -314,6 +381,16 @@ function goToCatalogue() {
 
 .history-table tbody tr {
   border-top: 1px solid #e8e8e8;
+}
+
+.history-table tbody tr.pending-order {
+  cursor: pointer;
+}
+
+.history-table tbody tr.pending-order:hover,
+.history-table tbody tr.pending-order:focus-visible {
+  background: #fff8d8;
+  outline: none;
 }
 
 .history-page.dark .history-table tbody tr {
