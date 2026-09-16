@@ -11,9 +11,10 @@
 .site-footer {
   margin-top: 48px;
   padding: 28px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(19, 14, 35, 0.92);
-  color: rgba(255, 255, 255, 0.7);
+  border-top: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-soft);
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 .footer-inner {
@@ -30,11 +31,11 @@
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: #fff;
+  color: var(--text);
 }
 
 .footer-brand span {
-  color: #d8b46a;
+  color: var(--gold);
 }
 
 .site-footer p {
@@ -42,6 +43,7 @@
   font-family: "DM Mono", monospace;
   font-size: 11px;
   letter-spacing: 0.04em;
+  color: var(--text-soft);
 }
 
 @media (max-width: 640px) {
