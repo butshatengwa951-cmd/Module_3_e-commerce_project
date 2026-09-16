@@ -88,15 +88,20 @@ export const addItemToGroupCart = async ({
   const db = await pool.getConnection();
 
   try {
+    console.time("[CART] begin transaction");
     await db.beginTransaction();
+    console.timeEnd("[CART] begin transaction");
 
     // Serialize cart creation for this Stokvel so two members do not
     // accidentally create two pending shared orders at the same time.
+    console.time("[CART] lock stokvel");
     await db.query(
       `SELECT stokvel_id FROM stokvels WHERE stokvel_id = ? FOR UPDATE`,
       [stokvelId],
     );
+    console.timeEnd("[CART] lock stokvel");
 
+    console.time("[CART] product lookup");
     const [products] = await db.query(
       `
         SELECT product_id, quantity_available
@@ -106,6 +111,7 @@ export const addItemToGroupCart = async ({
       `,
       [productId],
     );
+    console.timeEnd("[CART] product lookup");
 
     if (!products.length) {
       throw new Error("Product not found");
@@ -116,6 +122,7 @@ export const addItemToGroupCart = async ({
     let supplierName;
 
     if (selectedSupplierPriceId) {
+      console.time("[CART] selected supplier price lookup");
       const [prices] = await db.query(
         `
           SELECT supplier_price_id, price, supplier_name
@@ -126,6 +133,7 @@ export const addItemToGroupCart = async ({
         `,
         [selectedSupplierPriceId, productId],
       );
+      console.timeEnd("[CART] selected supplier price lookup");
 
       if (!prices.length) {
         throw new Error("Selected supplier price is not valid for this product");
@@ -134,6 +142,7 @@ export const addItemToGroupCart = async ({
       unitPrice = Number(prices[0].price);
       supplierName = prices[0].supplier_name;
     } else {
+      console.time("[CART] cheapest supplier lookup");
       const [prices] = await db.query(
         `
           SELECT supplier_price_id, price, supplier_name
@@ -144,6 +153,7 @@ export const addItemToGroupCart = async ({
         `,
         [productId],
       );
+      console.timeEnd("[CART] cheapest supplier lookup");
 
       if (!prices.length) {
         throw new Error("No supplier price is available for this product");
@@ -164,6 +174,7 @@ export const addItemToGroupCart = async ({
       throw new Error("Requested quantity exceeds available stock");
     }
 
+    console.time("[CART] pending order lookup");
     const [pendingOrders] = await db.query(
       `
         SELECT order_id
@@ -175,10 +186,12 @@ export const addItemToGroupCart = async ({
       `,
       [stokvelId],
     );
+    console.timeEnd("[CART] pending order lookup");
 
     let orderId = pendingOrders[0]?.order_id;
 
     if (!orderId) {
+      console.time("[CART] create pending order");
       const [created] = await db.query(
         `
           INSERT INTO order_details
@@ -187,10 +200,12 @@ export const addItemToGroupCart = async ({
         `,
         [userId, stokvelId],
       );
+      console.timeEnd("[CART] create pending order");
 
       orderId = created.insertId;
     }
 
+    console.time("[CART] existing item lookup");
     const [existingItems] = await db.query(
       `
         SELECT order_item_id, quantity
@@ -202,6 +217,7 @@ export const addItemToGroupCart = async ({
       `,
       [orderId, productId, selectedSupplierPriceId],
     );
+    console.timeEnd("[CART] existing item lookup");
 
     let orderItemId;
     let finalQuantity;
@@ -215,6 +231,7 @@ export const addItemToGroupCart = async ({
 
       const subtotal = Number((unitPrice * finalQuantity).toFixed(2));
 
+      console.time("[CART] update existing item");
       await db.query(
         `
           UPDATE order_items
@@ -223,12 +240,14 @@ export const addItemToGroupCart = async ({
         `,
         [finalQuantity, unitPrice, subtotal, existingItems[0].order_item_id],
       );
+      console.timeEnd("[CART] update existing item");
 
       orderItemId = existingItems[0].order_item_id;
     } else {
       finalQuantity = requestedQuantity;
       const subtotal = Number((unitPrice * finalQuantity).toFixed(2));
 
+      console.time("[CART] insert new item");
       const [createdItem] = await db.query(
         `
           INSERT INTO order_items
@@ -244,10 +263,12 @@ export const addItemToGroupCart = async ({
           subtotal,
         ],
       );
+      console.timeEnd("[CART] insert new item");
 
       orderItemId = createdItem.insertId;
     }
 
+    console.time("[CART] recalculate order total");
     await db.query(
       `
         UPDATE order_details
@@ -260,7 +281,9 @@ export const addItemToGroupCart = async ({
       `,
       [orderId, orderId],
     );
+    console.timeEnd("[CART] recalculate order total");
 
+    console.time("[CART] select updated item");
     const [updated] = await db.query(
       `
         SELECT
@@ -284,15 +307,20 @@ export const addItemToGroupCart = async ({
       `,
       [orderItemId],
     );
+    console.timeEnd("[CART] select updated item");
 
+    console.time("[CART] commit transaction");
     await db.commit();
+    console.timeEnd("[CART] commit transaction");
 
     return {
       item: updated[0],
       supplier_name: supplierName,
     };
   } catch (error) {
+    console.time("[CART] rollback transaction");
     await db.rollback();
+    console.timeEnd("[CART] rollback transaction");
     throw error;
   } finally {
     db.release();
