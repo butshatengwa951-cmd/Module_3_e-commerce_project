@@ -1,5 +1,5 @@
-const crypto = require("crypto");
-const { pool } = require("../config/db");
+import crypto from "crypto";
+import {pool} from "../config/db.js";
 
 function gen() {
   const c = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -237,7 +237,7 @@ async function payfastNotify(req, res) {
 }
 
 // Existing internal/demo payment rail retained for bank/voucher flows.
-exports.pay = async (req, res) => {
+export async function pay(req, res) {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
@@ -289,6 +289,7 @@ exports.pay = async (req, res) => {
   } finally {
     conn.release();
   }
-};
-exports.createPayfastCheckout = createPayfastCheckout;
-exports.payfastNotify = payfastNotify;
+}
+
+export {createPayfastCheckout};
+export {payfastNotify};

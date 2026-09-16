@@ -1,8 +1,21 @@
-require("dotenv").config({ path: require("path").join(__dirname, ".env") });
-const express = require("express");
-const cors = require("cors");
-const { testConnection } = require("./config/db");
-const initDB = require("./models/init");
+import cartRoutes from "./routes/cart.js";
+import payRoutes from "./routes/pay.js";
+import deliveryRoutes from "./routes/delivery.js";
+import productsRoutes from "./routes/products.js";
+import authRoutes from "./routes/auth.js";
+import cardsRoutes from "./routes/cards.js";
+import vouchersRoutes from "./routes/vouchers.js";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, ".env") });
+import express from "express";
+import cors from "cors";
+import {testConnection} from "./config/db.js";
+import initDB from "./models/init.js";
 const app = express();
 app.use(
   cors({
@@ -28,13 +41,13 @@ app.get("/api/health", (req, res) =>
     time: new Date(),
   }),
 );
-app.use("/api/cart", require("./routes/cart"));
-app.use("/api/pay", require("./routes/pay"));
-app.use("/api/delivery", require("./routes/delivery"));
-app.use("/api/products", require("./routes/products"));
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/cards", require("./routes/cards"));
-app.use("/api/vouchers", require("./routes/vouchers"));
+app.use("/api/cart", cartRoutes);
+app.use("/api/pay", payRoutes);
+app.use("/api/delivery", deliveryRoutes);
+app.use("/api/products", productsRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/cards", cardsRoutes);
+app.use("/api/vouchers", vouchersRoutes);
 const PORT = process.env.PORT || 4040;
 (async () => {
   await testConnection();

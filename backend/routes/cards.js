@@ -1,5 +1,6 @@
-const r = require("express").Router();
-const { pool } = require("../config/db");
+import express from "express";
+const r = express.Router();
+import {pool} from "../config/db.js";
 r.get("/", async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -10,4 +11,4 @@ r.get("/", async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
-module.exports = r;
+export default r;

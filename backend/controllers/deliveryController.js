@@ -1,4 +1,4 @@
-const { pool } = require("../config/db");
+import {pool} from "../config/db.js";
 
 // :id can be either a Butsha-dev tracking number (SW-XXXXXXXX-ZA) or a bare
 // order_details.order_id - the latter is what a link coming from the
@@ -23,7 +23,7 @@ async function findOrder(id) {
   return null;
 }
 
-exports.getDelivery = async (req, res) => {
+export async function getDelivery(req, res) {
   try {
     const { id } = req.params;
     const order = await findOrder(id);
@@ -103,9 +103,9 @@ exports.getDelivery = async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
-};
+}
 
-exports.updateProgress = async (req, res) => {
+export async function updateProgress(req, res) {
   try {
     const { id } = req.params;
     const { progress } = req.body;
@@ -143,4 +143,4 @@ exports.updateProgress = async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
-};
+}

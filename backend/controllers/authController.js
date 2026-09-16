@@ -1,6 +1,6 @@
-const { pool } = require("../config/db");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
+import {pool} from "../config/db.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 function signToken(u) {
   return jwt.sign(
@@ -17,7 +17,7 @@ function getUserId(req) {
   return decoded.user_id;
 }
 
-exports.login = async (req, res) => {
+export async function login(req, res) {
   const { email, password } = req.body;
   const [rows] = await pool.query("SELECT * FROM users WHERE email=?", [email]);
   if (!rows.length) return res.status(401).json({ error: "User not found" });
@@ -30,9 +30,9 @@ exports.login = async (req, res) => {
     token: signToken(user),
     user: { user_id: user.user_id, full_name: user.full_name, email: user.email, role: user.role },
   });
-};
+}
 
-exports.register = async (req, res) => {
+export async function register(req, res) {
   const { full_name, email, password } = req.body;
   const hashed = await bcrypt.hash(password, 10);
   const [r] = await pool.query(
@@ -44,9 +44,9 @@ exports.register = async (req, res) => {
     [r.insertId],
   );
   res.json({ token: signToken(u[0]), user: u[0] });
-};
+}
 
-exports.me = async (req, res) => {
+export async function me(req, res) {
   try {
     const userId = getUserId(req);
     if (!userId) return res.status(401).json({ error: "Invalid token" });
@@ -59,9 +59,9 @@ exports.me = async (req, res) => {
   } catch {
     res.status(401).json({ error: "Invalid token" });
   }
-};
+}
 
-exports.profile = async (req, res) => {
+export async function profile(req, res) {
   try {
     const userId = getUserId(req);
     if (!userId) return res.status(401).json({ error: "Invalid token" });
@@ -103,4 +103,4 @@ exports.profile = async (req, res) => {
     console.error("Profile load failed:", error);
     res.status(500).json({ error: "Could not load profile" });
   }
-};
+}

@@ -1,5 +1,6 @@
-const r = require("express").Router();
-const { pool } = require("../config/db");
+import express from "express";
+const r = express.Router();
+import {pool} from "../config/db.js";
 
 r.get("/", async (req, res) => {
   const [rows] = await pool.query(
@@ -37,4 +38,4 @@ r.post("/verify", async (req, res) => {
   }
 });
 
-module.exports = r;
+export default r;

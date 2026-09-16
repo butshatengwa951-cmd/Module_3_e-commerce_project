@@ -1,6 +1,10 @@
-const mysql = require("mysql2/promise");
-const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
+import mysql from "mysql2/promise";
+import path from "path";
+import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -25,4 +29,4 @@ async function testConnection() {
     console.error(err);
   }
 }
-module.exports = { pool, testConnection };
+export default { pool, testConnection };

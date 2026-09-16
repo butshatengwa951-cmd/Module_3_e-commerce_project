@@ -1,4 +1,4 @@
-const { pool } = require("../config/db");
+import {pool} from "../config/db.js";
 
 async function getOrCreateGuestCart(email, user_id) {
   let [e] = await pool.query("SELECT * FROM carts WHERE session_id=?", [
@@ -59,7 +59,7 @@ async function sharedOrderItems(order_id) {
   return rows;
 }
 
-exports.getCart = async (req, res) => {
+export async function getCart(req, res) {
   const { user_id, order_id, stokvel_id } = req.query;
 
   // Previewing a specific shared order (e.g. arriving here via
@@ -79,9 +79,9 @@ exports.getCart = async (req, res) => {
     [cart.id],
   );
   res.json(items);
-};
+}
 
-exports.addToCart = async (req, res) => {
+export async function addToCart(req, res) {
   const { user_id, stokvel_id, product_id, qty } = req.body;
   let price = req.body.price;
 
@@ -149,9 +149,9 @@ exports.addToCart = async (req, res) => {
     [cart.id],
   );
   res.json(items);
-};
+}
 
-exports.clearCart = async (req, res) => {
+export async function clearCart(req, res) {
   const user_id = req.query.user_id || req.body.user_id;
   if (user_id) {
     const order = await getOrCreateSharedOrder(Number(user_id), null);
@@ -167,4 +167,4 @@ exports.clearCart = async (req, res) => {
   );
   await pool.query("DELETE FROM cart_items WHERE cart_id=?", [cart.id]);
   res.json({ ok: true });
-};
+}

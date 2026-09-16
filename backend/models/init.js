@@ -1,6 +1,6 @@
-const fs = require("fs");
-const path = require("path");
-const { pool } = require("../config/db");
+import fs from "fs";
+import path from "path";
+import {pool} from "../config/db.js";
 
 async function initDB() {
   try {
@@ -87,4 +87,4 @@ async function initDB() {
   }
 }
 
-module.exports = initDB;
+export default initDB;
