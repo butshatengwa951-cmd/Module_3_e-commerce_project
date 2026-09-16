@@ -1,7 +1,12 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { getCart, updateCartItem, removeCartItem } from "../services/api.js";
+import {
+  getCart,
+  updateCartItem,
+  removeCartItem,
+  confirmCurrentOrder,
+} from "../services/api.js";
 
 const router = useRouter();
 const items = ref([]);
@@ -9,6 +14,7 @@ const stokvel = ref(null);
 const loading = ref(true);
 const error = ref("");
 const busyItemId = ref(null);
+const confirmingOrder = ref(false);
 
 const total = computed(() =>
   items.value.reduce((sum, item) => sum + Number(item.subtotal || 0), 0),
@@ -83,6 +89,36 @@ async function removeItem(item) {
     error.value = err.response?.data?.message || "Unable to remove that item.";
   } finally {
     busyItemId.value = null;
+  }
+}
+
+async function confirmOrder() {
+  if (!items.value.length || confirmingOrder.value) {
+    return;
+  }
+
+  confirmingOrder.value = true;
+  error.value = "";
+
+  try {
+    const response = await confirmCurrentOrder();
+
+    if (!response.success) {
+      throw new Error(response.message || "Unable to confirm the order.");
+    }
+
+    router.push({
+      name: "Payment",
+      query: { orderId: response.order.order_id },
+    });
+  } catch (err) {
+    console.error("Failed to confirm order:", err);
+    error.value =
+      err.response?.data?.message ||
+      err.message ||
+      "Unable to confirm the order.";
+  } finally {
+    confirmingOrder.value = false;
   }
 }
 
@@ -192,8 +228,16 @@ function continueShopping() {
             <strong>{{ formatMoney(total) }}</strong>
           </div>
           <p class="summary-note">
-            Your basket is still pending. Order confirmation and payment will be handled in the next integration stage.
+            Review your shared basket before continuing to payment.
           </p>
+          <button
+            class="primary-button confirm-button"
+            type="button"
+            :disabled="confirmingOrder || !items.length"
+            @click="confirmOrder"
+          >
+            {{ confirmingOrder ? "Confirming order…" : "Confirm order" }}
+          </button>
         </aside>
       </div>
     </section>
@@ -268,6 +312,11 @@ h1 {
 .primary-button {
   background: var(--sw-primary, #2f6b45);
   color: #fff;
+}
+
+.primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .message,
@@ -451,10 +500,14 @@ h1 {
 }
 
 .summary-note {
-  margin: 18px 0 0;
+  margin: 18px 0;
   color: var(--sw-muted, #66736a);
   font-size: 0.82rem;
   line-height: 1.55;
+}
+
+.confirm-button {
+  width: 100%;
 }
 
 @media (max-width: 900px) {
