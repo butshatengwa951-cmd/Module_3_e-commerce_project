@@ -11,12 +11,13 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { computed, onBeforeUnmount, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import Header from "./components/layout/Header.vue";
 import Footer from "./components/ui/Footer.vue";
 
 const route = useRoute();
+const router = useRouter();
 
 // Shared authentication pages keep their original full-screen presentation.
 const authRoutes = new Set([
@@ -28,6 +29,18 @@ const authRoutes = new Set([
 ]);
 
 const showSiteShell = computed(() => !authRoutes.has(route.name));
+
+const handleLoginCompleted = () => {
+  router.push("/catalogue");
+};
+
+onMounted(() => {
+  window.addEventListener("login-completed", handleLoginCompleted);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("login-completed", handleLoginCompleted);
+});
 </script>
 
 <style scoped>
