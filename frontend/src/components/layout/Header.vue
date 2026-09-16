@@ -17,13 +17,23 @@
         <span v-if="cartCount" class="cart-count">{{ cartCount }}</span>
       </router-link>
 
-      <router-link class="icon-button" to="/profile" aria-label="Profile">👤</router-link>
+      <template v-if="isLoggedIn">
+        <router-link class="icon-button" to="/profile" aria-label="Profile">👤</router-link>
 
-      <button class="icon-button theme-button" type="button" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
-        {{ isDark ? "☀" : "☾" }}
-      </button>
+        <button class="icon-button theme-button" type="button" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
+          {{ isDark ? "☀" : "☾" }}
+        </button>
 
-      <button class="logout-btn" type="button" @click="logout">Logout</button>
+        <button class="logout-btn" type="button" @click="logout">Logout</button>
+      </template>
+
+      <template v-else>
+        <router-link class="join-btn" to="/profile">Join</router-link>
+
+        <button class="icon-button theme-button" type="button" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
+          {{ isDark ? "☀" : "☾" }}
+        </button>
+      </template>
     </div>
   </header>
 
@@ -31,15 +41,16 @@
     <router-link to="/pay" @click="menuOpen = false">Home</router-link>
     <router-link to="/catalogue" @click="menuOpen = false">Catalogue</router-link>
     <router-link to="/delivery" @click="menuOpen = false">Delivery</router-link>
-    <router-link to="/profile" @click="menuOpen = false">Profile</router-link>
+    <router-link v-if="isLoggedIn" to="/profile" @click="menuOpen = false">Profile</router-link>
     <router-link to="/cart" @click="menuOpen = false">Cart</router-link>
+    <router-link v-if="!isLoggedIn" to="/profile" @click="menuOpen = false">Join</router-link>
     <button type="button" @click="toggleTheme">{{ isDark ? "☀ Light mode" : "☾ Dark mode" }}</button>
-    <button type="button" @click="logout">Logout</button>
+    <button v-if="isLoggedIn" type="button" @click="logout">Logout</button>
   </nav>
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useTheme } from "../../composables/useTheme.js";
 
@@ -47,6 +58,16 @@ const router = useRouter();
 const { isDark, toggleTheme } = useTheme();
 const menuOpen = ref(false);
 const cartCount = ref(Number(localStorage.getItem("basketCount") || 0));
+const authVersion = ref(0);
+
+const isLoggedIn = computed(() => {
+  authVersion.value;
+  return Boolean(localStorage.getItem("token") || localStorage.getItem("sw_token"));
+});
+
+function refreshAuthState() {
+  authVersion.value += 1;
+}
 
 function updateCart(event) {
   cartCount.value = Number(event.detail || 0);
@@ -58,15 +79,23 @@ function logout() {
   localStorage.removeItem("basketCount");
   cartCount.value = 0;
   menuOpen.value = false;
+  refreshAuthState();
   router.push("/pay");
 }
 
 onMounted(() => {
   window.addEventListener("basket-updated", updateCart);
+  window.addEventListener("auth-updated", refreshAuthState);
+  window.addEventListener("storage", refreshAuthState);
+  window.addEventListener("focus", refreshAuthState);
+  router.afterEach(refreshAuthState);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("basket-updated", updateCart);
+  window.removeEventListener("auth-updated", refreshAuthState);
+  window.removeEventListener("storage", refreshAuthState);
+  window.removeEventListener("focus", refreshAuthState);
 });
 </script>
 
@@ -160,6 +189,7 @@ onBeforeUnmount(() => {
   font: 700 9px "DM Mono", monospace;
 }
 
+.join-btn,
 .logout-btn {
   margin-left: 4px;
   padding: 9px 15px;
@@ -168,10 +198,12 @@ onBeforeUnmount(() => {
   background: var(--card);
   color: var(--text);
   font: 11px "DM Mono", monospace;
+  text-decoration: none;
   cursor: pointer;
   transition: 0.2s ease;
 }
 
+.join-btn:hover,
 .logout-btn:hover {
   background: var(--gold);
   border-color: var(--gold);
@@ -213,6 +245,7 @@ onBeforeUnmount(() => {
     gap: 3px;
   }
 
+  .join-btn,
   .logout-btn {
     display: none;
   }
