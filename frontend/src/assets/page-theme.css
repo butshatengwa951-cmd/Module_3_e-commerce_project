@@ -1,107 +1,46 @@
-/* Theme bridge for the legacy inline-styled payment and delivery pages. */
+/* Theme bridge for legacy inline-styled pages. */
 html.light-mode #app { background: var(--bg) !important; color: var(--text) !important; }
-html.light-mode #app [style*="background:#130e23"],
-html.light-mode #app [style*="background: #130e23"] { background: var(--bg) !important; }
-html.light-mode #app [style*="color: white"],
-html.light-mode #app [style*="color:white"],
-html.light-mode #app [style*="color: #fff"],
-html.light-mode #app [style*="color:#fff"] { color: var(--text) !important; }
-html.light-mode #app [style*="background: rgba(255, 255, 255"],
-html.light-mode #app [style*="background:rgba(255, 255, 255"] { background: var(--card) !important; }
-html.light-mode #app [style*="border: 1px solid rgba(255, 255, 255"],
-html.light-mode #app [style*="border:1px solid rgba(255, 255, 255"] { border-color: var(--border) !important; }
+html.light-mode #app [style*="background:#130e23"], html.light-mode #app [style*="background: #130e23"] { background: var(--bg) !important; }
+html.light-mode #app [style*="color: white"], html.light-mode #app [style*="color:white"], html.light-mode #app [style*="color: #fff"], html.light-mode #app [style*="color:#fff"] { color: var(--text) !important; }
+html.light-mode #app [style*="background: rgba(255, 255, 255"], html.light-mode #app [style*="background:rgba(255, 255, 255"] { background: var(--card) !important; }
+html.light-mode #app [style*="border: 1px solid rgba(255, 255, 255"], html.light-mode #app [style*="border:1px solid rgba(255, 255, 255"] { border-color: var(--border) !important; }
 html.light-mode #app .glass { background: var(--card) !important; color: var(--text) !important; border-color: var(--border) !important; box-shadow: 0 18px 45px rgba(49,43,80,.12) !important; }
-html.light-mode #app .lbl,
-html.light-mode #app .label { color: var(--text-soft) !important; }
-html.light-mode #app .inp,
-html.light-mode #app input,
-html.light-mode #app select,
-html.light-mode #app textarea { background: var(--bg-secondary) !important; color: var(--text) !important; border-color: var(--border) !important; }
-html.light-mode #app .inp::placeholder,
-html.light-mode #app input::placeholder,
-html.light-mode #app textarea::placeholder { color: var(--text-soft) !important; }
-html.light-mode #app [style*="color: rgba(255, 255, 255"],
-html.light-mode #app [style*="color:rgba(255, 255, 255"] { color: var(--text-soft) !important; }
-html.light-mode #app [style*="border-color: rgba(255, 255, 255"],
-html.light-mode #app [style*="border-color:rgba(255, 255, 255"] { border-color: var(--border) !important; }
-html.light-mode #app .paybtn,
-html.light-mode #app button { color: inherit; }
+html.light-mode #app .lbl, html.light-mode #app .label { color: var(--text-soft) !important; }
+html.light-mode #app .inp, html.light-mode #app input, html.light-mode #app select, html.light-mode #app textarea { background: var(--bg-secondary) !important; color: var(--text) !important; border-color: var(--border) !important; }
+html.light-mode #app .inp::placeholder, html.light-mode #app input::placeholder, html.light-mode #app textarea::placeholder { color: var(--text-soft) !important; }
+html.light-mode #app [style*="color: rgba(255, 255, 255"], html.light-mode #app [style*="color:rgba(255, 255, 255"] { color: var(--text-soft) !important; }
+html.light-mode #app [style*="border-color: rgba(255, 255, 255"], html.light-mode #app [style*="border-color:rgba(255, 255, 255"] { border-color: var(--border) !important; }
+html.light-mode #app .paybtn, html.light-mode #app button { color: inherit; }
 
-/* PAYMENT PAGE LIGHT-MODE OVERRIDES
-   PayView still contains legacy dark-mode scoped styles. These overrides keep
-   text readable after switching to light mode without changing the dark theme. */
-html.light-mode #app .payment-page,
-html.light-mode #app .payment-page .glass,
-html.light-mode #app .payment-page .summary-card,
-html.light-mode #app .payment-page .payment-card { color: var(--text) !important; }
+/* PAYMENT */
+html.light-mode #app .payment-page, html.light-mode #app .payment-page .glass { color: var(--text) !important; }
+html.light-mode #app .payment-page .eyebrow, html.light-mode #app .payment-page .payfast-logo, html.light-mode #app .payment-page .details-heading, html.light-mode #app .payment-page .voucher-title, html.light-mode #app .payment-page .empty-cart, html.light-mode #app .payment-page .cart-line, html.light-mode #app .payment-page .total-line, html.light-mode #app .payment-page .member-badge { color: var(--text) !important; }
+html.light-mode #app .payment-page .secure, html.light-mode #app .payment-page .payfast-card, html.light-mode #app .payment-page .details-subheading, html.light-mode #app .payment-page .lbl, html.light-mode #app .payment-page .voucher-subtitle, html.light-mode #app .payment-page .voucher-hint { color: var(--text-soft) !important; }
+html.light-mode #app .payment-page .pill, html.light-mode #app .payment-page .method-row button, html.light-mode #app .payment-page .voucher-panel, html.light-mode #app .payment-page .payfast-card, html.light-mode #app .payment-page .details-card { background: var(--card) !important; color: var(--text) !important; border-color: var(--border) !important; }
+html.light-mode #app .payment-page .method-row button:not(.selected), html.light-mode #app .payment-page .verify { background: var(--bg-secondary) !important; color: var(--text-soft) !important; border-color: var(--border) !important; }
+html.light-mode #app .payment-page .inp, html.light-mode #app .payment-page input { background: var(--bg-secondary) !important; color: var(--text) !important; border-color: var(--border) !important; }
+html.light-mode #app .payment-page .inp::placeholder, html.light-mode #app .payment-page input::placeholder { color: var(--text-soft) !important; }
+html.light-mode #app .payment-page .cart-line, html.light-mode #app .payment-page .total-line, html.light-mode #app .payment-page .voucher-header { border-color: var(--border) !important; }
+html.light-mode #app .payment-page .discount-line, html.light-mode #app .payment-page .recognized, html.light-mode #app .payment-page .valid { color: #247a4a !important; }
+html.light-mode #app .payment-page .error-box { color: #a33a3a !important; background: rgba(255,100,100,.08) !important; border-color: rgba(180,60,60,.25) !important; }
+html.light-mode #app .payment-page .paybtn, html.light-mode #app .payment-page .method-row button.selected { color: #211a2d !important; }
 
-html.light-mode #app .payment-page .eyebrow,
-html.light-mode #app .payment-page .payfast-logo,
-html.light-mode #app .payment-page .details-heading,
-html.light-mode #app .payment-page .voucher-title,
-html.light-mode #app .payment-page .empty-cart,
-html.light-mode #app .payment-page .cart-line,
-html.light-mode #app .payment-page .total-line,
-html.light-mode #app .payment-page .member-badge { color: var(--text) !important; }
+/* DELIVERY */
+html.light-mode #app > div[style*="max-width: 1100px"] { color: var(--text) !important; }
+html.light-mode #app > div[style*="max-width: 1100px"] .glass { background: var(--card) !important; color: var(--text) !important; border-color: var(--border) !important; box-shadow: 0 18px 45px rgba(49,43,80,.12) !important; }
+html.light-mode #app > div[style*="max-width: 1100px"] [style*="color: #f4eff8"], html.light-mode #app > div[style*="max-width: 1100px"] [style*="color:#f4eff8"], html.light-mode #app > div[style*="max-width: 1100px"] [style*="color: white"], html.light-mode #app > div[style*="max-width: 1100px"] [style*="color:white"] { color: var(--text) !important; }
+html.light-mode #app > div[style*="max-width: 1100px"] [style*="color: rgba(244, 239, 248"], html.light-mode #app > div[style*="max-width: 1100px"] [style*="color:rgba(244,239,248"] { color: var(--text-soft) !important; }
+html.light-mode #app > div[style*="max-width: 1100px"] [style*="background: rgba(255, 255, 255"], html.light-mode #app > div[style*="max-width: 1100px"] [style*="background:rgba(255,255,255"] { background: var(--card) !important; }
+html.light-mode #app > div[style*="max-width: 1100px"] [style*="border: 1px solid rgba(255, 255, 255"], html.light-mode #app > div[style*="max-width: 1100px"] [style*="border:1px solid rgba(255,255,255"] { border-color: var(--border) !important; }
+html.light-mode #app > div[style*="max-width: 1100px"] [style*="background: #211a31"] { background: var(--bg-secondary) !important; color: var(--text) !important; }
+html.light-mode #app > div[style*="max-width: 1100px"] button { color: var(--text) !important; }
 
-html.light-mode #app .payment-page .secure,
-html.light-mode #app .payment-page .payfast-card,
-html.light-mode #app .payment-page .details-subheading,
-html.light-mode #app .payment-page .lbl,
-html.light-mode #app .payment-page .voucher-subtitle,
-html.light-mode #app .payment-page .voucher-hint { color: var(--text-soft) !important; }
-
-html.light-mode #app .payment-page .pill,
-html.light-mode #app .payment-page .method-row button,
-html.light-mode #app .payment-page .voucher-panel,
-html.light-mode #app .payment-page .payfast-card,
-html.light-mode #app .payment-page .details-card { 
-  background: var(--card) !important;
-  color: var(--text) !important;
-  border-color: var(--border) !important;
-}
-
-html.light-mode #app .payment-page .method-row button:not(.selected),
-html.light-mode #app .payment-page .verify {
-  background: var(--bg-secondary) !important;
-  color: var(--text-soft) !important;
-  border-color: var(--border) !important;
-}
-
-html.light-mode #app .payment-page .inp,
-html.light-mode #app .payment-page input {
-  background: var(--bg-secondary) !important;
-  color: var(--text) !important;
-  border-color: var(--border) !important;
-}
-
-html.light-mode #app .payment-page .inp::placeholder,
-html.light-mode #app .payment-page input::placeholder {
-  color: var(--text-soft) !important;
-}
-
-html.light-mode #app .payment-page .cart-line,
-html.light-mode #app .payment-page .total-line {
-  border-color: var(--border) !important;
-}
-
-html.light-mode #app .payment-page .voucher-header {
-  border-color: var(--border) !important;
-}
-
-html.light-mode #app .payment-page .discount-line,
-html.light-mode #app .payment-page .recognized,
-html.light-mode #app .payment-page .valid {
-  color: #247a4a !important;
-}
-
-html.light-mode #app .payment-page .error-box {
-  color: #a33a3a !important;
-  background: rgba(255, 100, 100, 0.08) !important;
-  border-color: rgba(180, 60, 60, 0.25) !important;
-}
-
-html.light-mode #app .payment-page .paybtn,
-html.light-mode #app .payment-page .method-row button.selected {
-  color: #211a2d !important;
-}
+/* PROFILE */
+html.light-mode #app .profile-page { color: var(--text) !important; }
+html.light-mode #app .profile-page .glass, html.light-mode #app .profile-page .stokvel-card { background: var(--card) !important; border-color: var(--border) !important; color: var(--text) !important; box-shadow: 0 18px 45px rgba(49,43,80,.12) !important; }
+html.light-mode #app .profile-page .eyebrow { color: #8a6b18 !important; }
+html.light-mode #app .profile-page .intro, html.light-mode #app .profile-page .stat-card span, html.light-mode #app .profile-page .stat-card small, html.light-mode #app .profile-page .detail span, html.light-mode #app .profile-page .membership small, html.light-mode #app .profile-page .order-row small, html.light-mode #app .profile-page .panel-heading > span, html.light-mode #app .profile-page .stokvel-card p, html.light-mode #app .profile-page .empty, html.light-mode #app .profile-page .state-card { color: var(--text-soft) !important; }
+html.light-mode #app .profile-page .panel-title, html.light-mode #app .profile-page .stat-card strong, html.light-mode #app .profile-page .detail strong, html.light-mode #app .profile-page .stokvel-card h2, html.light-mode #app .profile-page .order-row, html.light-mode #app .profile-page h1 { color: var(--text) !important; }
+html.light-mode #app .profile-page .detail, html.light-mode #app .profile-page .order-row { border-color: var(--border) !important; }
+html.light-mode #app .profile-page .status { background: var(--bg-secondary) !important; color: var(--text) !important; border: 1px solid var(--border); }
+html.light-mode #app .profile-page .avatar { color: #211a2d !important; }
