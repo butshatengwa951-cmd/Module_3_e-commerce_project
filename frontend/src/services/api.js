@@ -56,6 +56,16 @@ export const removeCartItem = async (itemId) => {
   return response.data;
 };
 
+export const getCurrentOrder = async () => {
+  const response = await api.get("/api/orders/current");
+  return response.data;
+};
+
+export const confirmCurrentOrder = async () => {
+  const response = await api.post("/api/orders/current/confirm");
+  return response.data;
+};
+
 export const signup = async (userData) => {
   const response = await api.post("/api/auth/signup", userData);
   return response.data;
