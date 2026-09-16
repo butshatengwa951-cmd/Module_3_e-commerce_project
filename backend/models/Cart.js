@@ -88,81 +88,56 @@ export const addItemToGroupCart = async ({
   const db = await pool.getConnection();
 
   try {
-    console.time("[CART] begin transaction");
     await db.beginTransaction();
-    console.timeEnd("[CART] begin transaction");
 
-    // Serialize cart creation for this Stokvel so two members do not
-    // accidentally create two pending shared orders at the same time.
-    console.time("[CART] lock stokvel");
+    // Keep the Stokvel row locked during pending-cart creation so two members
+    // cannot create competing pending shared orders at the same time.
     await db.query(
       `SELECT stokvel_id FROM stokvels WHERE stokvel_id = ? FOR UPDATE`,
       [stokvelId],
     );
-    console.timeEnd("[CART] lock stokvel");
 
-    console.time("[CART] product lookup");
+    const selectedSupplierId = supplierPriceId ? Number(supplierPriceId) : null;
+
+    // Product and supplier selection are handled in one database round-trip.
     const [products] = await db.query(
       `
-        SELECT product_id, quantity_available
-        FROM products
-        WHERE product_id = ?
+        SELECT
+          p.product_id,
+          p.quantity_available,
+          p.product_name,
+          p.image_url,
+          sp.supplier_price_id,
+          sp.price,
+          sp.supplier_name
+        FROM products p
+        LEFT JOIN supplier_prices sp
+          ON sp.product_id = p.product_id
+         AND (? IS NULL OR sp.supplier_price_id = ?)
+        WHERE p.product_id = ?
+        ORDER BY sp.price ASC
         LIMIT 1
       `,
-      [productId],
+      [selectedSupplierId, selectedSupplierId, productId],
     );
-    console.timeEnd("[CART] product lookup");
 
     if (!products.length) {
       throw new Error("Product not found");
     }
 
-    let selectedSupplierPriceId = supplierPriceId || null;
-    let unitPrice;
-    let supplierName;
+    const product = products[0];
 
-    if (selectedSupplierPriceId) {
-      console.time("[CART] selected supplier price lookup");
-      const [prices] = await db.query(
-        `
-          SELECT supplier_price_id, price, supplier_name
-          FROM supplier_prices
-          WHERE supplier_price_id = ?
-            AND product_id = ?
-          LIMIT 1
-        `,
-        [selectedSupplierPriceId, productId],
-      );
-      console.timeEnd("[CART] selected supplier price lookup");
-
-      if (!prices.length) {
+    if (!product.supplier_price_id) {
+      if (selectedSupplierId) {
         throw new Error("Selected supplier price is not valid for this product");
       }
 
-      unitPrice = Number(prices[0].price);
-      supplierName = prices[0].supplier_name;
-    } else {
-      console.time("[CART] cheapest supplier lookup");
-      const [prices] = await db.query(
-        `
-          SELECT supplier_price_id, price, supplier_name
-          FROM supplier_prices
-          WHERE product_id = ?
-          ORDER BY price ASC
-          LIMIT 1
-        `,
-        [productId],
-      );
-      console.timeEnd("[CART] cheapest supplier lookup");
-
-      if (!prices.length) {
-        throw new Error("No supplier price is available for this product");
-      }
-
-      selectedSupplierPriceId = prices[0].supplier_price_id;
-      unitPrice = Number(prices[0].price);
-      supplierName = prices[0].supplier_name;
+      throw new Error("No supplier price is available for this product");
     }
+
+    const selectedSupplierPriceId = product.supplier_price_id;
+    const unitPrice = Number(product.price);
+    const supplierName = product.supplier_name;
 
     const requestedQuantity = Number(quantity);
 
@@ -170,28 +145,39 @@ export const addItemToGroupCart = async ({
       throw new Error("Quantity must be a positive whole number");
     }
 
-    if (requestedQuantity > Number(products[0].quantity_available)) {
+    if (requestedQuantity > Number(product.quantity_available)) {
       throw new Error("Requested quantity exceeds available stock");
     }
 
-    console.time("[CART] pending order lookup");
-    const [pendingOrders] = await db.query(
+    // Get the latest pending order and the matching cart item together.
+    const [pendingRows] = await db.query(
       `
-        SELECT order_id
-        FROM order_details
-        WHERE stokvel_id = ?
-          AND order_status = 'Pending'
-        ORDER BY order_id DESC
+        SELECT
+          od.order_id,
+          od.total_amount,
+          oi.order_item_id,
+          oi.quantity,
+          oi.subtotal
+        FROM order_details od
+        LEFT JOIN order_items oi
+          ON oi.order_id = od.order_id
+         AND oi.product_id = ?
+         AND oi.supplier_price_id = ?
+        WHERE od.stokvel_id = ?
+          AND od.order_status = 'Pending'
+        ORDER BY od.order_id DESC
         LIMIT 1
       `,
-      [stokvelId],
+      [productId, selectedSupplierPriceId, stokvelId],
     );
-    console.timeEnd("[CART] pending order lookup");
 
-    let orderId = pendingOrders[0]?.order_id;
+    let orderId = pendingRows[0]?.order_id;
+    let currentOrderTotal = Number(pendingRows[0]?.total_amount || 0);
+    const existingItem = pendingRows[0]?.order_item_id
+      ? pendingRows[0]
+      : null;
 
     if (!orderId) {
-      console.time("[CART] create pending order");
       const [created] = await db.query(
         `
           INSERT INTO order_details
@@ -200,54 +186,41 @@ export const addItemToGroupCart = async ({
         `,
         [userId, stokvelId],
       );
-      console.timeEnd("[CART] create pending order");
 
       orderId = created.insertId;
+      currentOrderTotal = 0;
     }
-
-    console.time("[CART] existing item lookup");
-    const [existingItems] = await db.query(
-      `
-        SELECT order_item_id, quantity
-        FROM order_items
-        WHERE order_id = ?
-          AND product_id = ?
-          AND supplier_price_id = ?
-        LIMIT 1
-      `,
-      [orderId, productId, selectedSupplierPriceId],
-    );
-    console.timeEnd("[CART] existing item lookup");
 
     let orderItemId;
     let finalQuantity;
+    let finalSubtotal;
+    let totalDelta;
 
-    if (existingItems.length) {
-      finalQuantity = Number(existingItems[0].quantity) + requestedQuantity;
+    if (existingItem) {
+      finalQuantity = Number(existingItem.quantity) + requestedQuantity;
 
-      if (finalQuantity > Number(products[0].quantity_available)) {
+      if (finalQuantity > Number(product.quantity_available)) {
         throw new Error("Requested quantity exceeds available stock");
       }
 
-      const subtotal = Number((unitPrice * finalQuantity).toFixed(2));
+      finalSubtotal = Number((unitPrice * finalQuantity).toFixed(2));
+      totalDelta = Number((finalSubtotal - Number(existingItem.subtotal)).toFixed(2));
 
-      console.time("[CART] update existing item");
       await db.query(
         `
           UPDATE order_items
           SET quantity = ?, unit_price = ?, subtotal = ?
           WHERE order_item_id = ?
         `,
-        [finalQuantity, unitPrice, subtotal, existingItems[0].order_item_id],
+        [finalQuantity, unitPrice, finalSubtotal, existingItem.order_item_id],
       );
-      console.timeEnd("[CART] update existing item");
 
-      orderItemId = existingItems[0].order_item_id;
+      orderItemId = existingItem.order_item_id;
     } else {
       finalQuantity = requestedQuantity;
-      const subtotal = Number((unitPrice * finalQuantity).toFixed(2));
+      finalSubtotal = Number((unitPrice * finalQuantity).toFixed(2));
+      totalDelta = finalSubtotal;
 
-      console.time("[CART] insert new item");
       const [createdItem] = await db.query(
         `
           INSERT INTO order_items
@@ -260,67 +233,46 @@ export const addItemToGroupCart = async ({
           selectedSupplierPriceId,
           finalQuantity,
           unitPrice,
-          subtotal,
+          finalSubtotal,
         ],
       );
-      console.timeEnd("[CART] insert new item");
 
       orderItemId = createdItem.insertId;
     }
 
-    console.time("[CART] recalculate order total");
+    // Update the order total by the exact change introduced by this operation.
+    // This removes the extra SUM(subtotal) round-trip while preserving the same total.
+    const finalOrderTotal = Number((currentOrderTotal + totalDelta).toFixed(2));
+
     await db.query(
       `
         UPDATE order_details
-        SET total_amount = (
-          SELECT COALESCE(SUM(subtotal), 0)
-          FROM order_items
-          WHERE order_id = ?
-        )
+        SET total_amount = ?
         WHERE order_id = ?
       `,
-      [orderId, orderId],
+      [finalOrderTotal, orderId],
     );
-    console.timeEnd("[CART] recalculate order total");
 
-    console.time("[CART] select updated item");
-    const [updated] = await db.query(
-      `
-        SELECT
-          oi.order_item_id,
-          oi.order_id,
-          oi.product_id,
-          oi.supplier_price_id,
-          oi.quantity,
-          oi.unit_price,
-          oi.subtotal,
-          p.product_name,
-          p.image_url,
-          sp.supplier_name,
-          od.total_amount
-        FROM order_items oi
-        INNER JOIN products p ON p.product_id = oi.product_id
-        INNER JOIN supplier_prices sp ON sp.supplier_price_id = oi.supplier_price_id
-        INNER JOIN order_details od ON od.order_id = oi.order_id
-        WHERE oi.order_item_id = ?
-        LIMIT 1
-      `,
-      [orderItemId],
-    );
-    console.timeEnd("[CART] select updated item");
-
-    console.time("[CART] commit transaction");
     await db.commit();
-    console.timeEnd("[CART] commit transaction");
 
     return {
-      item: updated[0],
+      item: {
+        order_item_id: orderItemId,
+        order_id: orderId,
+        product_id: productId,
+        supplier_price_id: selectedSupplierPriceId,
+        quantity: finalQuantity,
+        unit_price: unitPrice,
+        subtotal: finalSubtotal,
+        product_name: product.product_name,
+        image_url: product.image_url,
+        supplier_name: supplierName,
+        total_amount: finalOrderTotal,
+      },
       supplier_name: supplierName,
     };
   } catch (error) {
-    console.time("[CART] rollback transaction");
     await db.rollback();
-    console.timeEnd("[CART] rollback transaction");
     throw error;
   } finally {
     db.release();
