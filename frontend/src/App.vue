@@ -39,6 +39,10 @@ const showSiteShell = computed(() => !authRoutes.has(route.name));
   transition: background 0.3s ease, color 0.3s ease;
 }
 
+.app-shell > main:not(.auth-shell) {
+  min-height: calc(100vh - 68px);
+}
+
 .auth-shell {
   min-height: 100vh;
 }
