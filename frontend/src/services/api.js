@@ -24,11 +24,6 @@ export const getProduct = async (productId) => {
 
 export const signup = async (userData) => {
   const response = await api.post("/api/auth/signup", userData);
-
-  if (response.data?.success) {
-    window.dispatchEvent(new Event("signup-completed"));
-  }
-
   return response.data;
 };
 
