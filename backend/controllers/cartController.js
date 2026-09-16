@@ -23,11 +23,7 @@ export const getCart = async (req, res) => {
     const membership = await getUserMembership(req.user.user_id);
     const cart = await getPendingCart(membership.stokvel_id);
 
-    return res.status(200).json({
-      success: true,
-      stokvel: membership,
-      ...cart,
-    });
+    return res.status(200).json({ success: true, stokvel: membership, ...cart });
   } catch (error) {
     console.error("Failed to get group cart:", error);
     return res.status(error.statusCode || 500).json({
@@ -55,11 +51,7 @@ export const addCartItem = async (req, res) => {
       quantity: quantity ?? 1,
     });
 
-    return res.status(201).json({
-      success: true,
-      message: "Product added to the group basket.",
-      item: result.item,
-    });
+    return res.status(201).json({ success: true, message: "Product added to the group basket.", item: result.item });
   } catch (error) {
     console.error("Failed to add cart item:", error);
     const status = error.statusCode || (error.message.includes("not found") || error.message.includes("valid") ? 404 : 400);
@@ -76,17 +68,15 @@ export const updateCartItem = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid cart item ID." });
     }
 
-    await getUserMembership(req.user.user_id);
-
-    const item = await updateCartItemQuantity(itemId, quantity);
-
-    // Ensure the item belongs to the authenticated member's Stokvel.
+    // Check ownership before changing anything.
     const membership = await getUserMembership(req.user.user_id);
     const cart = await getPendingCart(membership.stokvel_id);
-    if (!cart.items.some((cartItem) => cartItem.order_item_id === item.order_item_id)) {
+
+    if (!cart.items.some((item) => item.order_item_id === itemId)) {
       return res.status(403).json({ success: false, message: "You cannot modify this group basket item." });
     }
 
+    const item = await updateCartItemQuantity(itemId, quantity);
     return res.status(200).json({ success: true, item });
   } catch (error) {
     console.error("Failed to update cart item:", error);
@@ -110,7 +100,6 @@ export const deleteCartItem = async (req, res) => {
     }
 
     await removeCartItem(itemId);
-
     return res.status(200).json({ success: true, message: "Basket item removed." });
   } catch (error) {
     console.error("Failed to remove cart item:", error);
