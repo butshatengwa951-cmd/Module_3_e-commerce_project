@@ -24,18 +24,28 @@ export const getProduct = async (productId) => {
 
 export const signup = async (userData) => {
   const response = await api.post("/api/auth/signup", userData);
+
+  if (response.data?.success) {
+    window.dispatchEvent(new Event("signup-completed"));
+  }
+
   return response.data;
 };
 
 export const login = async (userData) => {
   const response = await api.post("/api/auth/login", userData);
+
+  if (response.data?.success) {
+    window.dispatchEvent(new Event("login-completed"));
+  }
+
   return response.data;
 };
 
 export const forgotPassword = async (email) => {
   const response = await api.post(
     "/api/auth/forgot-password",
-    { email }
+    { email },
   );
   return response.data;
 };
@@ -43,7 +53,7 @@ export const forgotPassword = async (email) => {
 export const resetPassword = async (resetData) => {
   const response = await api.post(
     "/api/auth/reset-password",
-    resetData
+    resetData,
   );
   return response.data;
 };
@@ -51,7 +61,7 @@ export const resetPassword = async (resetData) => {
 export const verifyResetToken = async (token) => {
   const response = await api.get(
     "/api/auth/verify-reset-token",
-    { params: { token } }
+    { params: { token } },
   );
   return response.data;
 };
