@@ -31,6 +31,10 @@ export const login = async (userData) => {
   const response = await api.post("/api/auth/login", userData);
 
   if (response.data?.success) {
+    localStorage.setItem("token", response.data.token);
+    localStorage.setItem("user", JSON.stringify(response.data.user));
+    localStorage.setItem("stokvel", JSON.stringify(response.data.stokvel));
+
     window.dispatchEvent(new Event("login-completed"));
   }
 
