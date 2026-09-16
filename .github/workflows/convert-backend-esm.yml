@@ -1,0 +1,92 @@
+name: Convert backend to ES modules
+
+on:
+  push:
+    branches: [Butsha-dev]
+    paths:
+      - "backend/**/*.js"
+      - "backend/package.json"
+      - ".github/workflows/convert-backend-esm.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  convert:
+    if: ${{ !contains(github.event.head_commit.message, 'Convert backend to ES modules') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Butsha-dev
+        uses: actions/checkout@v4
+        with:
+          ref: Butsha-dev
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Convert CommonJS to ES modules
+        working-directory: backend
+        run: npx --yes lebab --replace '**/*.js' --transform commonjs
+
+      - name: Fix native ESM paths and runtime globals
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          root = Path('backend')
+
+          for path in root.rglob('*.js'):
+              text = path.read_text()
+
+              # Native Node ESM requires explicit extensions for relative imports.
+              text = re.sub(r"(from\s+[\"'])(\.{1,2}/[^\"']+?)([\"'])", lambda m: m.group(1) + (m.group(2) if Path(root / path.parent.relative_to(root) / m.group(2).lstrip('./')).suffix else m.group(2) + '.js') + m.group(3), text)
+
+              # Fix the known dotenv/path bootstrap pattern left by the CommonJS converter.
+              if path.as_posix().endswith('backend/server.js'):
+                  text = text.replace(
+                      'require("dotenv").config({ path: require("path").join(__dirname, ".env") });',
+                      'import dotenv from "dotenv";\nimport path from "path";\nimport { fileURLToPath } from "url";\n\nconst __filename = fileURLToPath(import.meta.url);\nconst __dirname = path.dirname(__filename);\ndotenv.config({ path: path.join(__dirname, ".env") });'
+                  )
+
+              if path.as_posix().endswith('backend/config/db.js'):
+                  text = text.replace(
+                      'require("dotenv").config({ path: path.join(__dirname, "..", ".env") });',
+                      'import dotenv from "dotenv";\nimport { fileURLToPath } from "url";\n\nconst __filename = fileURLToPath(import.meta.url);\nconst __dirname = path.dirname(__filename);\ndotenv.config({ path: path.join(__dirname, "..", ".env") });'
+                  )
+
+              if path.as_posix().endswith('backend/models/init.js'):
+                  marker = 'const { pool } = require("../config/db");'
+                  if marker not in text and 'from "../config/db.js"' in text:
+                      text = text.replace('import { pool } from "../config/db.js";', 'import { fileURLToPath } from "url";\nimport { pool } from "../config/db.js";')
+                      text = text.replace('const filePath = path.join(__dirname, "../sql/schema.sql");', 'const __filename = fileURLToPath(import.meta.url);\n    const __dirname = path.dirname(__filename);\n    const filePath = path.join(__dirname, "../sql/schema.sql");')
+
+              path.write_text(text)
+
+          pkg_path = root / 'package.json'
+          pkg = json.loads(pkg_path.read_text())
+          pkg['type'] = 'module'
+          pkg_path.write_text(json.dumps(pkg, indent=2) + '\n')
+          PY
+
+      - name: Verify no backend CommonJS syntax remains
+        run: |
+          if grep -RInE '(^|[^A-Za-z])require\(|module\.exports|exports\.[A-Za-z_]' backend --include='*.js'; then
+            echo 'CommonJS syntax remains in backend JavaScript files.'
+            exit 1
+          fi
+          node --check backend/server.js
+          node --check backend/config/db.js
+          node --check backend/models/init.js
+          for f in backend/controllers/*.js backend/routes/*.js; do node --check "$f"; done
+
+      - name: Commit converted backend
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend .github/workflows/convert-backend-esm.yml
+          git commit -m "Convert backend from CommonJS to ES modules" || exit 0
+          git push origin Butsha-dev
