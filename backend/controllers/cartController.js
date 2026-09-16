@@ -34,6 +34,13 @@ export const getCart = async (req, res) => {
 };
 
 export const addCartItem = async (req, res) => {
+  const startedAt = Date.now();
+
+  console.log("[CART] Add item request started", {
+    userId: req.user?.user_id,
+    productId: req.body?.product_id,
+  });
+
   try {
     const { product_id, supplier_price_id, quantity } = req.body;
     const productId = Number(product_id);
@@ -42,7 +49,11 @@ export const addCartItem = async (req, res) => {
       return res.status(400).json({ success: false, message: "A valid product_id is required." });
     }
 
+    console.time("[CART] membership lookup");
     const membership = await getUserMembership(req.user.user_id);
+    console.timeEnd("[CART] membership lookup");
+
+    console.time("[CART] add item database operation");
     const result = await addItemToGroupCart({
       userId: req.user.user_id,
       stokvelId: membership.stokvel_id,
@@ -50,9 +61,17 @@ export const addCartItem = async (req, res) => {
       supplierPriceId: supplier_price_id ? Number(supplier_price_id) : null,
       quantity: quantity ?? 1,
     });
+    console.timeEnd("[CART] add item database operation");
 
-    return res.status(201).json({ success: true, message: "Product added to the group basket.", item: result.item });
+    console.log(`[CART] Add item completed in ${Date.now() - startedAt}ms`);
+
+    return res.status(201).json({
+      success: true,
+      message: "Product added to the group basket.",
+      item: result.item,
+    });
   } catch (error) {
+    console.error(`[CART] Add item failed after ${Date.now() - startedAt}ms`);
     console.error("Failed to add cart item:", error);
     const status = error.statusCode || (error.message.includes("not found") || error.message.includes("valid") ? 404 : 400);
     return res.status(status).json({ success: false, message: error.message || "Failed to add product." });
