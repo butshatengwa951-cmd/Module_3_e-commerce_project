@@ -70,9 +70,7 @@
   ------------------------------------------------------- */
 
   --sw-transition-fast: 200ms ease;
-
   --sw-transition: 250ms ease;
-
   --sw-transition-slow: 900ms cubic-bezier(0.22, 1, 0.36, 1);
 
   /* -------------------------------------------------------
@@ -91,11 +89,8 @@
   --sw-page-surface: rgba(255, 255, 255, 0.3);
 
   --sw-page-text: var(--sw-purple-900);
-
   --sw-page-text-soft: rgba(49, 43, 80, 0.7);
-
   --sw-page-text-muted: rgba(49, 43, 80, 0.65);
-
   --sw-page-text-faint: rgba(49, 43, 80, 0.45);
 
   /* -------------------------------------------------------
@@ -103,17 +98,13 @@
   ------------------------------------------------------- */
 
   --sw-input-border: rgba(49, 43, 80, 0.16);
-
   --sw-input-background: rgba(255, 255, 255, 0.3);
-
   --sw-input-background-focus: rgba(255, 255, 255, 0.5);
 
   --sw-input-text: var(--sw-purple-900);
-
   --sw-placeholder: rgba(49, 43, 80, 0.45);
 
   --sw-focus: rgba(121, 93, 137, 0.7);
-
   --sw-focus-ring: rgba(121, 93, 137, 0.1);
 
   /* -------------------------------------------------------
@@ -129,7 +120,8 @@
 
   --sw-button-shadow: 0 10px 25px rgba(49, 43, 80, 0.2);
 
-  --sw-button-shadow-hover: 0 14px 34px rgba(49, 43, 80, 0.27);
+  --sw-button-shadow-hover:
+    0 14px 34px rgba(49, 43, 80, 0.27);
 
   /* -------------------------------------------------------
      GLASS — LIGHT
@@ -142,7 +134,6 @@
   );
 
   --sw-glass-light-border: rgba(255, 255, 255, 0.48);
-
   --sw-glass-light-text: var(--sw-purple-900);
 
   --sw-glass-shadow-light:
@@ -166,15 +157,16 @@
   );
 
   --sw-glass-dark-border: rgba(255, 255, 255, 0.14);
-
   --sw-glass-dark-text: #f7f5f1;
 
   --sw-glass-dark-shadow:
-    0 25px 70px rgba(0, 0, 0, 0.42), inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    0 25px 70px rgba(0, 0, 0, 0.42),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
     inset 0 -1px 1px rgba(0, 0, 0, 0.28);
 
   --sw-glass-dark-shadow-hover:
-    0 30px 82px rgba(0, 0, 0, 0.52), inset 0 1px 1px rgba(255, 255, 255, 0.14),
+    0 30px 82px rgba(0, 0, 0, 0.52),
+    inset 0 1px 1px rgba(255, 255, 255, 0.14),
     inset 0 -1px 1px rgba(0, 0, 0, 0.32);
 
   /* -------------------------------------------------------
@@ -182,7 +174,6 @@
   ------------------------------------------------------- */
 
   --sw-glass-blur: 24px;
-
   --sw-glass-saturation: 130%;
 
   /* -------------------------------------------------------
@@ -190,19 +181,14 @@
   ------------------------------------------------------- */
 
   --sw-orb-blur: 80px;
-
   --sw-orb-opacity: 0.45;
 
   --sw-orb-gold: var(--sw-gold-500);
-
   --sw-orb-orange: var(--sw-orange-600);
-
   --sw-orb-purple: var(--sw-purple-700);
-
   --sw-orb-lavender: var(--sw-lavender-500);
 
   --sw-grain-opacity: 0.1;
-
   --sw-grain-dot: rgba(255, 255, 255, 0.9);
 
   /* -------------------------------------------------------
@@ -210,16 +196,28 @@
   ------------------------------------------------------- */
 
   --sw-toggle-background: rgba(255, 255, 255, 0.22);
-
   --sw-toggle-border: rgba(255, 255, 255, 0.32);
-
   --sw-toggle-text: var(--sw-white);
 
   --sw-toggle-shadow:
-    0 8px 25px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.18);
+    0 8px 25px rgba(0, 0, 0, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.18);
 
   --sw-toggle-shadow-hover:
-    0 12px 30px rgba(0, 0, 0, 0.16), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    0 12px 30px rgba(0, 0, 0, 0.16),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+
+  /* -------------------------------------------------------
+     LEGACY THEME VARIABLE COMPATIBILITY
+  ------------------------------------------------------- */
+
+  --sw-bg: var(--sw-page-background);
+  --sw-text: var(--sw-page-text);
+  --sw-surface: var(--sw-page-surface);
+  --sw-border: var(--sw-input-border);
+  --sw-primary: var(--sw-purple-700);
+  --sw-muted: var(--sw-page-text-muted);
+  --sw-accent-soft: var(--sw-page-surface);
 }
 
 /* =========================================================
@@ -245,11 +243,8 @@ html.dark-mode {
   --sw-page-surface: rgba(25, 21, 34, 0.58);
 
   --sw-page-text: #f7f5f1;
-
   --sw-page-text-soft: rgba(247, 245, 241, 0.76);
-
   --sw-page-text-muted: rgba(247, 245, 241, 0.62);
-
   --sw-page-text-faint: rgba(247, 245, 241, 0.42);
 
   /* -------------------------------------------------------
@@ -257,27 +252,27 @@ html.dark-mode {
   ------------------------------------------------------- */
 
   --sw-input-border: rgba(247, 245, 241, 0.16);
-
   --sw-input-background: rgba(255, 255, 255, 0.065);
-
   --sw-input-background-focus: rgba(255, 255, 255, 0.11);
 
   --sw-input-text: #f7f5f1;
-
   --sw-placeholder: rgba(247, 245, 241, 0.42);
 
   --sw-focus: rgba(155, 134, 167, 0.88);
-
   --sw-focus-ring: rgba(155, 134, 167, 0.16);
 
   /* -------------------------------------------------------
      BUTTONS
   ------------------------------------------------------- */
 
-  --sw-button-gradient: linear-gradient(90deg, #403665, #795d89, #c2583d);
+  --sw-button-gradient: linear-gradient(
+    90deg,
+    #403665,
+    #795d89,
+    #c2583d
+  );
 
   --sw-button-shadow: 0 10px 28px rgba(0, 0, 0, 0.34);
-
   --sw-button-shadow-hover: 0 15px 38px rgba(0, 0, 0, 0.46);
 
   /* -------------------------------------------------------
@@ -291,15 +286,16 @@ html.dark-mode {
   );
 
   --sw-glass-dark-border: rgba(255, 255, 255, 0.15);
-
   --sw-glass-dark-text: #f7f5f1;
 
   --sw-glass-shadow-dark:
-    0 25px 75px rgba(0, 0, 0, 0.48), inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    0 25px 75px rgba(0, 0, 0, 0.48),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
     inset 0 -1px 1px rgba(0, 0, 0, 0.32);
 
   --sw-glass-shadow-dark-hover:
-    0 32px 86px rgba(0, 0, 0, 0.58), inset 0 1px 1px rgba(255, 255, 255, 0.14),
+    0 32px 86px rgba(0, 0, 0, 0.58),
+    inset 0 1px 1px rgba(255, 255, 255, 0.14),
     inset 0 -1px 1px rgba(0, 0, 0, 0.36);
 
   /* -------------------------------------------------------
@@ -307,9 +303,7 @@ html.dark-mode {
   ------------------------------------------------------- */
 
   --sw-orb-opacity: 0.2;
-
   --sw-grain-opacity: 0.12;
-
   --sw-grain-dot: rgba(255, 255, 255, 0.75);
 
   /* -------------------------------------------------------
@@ -317,16 +311,28 @@ html.dark-mode {
   ------------------------------------------------------- */
 
   --sw-toggle-background: rgba(18, 16, 26, 0.66);
-
   --sw-toggle-border: rgba(255, 255, 255, 0.16);
-
   --sw-toggle-text: var(--sw-off-white);
 
   --sw-toggle-shadow:
-    0 8px 25px rgba(0, 0, 0, 0.34), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+    0 8px 25px rgba(0, 0, 0, 0.34),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
 
   --sw-toggle-shadow-hover:
-    0 12px 32px rgba(0, 0, 0, 0.46), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+    0 12px 32px rgba(0, 0, 0, 0.46),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12);
+
+  /* -------------------------------------------------------
+     LEGACY THEME VARIABLE COMPATIBILITY — DARK
+  ------------------------------------------------------- */
+
+  --sw-bg: var(--sw-page-background);
+  --sw-text: var(--sw-page-text);
+  --sw-surface: var(--sw-page-surface);
+  --sw-border: var(--sw-input-border);
+  --sw-primary: var(--sw-purple-700);
+  --sw-muted: var(--sw-page-text-muted);
+  --sw-accent-soft: var(--sw-page-surface);
 }
 
 /* =========================================================
@@ -341,21 +347,17 @@ html.dark-mode {
 
 html {
   margin: 0;
-
   min-height: 100%;
-
   background: var(--sw-page-background);
 }
 
 body {
   margin: 0;
-
   min-height: 100vh;
 
   font-family: var(--sw-font-body);
 
   background: var(--sw-page-background);
-
   color: var(--sw-page-text);
 
   transition:
@@ -393,7 +395,6 @@ svg {
 
 #app {
   min-height: 100vh;
-
   background: transparent;
 }
 
@@ -411,7 +412,6 @@ svg {
 
 ::selection {
   background: rgba(121, 93, 137, 0.22);
-
   color: var(--sw-page-text);
 }
 
@@ -421,7 +421,6 @@ svg {
 
 :focus-visible {
   outline: 2px solid var(--sw-focus);
-
   outline-offset: 3px;
 }
 
@@ -431,7 +430,6 @@ svg {
 
 html {
   scrollbar-width: thin;
-
   scrollbar-color: rgba(121, 93, 137, 0.55) transparent;
 }
 
@@ -441,7 +439,6 @@ html.dark-mode {
 
 ::-webkit-scrollbar {
   width: 9px;
-
   height: 9px;
 }
 
@@ -451,11 +448,9 @@ html.dark-mode {
 
 ::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
-
   border-radius: var(--sw-radius-pill);
 
   background-clip: padding-box;
-
   background: rgba(121, 93, 137, 0.45);
 }
 
@@ -477,11 +472,9 @@ html.dark-mode ::-webkit-scrollbar-thumb {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
-
     animation-iteration-count: 1 !important;
 
     transition-duration: 0.01ms !important;
-
     scroll-behavior: auto !important;
   }
 }
@@ -576,7 +569,12 @@ body {
       rgba(121, 93, 137, 0.18),
       transparent 30%
     ),
-    linear-gradient(135deg, #f9f4ec 0%, #fff8f2 36%, #f7ebfa 100%) !important;
+    linear-gradient(
+      135deg,
+      #f9f4ec 0%,
+      #fff8f2 36%,
+      #f7ebfa 100%
+    ) !important;
 }
 
 /* =========================================================
@@ -602,26 +600,42 @@ html.dark-mode .reset-password-page {
       rgba(121, 93, 137, 0.2),
       transparent 32%
     ),
-    linear-gradient(135deg, #17131f 0%, #1f1828 48%, #25181a 100%) !important;
+    linear-gradient(
+      135deg,
+      #17131f 0%,
+      #1f1828 48%,
+      #25181a 100%
+    ) !important;
 }
 
 html.dark-mode .signup-page .page-gradient,
 html.dark-mode .forgot-password-page .page-gradient,
 html.dark-mode .reset-password-page .page-gradient {
   opacity: 1 !important;
+
   background:
     radial-gradient(
       circle at 16% 15%,
       rgba(200, 176, 25, 0.17),
       transparent 25%
     ),
-    radial-gradient(circle at 81% 32%, rgba(194, 88, 61, 0.2), transparent 29%),
+    radial-gradient(
+      circle at 81% 32%,
+      rgba(194, 88, 61, 0.2),
+      transparent 29%
+    ),
     radial-gradient(
       circle at 55% 82%,
       rgba(121, 93, 137, 0.22),
       transparent 34%
     ),
-    linear-gradient(135deg, #17131f 0%, #21192d 48%, #2a1a20 100%) !important;
+    linear-gradient(
+      135deg,
+      #17131f 0%,
+      #21192d 48%,
+      #2a1a20 100%
+    ) !important;
+
   filter: saturate(1.18) brightness(0.92) !important;
 }
 
@@ -682,7 +696,9 @@ html.dark-mode .signup-page .page-brand .brand-handshake,
 html.dark-mode .forgot-password-page .page-brand .brand-handshake,
 html.dark-mode .reset-password-page .page-brand .brand-handshake {
   color: #ffffff !important;
-  filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08)) !important;
+  filter: drop-shadow(
+    0 2px 5px rgba(255, 255, 255, 0.08)
+  ) !important;
 }
 
 /* =========================================================
@@ -706,7 +722,13 @@ html.dark-mode .auth-selector .login-panel {
       rgba(121, 93, 137, 0.16),
       transparent 40%
     ),
-    linear-gradient(135deg, #160f20 0%, #21172f 48%, #331c28 100%) !important;
+    linear-gradient(
+      135deg,
+      #160f20 0%,
+      #21172f 48%,
+      #331c28 100%
+    ) !important;
+
   filter: saturate(1.1) brightness(0.98) !important;
 }
 
@@ -750,8 +772,10 @@ html.dark-mode .signup-submit {
     #795d89 50%,
     #c2583d 100%
   ) !important;
+
   color: #ffffff !important;
   border-color: transparent !important;
+
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34) !important;
 }
 
@@ -764,7 +788,9 @@ html.dark-mode .signup-submit:hover:not(:disabled) {
     #8767a0 50%,
     #da694d 100%
   ) !important;
+
   color: #ffffff !important;
+
   box-shadow: 0 15px 38px rgba(0, 0, 0, 0.46) !important;
 }
 
@@ -933,7 +959,12 @@ html.dark-mode .auth-selector .login-panel {
       rgba(121, 93, 137, 0.06) 16%,
       transparent 34%
     ),
-    linear-gradient(135deg, #1a1124 0%, #291a36 44%, #48202a 100%) !important;
+    linear-gradient(
+      135deg,
+      #1a1124 0%,
+      #291a36 44%,
+      #48202a 100%
+    ) !important;
 
   filter: saturate(1.05) brightness(0.96) !important;
 }
@@ -944,8 +975,10 @@ html.dark-mode .auth-selector .login-panel {
 
 html.dark-mode .auth-selector .login-panel::before {
   content: "";
+
   position: absolute;
   inset: -12%;
+
   z-index: 0;
   pointer-events: none;
 
@@ -965,6 +998,7 @@ html.dark-mode .auth-selector .login-panel::before {
 
   filter: blur(26px);
   opacity: 0.45;
+
   mix-blend-mode: screen;
 
   transform: translateZ(0);
@@ -977,8 +1011,11 @@ html.dark-mode .auth-selector .login-panel::before {
 
 html.dark-mode .auth-selector .login-panel .gradient-orb {
   display: block;
+
   animation-play-state: running !important;
+
   will-change: transform;
+
   filter: blur(54px) saturate(1.1) !important;
 }
 
