@@ -6,12 +6,6 @@ function gen() {
   return `SW-${r}-ZA`;
 }
 
-// StockWell is one shared MySQL schema across all three dev branches, so
-// checkout is built on the SAME tables the catalogue (Kanya-dev) and group
-// cart (Cial-dev) already read/write: order_details + order_items for the
-// order itself, card_details/money_contributions for who paid what, and
-// delivery_details for the shared delivery record. That's what lets an
-// order built on another branch actually be paid for and tracked here.
 exports.pay = async (req, res) => {
   const conn = await pool.getConnection();
   try {
@@ -145,7 +139,14 @@ exports.pay = async (req, res) => {
         const subtotal = unitPrice * Number(it.qty || 1);
         await conn.query(
           "INSERT INTO order_items (order_id, product_id, supplier_price_id, quantity, unit_price, subtotal) VALUES (?,?,?,?,?,?)",
-          [resolvedOrderId, it.product_id, supplierPriceId, it.qty || 1, unitPrice, subtotal],
+          [
+            resolvedOrderId,
+            it.product_id,
+            supplierPriceId,
+            it.qty || 1,
+            unitPrice,
+            subtotal,
+          ],
         );
       }
     }

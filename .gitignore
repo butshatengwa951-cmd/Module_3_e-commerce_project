@@ -17,4 +17,4 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-frontend/.prettierignore
+Frontend/.prettierignore

@@ -1,2 +1,4 @@
 src/views/PayView.vue
 src/views/DeliveryView.vue
+src/components/ui/ConfirmationPopup.vue
+src/App.vue

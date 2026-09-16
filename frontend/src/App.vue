@@ -1,1 +1,35 @@
-<template><div id="app" style="min-height:100vh;background:#130e23;position:relative;font-family:&quot;Space Grotesk&quot;, sans-serif"><div style="position:fixed; inset:0; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size:24px 24px; opacity:0.5; pointer-events:none"></div><router-view /><ConfirmationPopup v-if="showConfirm" @close="showConfirm=false" /></div></template><script setup>import {ref,provide} from "vue";import ConfirmationPopup from "./components/ui/ConfirmationPopup.vue";const showConfirm=ref(false);provide("showConfirm",showConfirm);</script>
+<template>
+  <div
+    id="app"
+    style="
+      min-height: 100vh;
+      background: #130e23;
+      position: relative;
+      font-family: 'Space Grotesk', sans-serif;
+    "
+  >
+    <div
+      style="
+        position: fixed;
+        inset: 0;
+        background-image: radial-gradient(
+          rgba(255, 255, 255, 0.05) 1px,
+          transparent 1px
+        );
+        background-size: 24px 24px;
+        opacity: 0.5;
+        pointer-events: none;
+      "
+    ></div>
+    <router-view /><ConfirmationPopup
+      v-if="showConfirm"
+      @close="showConfirm = false"
+    />
+  </div>
+</template>
+<script setup>
+import { ref, provide } from "vue";
+import ConfirmationPopup from "./components/ui/ConfirmationPopup.vue";
+const showConfirm = ref(false);
+provide("showConfirm", showConfirm);
+</script>
