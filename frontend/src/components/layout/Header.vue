@@ -2,7 +2,10 @@
   <header class="sw-header">
     <button class="menu-button" type="button" aria-label="Open menu" @click="menuOpen = !menuOpen">☰</button>
 
-    <router-link to="/pay" class="brand">STOCKWELL</router-link>
+    <router-link to="/pay" class="brand">
+      <span class="brand-mark">🤝</span>
+      <span class="brand-name">STOCK<span>WELL</span></span>
+    </router-link>
 
     <nav class="desktop-nav" aria-label="Primary navigation">
       <router-link to="/pay">Home</router-link>
@@ -28,7 +31,7 @@
       </template>
 
       <template v-else>
-        <router-link class="join-btn" to="/profile">Join</router-link>
+        <router-link class="join-btn" to="/login-signup">Join</router-link>
 
         <button class="icon-button theme-button" type="button" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
           {{ isDark ? "☀" : "☾" }}
@@ -43,7 +46,7 @@
     <router-link to="/delivery" @click="menuOpen = false">Delivery</router-link>
     <router-link v-if="isLoggedIn" to="/profile" @click="menuOpen = false">Profile</router-link>
     <router-link to="/cart" @click="menuOpen = false">Cart</router-link>
-    <router-link v-if="!isLoggedIn" to="/profile" @click="menuOpen = false">Join</router-link>
+    <router-link v-if="!isLoggedIn" to="/login-signup" @click="menuOpen = false">Join</router-link>
     <button type="button" @click="toggleTheme">{{ isDark ? "☀ Light mode" : "☾ Dark mode" }}</button>
     <button v-if="isLoggedIn" type="button" @click="logout">Logout</button>
   </nav>
@@ -116,12 +119,34 @@ onBeforeUnmount(() => {
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   min-width: 160px;
   color: var(--text);
   text-decoration: none;
+}
+
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #221A3A;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  border: 2px solid var(--gold);
+}
+
+.brand-name {
   font-size: 20px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
+}
+
+.brand-name span {
+  color: var(--gold);
 }
 
 .desktop-nav {
@@ -223,6 +248,15 @@ onBeforeUnmount(() => {
 
   .brand {
     min-width: auto;
+  }
+
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    font-size: 19px;
+  }
+
+  .brand-name {
     font-size: 17px;
   }
 
