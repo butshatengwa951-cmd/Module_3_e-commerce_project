@@ -1,119 +1,45 @@
-<script setup>
-import { useTheme } from "./composables/useTheme.js";
-
-const { isDark, toggleTheme } = useTheme();
-</script>
-
 <template>
-  <div class="app-shell">
-    <button
-      class="theme-toggle"
-      type="button"
-      :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-      :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-      @click="toggleTheme"
-    >
-      <span v-if="isDark" aria-hidden="true"> ☀ </span>
+  <div id="app" class="app-shell">
+    <Header v-if="showSiteShell" />
 
-      <span v-else aria-hidden="true"> ☾ </span>
+    <main :class="{ 'auth-shell': !showSiteShell }">
+      <router-view />
+    </main>
 
-      <span class="theme-toggle-label">
-        {{ isDark ? "Light" : "Dark" }}
-      </span>
-    </button>
-
-    <router-view />
+    <Footer v-if="showSiteShell" />
   </div>
 </template>
 
-<style>
+<script setup>
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+import Header from "./components/layout/Header.vue";
+import Footer from "./components/ui/Footer.vue";
+
+const route = useRoute();
+
+// Shared authentication pages keep their original full-screen presentation.
+const authRoutes = new Set([
+  "AuthSelector",
+  "Login",
+  "Signup",
+  "ForgotPassword",
+  "ResetPassword",
+]);
+
+const showSiteShell = computed(() => !authRoutes.has(route.name));
+</script>
+
+<style scoped>
 .app-shell {
   min-height: 100vh;
+  position: relative;
+  background: var(--sw-page-background);
+  color: var(--sw-page-text);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* =========================================================
-   THEME TOGGLE
-   ========================================================= */
-
-.theme-toggle {
-  position: fixed;
-
-  top: var(--sw-space-8);
-  right: var(--sw-space-9);
-
-  z-index: 100;
-
-  display: inline-flex;
-
-  align-items: center;
-
-  gap: var(--sw-space-2);
-
-  padding: 9px 14px;
-
-  border: 1px solid var(--sw-toggle-border);
-
-  border-radius: var(--sw-radius-pill);
-
-  background: var(--sw-toggle-background);
-
-  color: var(--sw-purple-900);
-
-  backdrop-filter: blur(14px);
-
-  -webkit-backdrop-filter: blur(14px);
-
-  box-shadow: var(--sw-toggle-shadow);
-
-  font-family: var(--sw-font-body);
-
-  font-size: var(--sw-text-sm);
-
-  font-weight: 700;
-
-  cursor: pointer;
-
-  transition:
-    transform var(--sw-transition-fast),
-    background var(--sw-transition-fast),
-    box-shadow var(--sw-transition-fast);
-}
-
-.theme-toggle:hover {
-  transform: translateY(-2px);
-
-  box-shadow: var(--sw-toggle-shadow-hover);
-}
-
-.theme-toggle:active {
-  transform: translateY(0);
-}
-
-.theme-toggle:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.8);
-
-  outline-offset: 3px;
-}
-
-.theme-toggle-label {
-  letter-spacing: 0.04em;
-}
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 768px) {
-  .theme-toggle {
-    top: var(--sw-space-6);
-
-    right: var(--sw-space-6);
-
-    padding: var(--sw-space-2) var(--sw-space-3);
-  }
-
-  .theme-toggle-label {
-    display: none;
-  }
+.auth-shell {
+  min-height: 100vh;
 }
 </style>
