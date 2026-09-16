@@ -7,6 +7,16 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token") || localStorage.getItem("sw_token");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
 export const getStokvels = async () => {
   const response = await api.get("/api/stokvels");
   return response.data;
@@ -19,6 +29,30 @@ export const getProducts = async () => {
 
 export const getProduct = async (productId) => {
   const response = await api.get(`/api/products/${productId}`);
+  return response.data;
+};
+
+export const getCart = async () => {
+  const response = await api.get("/api/cart");
+  return response.data;
+};
+
+export const addCartItem = async ({ product_id, supplier_price_id, quantity = 1 }) => {
+  const response = await api.post("/api/cart/items", {
+    product_id,
+    supplier_price_id,
+    quantity,
+  });
+  return response.data;
+};
+
+export const updateCartItem = async (itemId, quantity) => {
+  const response = await api.patch(`/api/cart/items/${itemId}`, { quantity });
+  return response.data;
+};
+
+export const removeCartItem = async (itemId) => {
+  const response = await api.delete(`/api/cart/items/${itemId}`);
   return response.data;
 };
 
