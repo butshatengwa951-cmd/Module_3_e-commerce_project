@@ -66,6 +66,19 @@ export const confirmCurrentOrder = async () => {
   return response.data;
 };
 
+export const getPaymentOptions = async () => {
+  const response = await api.get("/api/payment/current");
+  return response.data;
+};
+
+export const payCurrentOrder = async ({ card_id, delivery_address }) => {
+  const response = await api.post("/api/payment/current/pay", {
+    card_id,
+    delivery_address,
+  });
+  return response.data;
+};
+
 export const signup = async (userData) => {
   const response = await api.post("/api/auth/signup", userData);
   return response.data;
