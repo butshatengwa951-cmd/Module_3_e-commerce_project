@@ -26,3 +26,82 @@ html.light-mode #app [style*="border-color: rgba(255, 255, 255"],
 html.light-mode #app [style*="border-color:rgba(255, 255, 255"] { border-color: var(--border) !important; }
 html.light-mode #app .paybtn,
 html.light-mode #app button { color: inherit; }
+
+/* PAYMENT PAGE LIGHT-MODE OVERRIDES
+   PayView still contains legacy dark-mode scoped styles. These overrides keep
+   text readable after switching to light mode without changing the dark theme. */
+html.light-mode #app .payment-page,
+html.light-mode #app .payment-page .glass,
+html.light-mode #app .payment-page .summary-card,
+html.light-mode #app .payment-page .payment-card { color: var(--text) !important; }
+
+html.light-mode #app .payment-page .eyebrow,
+html.light-mode #app .payment-page .payfast-logo,
+html.light-mode #app .payment-page .details-heading,
+html.light-mode #app .payment-page .voucher-title,
+html.light-mode #app .payment-page .empty-cart,
+html.light-mode #app .payment-page .cart-line,
+html.light-mode #app .payment-page .total-line,
+html.light-mode #app .payment-page .member-badge { color: var(--text) !important; }
+
+html.light-mode #app .payment-page .secure,
+html.light-mode #app .payment-page .payfast-card,
+html.light-mode #app .payment-page .details-subheading,
+html.light-mode #app .payment-page .lbl,
+html.light-mode #app .payment-page .voucher-subtitle,
+html.light-mode #app .payment-page .voucher-hint { color: var(--text-soft) !important; }
+
+html.light-mode #app .payment-page .pill,
+html.light-mode #app .payment-page .method-row button,
+html.light-mode #app .payment-page .voucher-panel,
+html.light-mode #app .payment-page .payfast-card,
+html.light-mode #app .payment-page .details-card { 
+  background: var(--card) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+html.light-mode #app .payment-page .method-row button:not(.selected),
+html.light-mode #app .payment-page .verify {
+  background: var(--bg-secondary) !important;
+  color: var(--text-soft) !important;
+  border-color: var(--border) !important;
+}
+
+html.light-mode #app .payment-page .inp,
+html.light-mode #app .payment-page input {
+  background: var(--bg-secondary) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+html.light-mode #app .payment-page .inp::placeholder,
+html.light-mode #app .payment-page input::placeholder {
+  color: var(--text-soft) !important;
+}
+
+html.light-mode #app .payment-page .cart-line,
+html.light-mode #app .payment-page .total-line {
+  border-color: var(--border) !important;
+}
+
+html.light-mode #app .payment-page .voucher-header {
+  border-color: var(--border) !important;
+}
+
+html.light-mode #app .payment-page .discount-line,
+html.light-mode #app .payment-page .recognized,
+html.light-mode #app .payment-page .valid {
+  color: #247a4a !important;
+}
+
+html.light-mode #app .payment-page .error-box {
+  color: #a33a3a !important;
+  background: rgba(255, 100, 100, 0.08) !important;
+  border-color: rgba(180, 60, 60, 0.25) !important;
+}
+
+html.light-mode #app .payment-page .paybtn,
+html.light-mode #app .payment-page .method-row button.selected {
+  color: #211a2d !important;
+}
