@@ -1,2 +1,19 @@
-node_modules/
-.envnp
+# dependencies
+frontend/node_modules/
+backend/node_modules/
+frontend/dist/
+backend/dist/
+
+# envs
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+npm-debug.log*
+
+#ca.pem
+backend/config/ca.pem

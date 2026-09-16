@@ -2,10 +2,10 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import db from "./backend/config/db.js";
+import db from "./config/db.js";
 
-import productRoutes from "./backend/routes/productRoutes.js";
-import supplierPriceRoutes from "./backend/routes/supplierPriceRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import supplierPriceRoutes from "./routes/supplierPriceRoutes.js";
 
 dotenv.config();
 
