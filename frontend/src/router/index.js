@@ -5,6 +5,7 @@ import HomeView from "../views/HomeView.vue";
 import CatalogueView from "../views/CatalogueView.vue";
 import CartView from "../views/CartView.vue";
 import PaymentView from "../views/PaymentView.vue";
+import ProfileView from "../views/ProfileView.vue";
 import Login from "../views/Login.vue";
 import Signup from "../views/Signup.vue";
 import ForgotPassword from "../views/ForgotPassword.vue";
@@ -15,6 +16,7 @@ const routes = [
   { path: "/catalogue", name: "Catalogue", component: CatalogueView },
   { path: "/cart", name: "Cart", component: CartView },
   { path: "/payment", name: "Payment", component: PaymentView },
+  { path: "/profile", name: "Profile", component: ProfileView },
   { path: "/login-signup", name: "AuthSelector", component: AuthSelector },
   { path: "/login", name: "Login", component: Login },
   { path: "/signup", name: "Signup", component: Signup },
