@@ -434,3 +434,11 @@ INSERT INTO admins (user_id, stokvel_id) VALUES
 (1, 1),
 (6, 2),
 (11, 3);
+
+UPDATE users
+SET role = 'admin'
+WHERE user_id IN (1, 6, 11);
+
+UPDATE users
+SET password = 'AMpassword321'
+WHERE user_id IN (1, 6, 11);
