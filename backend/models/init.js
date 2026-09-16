@@ -39,11 +39,6 @@ async function initDB() {
       FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
       UNIQUE KEY uniq_cart_product (cart_id, product_id)
     );
-    -- Payment/delivery now run on the shared order_details/order_items/
-    -- card_details/money_contributions/delivery_details tables from
-    -- schema.sql (same ones the catalogue + group cart branches use), so
-    -- there's no separate "orders" table here any more - just Butsha-dev's
-    -- own richer tracking layer, linked straight to order_details.order_id.
     CREATE TABLE IF NOT EXISTS deliveries (
       id INT AUTO_INCREMENT PRIMARY KEY,
       order_id INT NOT NULL UNIQUE,
@@ -68,9 +63,25 @@ async function initDB() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (delivery_id) REFERENCES deliveries(id) ON DELETE CASCADE
     );
+    CREATE TABLE IF NOT EXISTS payfast_transactions (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      order_id INT NOT NULL,
+      m_payment_id VARCHAR(100) NOT NULL UNIQUE,
+      pf_payment_id VARCHAR(100) NULL,
+      amount DECIMAL(10,2) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      member_name VARCHAR(255) NULL,
+      address TEXT NULL,
+      voucher_id INT NULL,
+      status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+      failure_reason VARCHAR(255) NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (order_id) REFERENCES order_details(order_id) ON DELETE CASCADE
+    );
     `;
     await pool.query(extra);
-    console.log("✅ carts/cart_items/deliveries ensured (shared order_details schema)");
+    console.log("✅ carts/cart_items/deliveries/payfast_transactions ensured");
   } catch (e) {
     console.error("init error", e.message.slice(0, 500));
   }
