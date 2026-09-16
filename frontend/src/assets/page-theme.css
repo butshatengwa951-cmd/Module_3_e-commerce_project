@@ -1,0 +1,28 @@
+/* Theme bridge for the legacy inline-styled payment and delivery pages. */
+html.light-mode #app { background: var(--bg) !important; color: var(--text) !important; }
+html.light-mode #app [style*="background:#130e23"],
+html.light-mode #app [style*="background: #130e23"] { background: var(--bg) !important; }
+html.light-mode #app [style*="color: white"],
+html.light-mode #app [style*="color:white"],
+html.light-mode #app [style*="color: #fff"],
+html.light-mode #app [style*="color:#fff"] { color: var(--text) !important; }
+html.light-mode #app [style*="background: rgba(255, 255, 255"],
+html.light-mode #app [style*="background:rgba(255, 255, 255"] { background: var(--card) !important; }
+html.light-mode #app [style*="border: 1px solid rgba(255, 255, 255"],
+html.light-mode #app [style*="border:1px solid rgba(255, 255, 255"] { border-color: var(--border) !important; }
+html.light-mode #app .glass { background: var(--card) !important; color: var(--text) !important; border-color: var(--border) !important; box-shadow: 0 18px 45px rgba(49,43,80,.12) !important; }
+html.light-mode #app .lbl,
+html.light-mode #app .label { color: var(--text-soft) !important; }
+html.light-mode #app .inp,
+html.light-mode #app input,
+html.light-mode #app select,
+html.light-mode #app textarea { background: var(--bg-secondary) !important; color: var(--text) !important; border-color: var(--border) !important; }
+html.light-mode #app .inp::placeholder,
+html.light-mode #app input::placeholder,
+html.light-mode #app textarea::placeholder { color: var(--text-soft) !important; }
+html.light-mode #app [style*="color: rgba(255, 255, 255"],
+html.light-mode #app [style*="color:rgba(255, 255, 255"] { color: var(--text-soft) !important; }
+html.light-mode #app [style*="border-color: rgba(255, 255, 255"],
+html.light-mode #app [style*="border-color:rgba(255, 255, 255"] { border-color: var(--border) !important; }
+html.light-mode #app .paybtn,
+html.light-mode #app button { color: inherit; }
