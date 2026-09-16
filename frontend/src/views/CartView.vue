@@ -15,6 +15,7 @@ const loading = ref(true);
 const error = ref("");
 const busyItemId = ref(null);
 const confirmingOrder = ref(false);
+const confirmedOrder = ref(null);
 
 const total = computed(() =>
   items.value.reduce((sum, item) => sum + Number(item.subtotal || 0), 0),
@@ -107,10 +108,8 @@ async function confirmOrder() {
       throw new Error(response.message || "Unable to confirm the order.");
     }
 
-    router.push({
-      name: "Payment",
-      query: { orderId: response.order.order_id },
-    });
+    confirmedOrder.value = response.order;
+    notifyCartChange();
   } catch (err) {
     console.error("Failed to confirm order:", err);
     error.value =
@@ -155,6 +154,10 @@ function continueShopping() {
       </div>
 
       <div v-if="error" class="message error-message">{{ error }}</div>
+      <div v-if="confirmedOrder" class="message success-message">
+        <strong>Order #{{ confirmedOrder.order_id }} confirmed.</strong>
+        Your shared order is ready for the next checkout stage.
+      </div>
       <div v-if="loading" class="state-card">Loading your group basket…</div>
 
       <div v-else-if="!items.length" class="empty-card">
@@ -186,7 +189,7 @@ function continueShopping() {
             <div class="quantity-control">
               <button
                 type="button"
-                :disabled="busyItemId === item.order_item_id"
+                :disabled="busyItemId === item.order_item_id || confirmedOrder"
                 @click="changeQuantity(item, -1)"
                 aria-label="Decrease quantity"
               >
@@ -195,7 +198,7 @@ function continueShopping() {
               <strong>{{ item.quantity }}</strong>
               <button
                 type="button"
-                :disabled="busyItemId === item.order_item_id"
+                :disabled="busyItemId === item.order_item_id || confirmedOrder"
                 @click="changeQuantity(item, 1)"
                 aria-label="Increase quantity"
               >
@@ -208,7 +211,7 @@ function continueShopping() {
             <button
               class="remove-button"
               type="button"
-              :disabled="busyItemId === item.order_item_id"
+              :disabled="busyItemId === item.order_item_id || confirmedOrder"
               @click="removeItem(item)"
             >
               Remove
@@ -228,15 +231,21 @@ function continueShopping() {
             <strong>{{ formatMoney(total) }}</strong>
           </div>
           <p class="summary-note">
-            Review your shared basket before continuing to payment.
+            Review your shared basket before continuing to the next checkout stage.
           </p>
           <button
             class="primary-button confirm-button"
             type="button"
-            :disabled="confirmingOrder || !items.length"
+            :disabled="confirmingOrder || !items.length || confirmedOrder"
             @click="confirmOrder"
           >
-            {{ confirmingOrder ? "Confirming order…" : "Confirm order" }}
+            {{
+              confirmingOrder
+                ? "Confirming order…"
+                : confirmedOrder
+                  ? "Order confirmed"
+                  : "Confirm order"
+            }}
           </button>
         </aside>
       </div>
@@ -338,6 +347,11 @@ h1 {
 .error-message {
   color: #9b2c2c;
   background: #fff5f5;
+}
+
+.success-message {
+  color: var(--sw-text, #17211b);
+  background: var(--sw-accent-soft, #eef5ef);
 }
 
 .state-card,
