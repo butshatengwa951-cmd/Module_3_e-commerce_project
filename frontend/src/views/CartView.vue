@@ -110,6 +110,11 @@ async function confirmOrder() {
 
     confirmedOrder.value = response.order;
     notifyCartChange();
+
+    router.push({
+      path: "/payment",
+      query: { order_id: response.order.order_id },
+    });
   } catch (err) {
     console.error("Failed to confirm order:", err);
     error.value =
@@ -154,10 +159,6 @@ function continueShopping() {
       </div>
 
       <div v-if="error" class="message error-message">{{ error }}</div>
-      <div v-if="confirmedOrder" class="message success-message">
-        <strong>Order #{{ confirmedOrder.order_id }} confirmed.</strong>
-        Your shared order is ready for the next checkout stage.
-      </div>
       <div v-if="loading" class="state-card">Loading your group basket…</div>
 
       <div v-else-if="!items.length" class="empty-card">
@@ -179,74 +180,34 @@ function continueShopping() {
           </div>
 
           <article v-for="item in items" :key="item.order_item_id" class="cart-item">
-            <div class="product-mark">✦</div>
+            <div class="product-image-wrap">
+              <img v-if="item.image_url" :src="item.image_url" :alt="item.product_name" class="product-image" />
+              <div v-else class="product-placeholder">🛒</div>
+            </div>
             <div class="item-details">
               <h3>{{ item.product_name }}</h3>
-              <p>{{ item.supplier_name || "Supplier selected" }}</p>
-              <span>{{ formatMoney(item.unit_price) }} each</span>
+              <p>{{ item.supplier_name }}</p>
+              <strong>{{ formatMoney(item.unit_price) }} each</strong>
             </div>
-
             <div class="quantity-control">
-              <button
-                type="button"
-                :disabled="busyItemId === item.order_item_id || confirmedOrder"
-                @click="changeQuantity(item, -1)"
-                aria-label="Decrease quantity"
-              >
-                −
-              </button>
-              <strong>{{ item.quantity }}</strong>
-              <button
-                type="button"
-                :disabled="busyItemId === item.order_item_id || confirmedOrder"
-                @click="changeQuantity(item, 1)"
-                aria-label="Increase quantity"
-              >
-                +
-              </button>
+              <button type="button" :disabled="busyItemId === item.order_item_id" @click="changeQuantity(item, -1)">−</button>
+              <span>{{ item.quantity }}</span>
+              <button type="button" :disabled="busyItemId === item.order_item_id" @click="changeQuantity(item, 1)">+</button>
             </div>
-
             <div class="item-total">{{ formatMoney(item.subtotal) }}</div>
-
-            <button
-              class="remove-button"
-              type="button"
-              :disabled="busyItemId === item.order_item_id || confirmedOrder"
-              @click="removeItem(item)"
-            >
-              Remove
-            </button>
+            <button class="remove-button" type="button" :disabled="busyItemId === item.order_item_id" @click="removeItem(item)">Remove</button>
           </article>
         </section>
 
         <aside class="summary-card">
           <p class="eyebrow">ORDER SUMMARY</p>
-          <h2>Shared basket total</h2>
-          <div class="summary-row">
-            <span>Items</span>
-            <span>{{ itemCount }}</span>
-          </div>
-          <div class="summary-row total-row">
-            <span>Total</span>
-            <strong>{{ formatMoney(total) }}</strong>
-          </div>
-          <p class="summary-note">
-            Review your shared basket before continuing to the next checkout stage.
-          </p>
-          <button
-            class="primary-button confirm-button"
-            type="button"
-            :disabled="confirmingOrder || !items.length || confirmedOrder"
-            @click="confirmOrder"
-          >
-            {{
-              confirmingOrder
-                ? "Confirming order…"
-                : confirmedOrder
-                  ? "Order confirmed"
-                  : "Confirm order"
-            }}
+          <h2>Shared order</h2>
+          <div class="summary-line"><span>Items</span><strong>{{ itemCount }}</strong></div>
+          <div class="summary-line total-line"><span>Total</span><strong>{{ formatMoney(total) }}</strong></div>
+          <button class="primary-button confirm-button" type="button" :disabled="confirmingOrder || !items.length" @click="confirmOrder">
+            {{ confirmingOrder ? "Confirming order…" : "Confirm order" }}
           </button>
+          <p class="summary-note">Confirming your basket moves it to the Payment stage.</p>
         </aside>
       </div>
     </section>
@@ -254,308 +215,47 @@ function continueShopping() {
 </template>
 
 <style scoped>
-.cart-page {
-  min-height: calc(100vh - 140px);
-  background: var(--sw-bg, #f7f5ef);
-  color: var(--sw-text, #17211b);
-  padding: 48px 24px 80px;
-}
-
-.cart-container {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-}
-
-.cart-heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 32px;
-}
-
-.eyebrow {
-  margin: 0 0 8px;
-  color: var(--sw-primary, #2f6b45);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-}
-
-h1,
-h2,
-h3,
-p {
-  margin-top: 0;
-}
-
-h1 {
-  margin-bottom: 10px;
-  font-size: clamp(2.3rem, 5vw, 4.4rem);
-  line-height: 0.98;
-  letter-spacing: -0.04em;
-}
-
-.intro {
-  margin-bottom: 0;
-  color: var(--sw-muted, #66736a);
-  font-size: 1rem;
-}
-
-.secondary-button,
-.primary-button {
-  border: 0;
-  border-radius: 999px;
-  padding: 12px 20px;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.secondary-button {
-  background: var(--sw-surface, #fff);
-  color: var(--sw-text, #17211b);
-  border: 1px solid var(--sw-border, #dce3dd);
-}
-
-.primary-button {
-  background: var(--sw-primary, #2f6b45);
-  color: #fff;
-}
-
-.primary-button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.message,
-.state-card,
-.empty-card,
-.items-card,
-.summary-card {
-  border: 1px solid var(--sw-border, #dce3dd);
-  border-radius: 22px;
-  background: var(--sw-surface, #fff);
-  box-shadow: 0 12px 35px rgba(31, 53, 39, 0.06);
-}
-
-.message {
-  padding: 14px 18px;
-  margin-bottom: 18px;
-}
-
-.error-message {
-  color: #9b2c2c;
-  background: #fff5f5;
-}
-
-.success-message {
-  color: var(--sw-text, #17211b);
-  background: var(--sw-accent-soft, #eef5ef);
-}
-
-.state-card,
-.empty-card {
-  padding: 56px 24px;
-  text-align: center;
-}
-
-.empty-icon {
-  font-size: 2.6rem;
-  margin-bottom: 12px;
-}
-
-.empty-card h2 {
-  margin-bottom: 8px;
-}
-
-.empty-card p {
-  max-width: 520px;
-  margin: 0 auto 22px;
-  color: var(--sw-muted, #66736a);
-}
-
-.cart-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 22px;
-  align-items: start;
-}
-
-.items-card {
-  overflow: hidden;
-}
-
-.card-header {
-  padding: 24px;
-  border-bottom: 1px solid var(--sw-border, #dce3dd);
-}
-
-.card-header h2 {
-  margin-bottom: 5px;
-}
-
-.card-header p {
-  margin-bottom: 0;
-  color: var(--sw-muted, #66736a);
-  font-size: 0.9rem;
-}
-
-.cart-item {
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) auto auto auto;
-  align-items: center;
-  gap: 18px;
-  padding: 22px 24px;
-  border-bottom: 1px solid var(--sw-border, #dce3dd);
-}
-
-.cart-item:last-child {
-  border-bottom: 0;
-}
-
-.product-mark {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  border-radius: 15px;
-  background: var(--sw-accent-soft, #eef5ef);
-  color: var(--sw-primary, #2f6b45);
-  font-size: 1.25rem;
-}
-
-.item-details h3 {
-  margin-bottom: 4px;
-  font-size: 1rem;
-}
-
-.item-details p,
-.item-details span {
-  margin-bottom: 3px;
-  color: var(--sw-muted, #66736a);
-  font-size: 0.8rem;
-}
-
-.item-details span {
-  display: block;
-}
-
-.quantity-control {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid var(--sw-border, #dce3dd);
-  border-radius: 999px;
-  padding: 5px;
-}
-
-.quantity-control button {
-  width: 30px;
-  height: 30px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--sw-accent-soft, #eef5ef);
-  color: var(--sw-primary, #2f6b45);
-  font-size: 1.1rem;
-  cursor: pointer;
-}
-
-.quantity-control button:disabled,
-.remove-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.quantity-control strong {
-  min-width: 18px;
-  text-align: center;
-}
-
-.item-total {
-  min-width: 90px;
-  font-weight: 800;
-  text-align: right;
-}
-
-.remove-button {
-  border: 0;
-  background: transparent;
-  color: #9b4b4b;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.8rem;
-}
-
-.summary-card {
-  padding: 26px;
-  position: sticky;
-  top: 24px;
-}
-
-.summary-card h2 {
-  margin-bottom: 24px;
-  font-size: 1.45rem;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 0;
-  color: var(--sw-muted, #66736a);
-  border-bottom: 1px solid var(--sw-border, #dce3dd);
-}
-
-.total-row {
-  color: var(--sw-text, #17211b);
-  border-bottom: 0;
-  font-size: 1.15rem;
-}
-
-.summary-note {
-  margin: 18px 0;
-  color: var(--sw-muted, #66736a);
-  font-size: 0.82rem;
-  line-height: 1.55;
-}
-
-.confirm-button {
-  width: 100%;
-}
-
-@media (max-width: 900px) {
-  .cart-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .summary-card {
-    position: static;
-  }
-}
-
-@media (max-width: 720px) {
-  .cart-page {
-    padding: 32px 16px 60px;
-  }
-
-  .cart-heading {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .cart-item {
-    grid-template-columns: 48px minmax(0, 1fr);
-  }
-
-  .quantity-control,
-  .item-total,
-  .remove-button {
-    grid-column: 2;
-  }
-
-  .item-total {
-    text-align: left;
-  }
-}
+.cart-page { min-height:calc(100vh - 68px); padding:36px 24px 60px; background:var(--sw-bg,#f7f5ef); color:var(--sw-text,#17211b); }
+.cart-container { max-width:1180px; margin:0 auto; }
+.cart-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; margin-bottom:28px; }
+.eyebrow { margin:0 0 8px; font-size:11px; font-weight:800; letter-spacing:.14em; color:var(--sw-primary,#5b3a82); }
+h1 { margin:0; font-size:42px; color:var(--sw-text,#17211b); }
+h2 { margin:8px 0 10px; color:var(--sw-text,#17211b); }
+.intro,.summary-note,.card-header p,.item-details p { color:var(--sw-muted,#68736d); line-height:1.6; }
+.secondary-button,.primary-button,.remove-button,.quantity-control button { cursor:pointer; }
+.secondary-button { padding:13px 20px; border-radius:999px; border:1px solid var(--sw-border,#d9ddd8); background:transparent; color:var(--sw-text,#17211b); font-weight:800; }
+.message { padding:14px 16px; border-radius:14px; margin-bottom:20px; }
+.error-message { background:rgba(220,70,70,.1); color:#b42318; }
+.state-card,.empty-card,.items-card,.summary-card { border:1px solid var(--sw-border,#d9ddd8); background:var(--sw-surface,#fff); border-radius:24px; box-shadow:var(--sw-card-shadow,0 10px 30px rgba(0,0,0,.06)); }
+.state-card,.empty-card { padding:50px 28px; text-align:center; }
+.empty-icon { font-size:42px; }
+.primary-button { border:0; border-radius:999px; padding:14px 22px; background:var(--sw-primary,#5b3a82); color:#fff; font-weight:800; }
+.cart-layout { display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:24px; align-items:start; }
+.items-card { overflow:hidden; }
+.card-header { padding:24px 26px; border-bottom:1px solid var(--sw-border,#d9ddd8); }
+.card-header h2 { margin:0 0 4px; }
+.card-header p { margin:0; font-size:13px; }
+.cart-item { display:grid; grid-template-columns:72px minmax(0,1fr) auto auto auto; align-items:center; gap:18px; padding:20px 24px; border-bottom:1px solid var(--sw-border,#d9ddd8); }
+.cart-item:last-child { border-bottom:0; }
+.product-image-wrap,.product-placeholder { width:72px; height:72px; border-radius:14px; overflow:hidden; background:var(--sw-accent-soft,#f2f0f5); display:grid; place-items:center; }
+.product-image { width:100%; height:100%; object-fit:cover; }
+.product-placeholder { font-size:28px; }
+.item-details h3 { margin:0 0 5px; color:var(--sw-text,#17211b); }
+.item-details p { margin:0 0 5px; font-size:12px; }
+.item-details strong,.item-total { color:var(--sw-text,#17211b); }
+.quantity-control { display:flex; align-items:center; gap:10px; border:1px solid var(--sw-border,#d9ddd8); border-radius:999px; padding:4px; }
+.quantity-control button { width:30px; height:30px; border:0; border-radius:50%; background:var(--sw-accent-soft,#f2f0f5); color:var(--sw-text,#17211b); font-size:18px; }
+.quantity-control button:disabled { opacity:.5; cursor:not-allowed; }
+.quantity-control span { min-width:20px; text-align:center; font-weight:800; }
+.remove-button { border:0; background:transparent; color:#b42318; font-size:12px; font-weight:700; }
+.remove-button:disabled { opacity:.5; cursor:not-allowed; }
+.summary-card { padding:26px; position:sticky; top:90px; }
+.summary-line { display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid var(--sw-border,#d9ddd8); color:var(--sw-muted,#68736d); }
+.summary-line strong { color:var(--sw-text,#17211b); }
+.total-line { border-bottom:0; font-size:18px; }
+.confirm-button { width:100%; margin-top:10px; }
+.confirm-button:disabled { opacity:.5; cursor:not-allowed; }
+.summary-note { font-size:12px; margin:12px 0 0; text-align:center; }
+@media (max-width:900px) { .cart-layout { grid-template-columns:1fr; } .summary-card { position:static; } }
+@media (max-width:700px) { .cart-heading { flex-direction:column; } h1 { font-size:34px; } .cart-item { grid-template-columns:56px 1fr; } .product-image-wrap,.product-placeholder { width:56px; height:56px; } .quantity-control,.item-total,.remove-button { grid-column:2; justify-self:start; } }
 </style>
