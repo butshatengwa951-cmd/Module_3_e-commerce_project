@@ -43,11 +43,12 @@ async function pay() {
   error.value = "";
 
   try {
-    await payCurrentOrder({
+    const response = await payCurrentOrder({
       card_id: selectedCardId.value,
       delivery_address: deliveryAddress.value.trim(),
     });
 
+    order.value = response.order;
     paymentComplete.value = true;
   } catch (err) {
     error.value = err.response?.data?.message || "Payment could not be completed.";
@@ -56,14 +57,12 @@ async function pay() {
   }
 }
 
-function continueToDelivery() {
-  if (order.value?.delivery_id) {
-    router.push({ path: "/delivery", query: { delivery_id: order.value.delivery_id } });
-  }
-}
-
 function backToCart() {
   router.push("/cart");
+}
+
+function continueShopping() {
+  router.push("/catalogue");
 }
 
 function formatMoney(value) {
@@ -91,8 +90,9 @@ function formatMoney(value) {
         <p class="eyebrow">PAYMENT COMPLETE</p>
         <h2>Payment successful</h2>
         <p>Your order is now processing and your delivery details have been recorded.</p>
-        <button class="primary-button" type="button" @click="continueToDelivery">
-          Continue to delivery
+        <p class="next-stage">Next checkout stage: <strong>Delivery</strong>.</p>
+        <button class="primary-button" type="button" @click="continueShopping">
+          Continue shopping
         </button>
       </div>
 
@@ -167,6 +167,7 @@ textarea { width:100%; box-sizing:border-box; resize:vertical; padding:14px 16px
 .success-card,.state-card { padding:50px 28px; text-align:center; }
 .success-card { max-width:620px; margin:40px auto; }
 .success-icon { width:56px; height:56px; margin:0 auto 18px; display:grid; place-items:center; border-radius:50%; background:var(--sw-purple-700); color:white; font-size:28px; }
+.next-stage { margin-top:20px; color:var(--sw-page-text-muted); }
 .success-card .primary-button { max-width:300px; }
 @media (max-width:800px) { .heading-row,.payment-layout { grid-template-columns:1fr; display:grid; } h1 { font-size:34px; } }
 </style>
