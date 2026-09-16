@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS order_details;
 DROP TABLE IF EXISTS money_contributions;
 DROP TABLE IF EXISTS stokvel_members;
 DROP TABLE IF EXISTS supplier_prices;
+DROP TABLE IF EXISTS admins;
 DROP TABLE IF EXISTS stokvels;
 DROP TABLE IF EXISTS delivery_details;
 DROP TABLE IF EXISTS card_details;
@@ -411,3 +412,25 @@ CREATE TABLE IF NOT EXISTS delivery_confirmations (
   FOREIGN KEY (delivery_id) REFERENCES deliveries(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
 );
+
+CREATE TABLE admins (
+    admin_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    stokvel_id INT NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (stokvel_id)
+        REFERENCES stokvels(stokvel_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+INSERT INTO admins (user_id, stokvel_id) VALUES
+(1, 1),
+(6, 2),
+(11, 3);
