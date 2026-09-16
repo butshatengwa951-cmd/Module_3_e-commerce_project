@@ -460,6 +460,8 @@ import {
   getProducts
 } from "../services/api.js";
 
+import rice from "../assets/tastic-rice.png";
+import whiteStar from "../assets/white-star.png";
 import beans from "../assets/beans.png";
 import cornflakes from "../assets/cornflakes.png";
 import curryPowder from "../assets/curry-powder.png";
