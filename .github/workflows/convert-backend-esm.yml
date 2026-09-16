@@ -41,7 +41,6 @@ jobs:
 
           for path in root.rglob('*.js'):
               text = path.read_text()
-
               text = re.sub(r"(from\s+[\"'])(\.{1,2}/[^\"']+?)([\"'])", lambda m: m.group(1) + (m.group(2) if Path(root / path.parent.relative_to(root) / m.group(2).lstrip('./')).suffix else m.group(2) + '.js') + m.group(3), text)
 
               if path.as_posix().endswith('backend/server.js'):
@@ -60,13 +59,8 @@ jobs:
               if path.as_posix().endswith('backend/config/db.js'):
                   text = re.sub(r'require\("dotenv"\)\.config\(\{ path: path\.join\(__dirname, "\.\.", "\.env"\) \}\);', 'import dotenv from "dotenv";\nimport { fileURLToPath } from "url";\nconst __filename = fileURLToPath(import.meta.url);\nconst __dirname = path.dirname(__filename);\ndotenv.config({ path: path.join(__dirname, "..", ".env") });', text)
 
-              if path.name == 'auth.js' and 'require("express").Router()' in text:
-                  text = text.replace('const r = require("express").Router();', 'import express from "express";\nimport * as c from "../controllers/authController.js";\nconst r = express.Router();').replace('const c = require("../controllers/authController");\n', '')
-              if path.name == 'cards.js' and 'require("express").Router()' in text:
-                  text = text.replace('const r = require("express").Router();', 'import express from "express";\nimport { pool } from "../config/db.js";\nconst r = express.Router();').replace('const { pool } = require("../config/db");\n', '')
-              if path.name == 'vouchers.js' and 'require("express").Router()' in text:
-                  text = text.replace('const r = require("express").Router();', 'import express from "express";\nimport { pool } from "../config/db.js";\nconst r = express.Router();').replace('const { pool } = require("../config/db");\n', '')
-
+              if path.name in {'cards.js', 'vouchers.js'} and 'require("express").Router()' in text:
+                  text = text.replace('const r = require("express").Router();', 'import express from "express";\nconst r = express.Router();')
               path.write_text(text)
 
           pkg_path = root / 'package.json'
