@@ -2,9 +2,9 @@ import {
   getMembershipByUserId,
   getPendingCart,
   addItemToGroupCart,
-  updateCartItemQuantity,
   removeCartItem,
 } from "../models/Cart.js";
+import { updateCartItemQuantity } from "../models/CartQuantity.js";
 
 const getUserMembership = async (userId) => {
   const membership = await getMembershipByUserId(userId);
@@ -73,7 +73,6 @@ export const updateCartItem = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid cart item ID." });
     }
 
-    // Check ownership before changing anything.
     const membership = await getUserMembership(req.user.user_id);
     const cart = await getPendingCart(membership.stokvel_id);
 
