@@ -12,6 +12,16 @@ export const getStokvels = async () => {
   return response.data;
 };
 
+export const getProducts = async () => {
+  const response = await api.get("/api/products");
+  return response.data;
+};
+
+export const getProduct = async (productId) => {
+  const response = await api.get(`/api/products/${productId}`);
+  return response.data;
+};
+
 export const signup = async (userData) => {
   const response = await api.post("/api/auth/signup", userData);
   return response.data;
@@ -27,7 +37,6 @@ export const forgotPassword = async (email) => {
     "/api/auth/forgot-password",
     { email }
   );
-
   return response.data;
 };
 
@@ -36,18 +45,14 @@ export const resetPassword = async (resetData) => {
     "/api/auth/reset-password",
     resetData
   );
-
   return response.data;
 };
 
 export const verifyResetToken = async (token) => {
   const response = await api.get(
     "/api/auth/verify-reset-token",
-    {
-      params: { token },
-    }
+    { params: { token } }
   );
-
   return response.data;
 };
 
