@@ -6,6 +6,7 @@
     "dev": "node server.js",
     "start": "node server.js"
   },
+  "type": "module",
   "dependencies": {
     "express": "^4.19.2",
     "cors": "^2.8.5",
