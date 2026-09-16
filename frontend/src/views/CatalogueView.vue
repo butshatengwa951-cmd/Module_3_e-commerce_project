@@ -591,7 +591,7 @@ function getProductImage(product) {
   }
 
   if (name.includes("iwisa")) {
-    return maizemeal;
+    return maizeMeal;
   }
 
   if (name.includes("all gold")) {

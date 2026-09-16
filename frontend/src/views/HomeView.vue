@@ -45,7 +45,7 @@
 
         <div class="image-circle">
           <img
-            src="/images/unityHome.png"
+            src="../assets/unityHome.png"
             alt="People joining hands in unity"
             @error="handleImageError"
           />
@@ -175,7 +175,7 @@
 
       <div class="why-image">
         <img
-          src="/images/unityHome.png"
+          src="../assets/unityHome.png"
           alt="StockWell community"
           @error="handleImageError"
         />
@@ -256,6 +256,8 @@
 
 
 <script setup>
+
+import unityHome from "../assets/unityHome.png";
 
 defineProps({
   theme: {
