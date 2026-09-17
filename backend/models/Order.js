@@ -1,10 +1,332 @@
 import pool from "../config/db.js";
 
-export const getPendingOrderForStokvel=async(stokvelId)=>{const[orders]=await pool.query(`SELECT od.order_id,od.user_id,od.stokvel_id,od.delivery_id,od.order_date,od.total_amount,od.order_status,s.stokvel_name FROM order_details od INNER JOIN stokvels s ON s.stokvel_id=od.stokvel_id WHERE od.stokvel_id=? AND od.order_status='Pending' ORDER BY od.order_id DESC LIMIT 1`,[stokvelId]);if(!orders.length)return null;const order=orders[0];const[items]=await pool.query(`SELECT oi.order_item_id,oi.order_id,oi.product_id,oi.supplier_price_id,oi.quantity,oi.unit_price,oi.subtotal,p.product_name,p.image_url,sp.supplier_name FROM order_items oi INNER JOIN products p ON p.product_id=oi.product_id INNER JOIN supplier_prices sp ON sp.supplier_price_id=oi.supplier_price_id WHERE oi.order_id=? ORDER BY oi.order_item_id ASC`,[order.order_id]);return{order,items}};
+export const getPendingOrderForStokvel = async (stokvelId) => {
+  const [orders] = await pool.query(
+    `SELECT
+      od.order_id,
+      od.user_id,
+      od.stokvel_id,
+      od.delivery_id,
+      od.order_date,
+      od.total_amount,
+      od.order_status,
+      s.stokvel_name
+     FROM order_details od
+     INNER JOIN stokvels s ON s.stokvel_id = od.stokvel_id
+     WHERE od.stokvel_id = ?
+       AND od.order_status = 'Pending'
+     ORDER BY od.order_id DESC
+     LIMIT 1`,
+    [stokvelId],
+  );
 
-export const getOrderHistoryForStokvel=async(stokvelId)=>{const[orders]=await pool.query(`SELECT od.order_id,od.user_id,od.stokvel_id,od.delivery_id,od.order_date,od.total_amount,od.order_status,dd.delivery_status,COUNT(oi.order_item_id) AS item_count FROM order_details od LEFT JOIN delivery_details dd ON dd.delivery_id=od.delivery_id LEFT JOIN order_items oi ON oi.order_id=od.order_id WHERE od.stokvel_id=? AND od.order_status<>'Pending' GROUP BY od.order_id,od.user_id,od.stokvel_id,od.delivery_id,od.order_date,od.total_amount,od.order_status,dd.delivery_status ORDER BY od.order_date DESC,od.order_id DESC`,[stokvelId]);return orders.map(o=>({...o,item_count:Number(o.item_count||0),funding_source:"Group Wallet"}))};
+  if (!orders.length) return null;
 
-export const getOrderDetailsForStokvel=async(orderId,stokvelId)=>{const[orders]=await pool.query(`SELECT od.order_id,od.user_id,od.stokvel_id,od.delivery_id,od.order_date,od.total_amount,od.order_status,s.stokvel_name,dd.delivery_address,dd.transport_type,dd.driver_name,dd.driver_contact,dd.delivery_date,dd.delivery_status FROM order_details od INNER JOIN stokvels s ON s.stokvel_id=od.stokvel_id LEFT JOIN delivery_details dd ON dd.delivery_id=od.delivery_id WHERE od.order_id=? AND od.stokvel_id=? AND od.order_status<>'Pending' LIMIT 1`,[orderId,stokvelId]);if(!orders.length)return null;const[items]=await pool.query(`SELECT oi.order_item_id,oi.product_id,oi.supplier_price_id,oi.quantity,oi.unit_price,oi.subtotal,p.product_name,p.image_url,sp.supplier_name FROM order_items oi INNER JOIN products p ON p.product_id=oi.product_id INNER JOIN supplier_prices sp ON sp.supplier_price_id=oi.supplier_price_id WHERE oi.order_id=? ORDER BY oi.order_item_id ASC`,[orderId]);return{order:{...orders[0],funding_source:"Group Wallet"},items}};
+  const order = orders[0];
 
-export const confirmPendingOrder=async(stokvelId,deliveryAddress)=>{const connection=await pool.getConnection();try{await connection.beginTransaction();const[orders]=await connection.query(`SELECT order_id,user_id,stokvel_id,delivery_id,order_date,total_amount,order_status FROM order_details WHERE stokvel_id=? AND order_status='Pending' ORDER BY order_id DESC LIMIT 1 FOR UPDATE`,[stokvelId]);if(!orders.length){const e=new Error("No pending group basket was found for this Stokvel.");e.statusCode=404;throw e}const order=orders[0];const[items]=await connection.query(`SELECT oi.order_item_id,oi.product_id,oi.quantity,p.quantity_available,p.product_name FROM order_items oi INNER JOIN products p ON p.product_id=oi.product_id WHERE oi.order_id=? FOR UPDATE`,[order.order_id]);if(!items.length){const e=new Error("The group basket has no items.");e.statusCode=400;throw e}for(const item of items){if(Number(item.quantity)>Number(item.quantity_available)){const e=new Error(`${item.product_name} no longer has enough stock for this group order.`);e.statusCode=409;throw e}}
-const[wallets]=await connection.query(`SELECT wallet_id,balance FROM stokvel_wallets WHERE stokvel_id=? LIMIT 1 FOR UPDATE`,[stokvelId]);if(!wallets.length){const e=new Error("The Stokvel wallet has not been set up yet. Run backend/sql/stokvel_wallet.sql first.");e.statusCode=503;throw e}const balance=Number(wallets[0].balance),total=Number(order.total_amount);if(balance<total){const e=new Error(`Insufficient group wallet funds. Available: R ${balance.toFixed(2)}. Required: R ${total.toFixed(2)}.`);e.statusCode=400;throw e}const[delivery]=await connection.query(`INSERT INTO delivery_details (delivery_address,transport_type,delivery_status) VALUES (?,'Van','Pending')`,[deliveryAddress]);for(const item of items){await connection.query(`UPDATE products SET quantity_available=quantity_available-? WHERE product_id=?`,[Number(item.quantity),item.product_id])}await connection.query(`UPDATE stokvel_wallets SET balance=balance-? WHERE wallet_id=?`,[total,wallets[0].wallet_id]);await connection.query(`INSERT INTO stokvel_wallet_transactions (stokvel_id,user_id,transaction_type,amount,reference_id,description) VALUES (?,?,'PURCHASE',?,?,?)`,[stokvelId,order.user_id,total,order.order_id,`Group purchase #${order.order_id}`]);await connection.query(`UPDATE order_details SET delivery_id=?,order_status='Processing' WHERE order_id=? AND order_status='Pending'`,[delivery.insertId,order.order_id]);await connection.commit();return{...order,delivery_id:delivery.insertId,order_status:"Processing",funding_source:"Group Wallet",wallet_balance:Number((balance-total).toFixed(2))}}catch(error){await connection.rollback();throw error}finally{connection.release()}};
+  const [items] = await pool.query(
+    `SELECT
+      oi.order_item_id,
+      oi.order_id,
+      oi.product_id,
+      oi.supplier_price_id,
+      oi.quantity,
+      oi.unit_price,
+      oi.subtotal,
+      p.product_name,
+      p.image_url,
+      sp.supplier_name
+     FROM order_items oi
+     INNER JOIN products p ON p.product_id = oi.product_id
+     INNER JOIN supplier_prices sp ON sp.supplier_price_id = oi.supplier_price_id
+     WHERE oi.order_id = ?
+     ORDER BY oi.order_item_id ASC`,
+    [order.order_id],
+  );
+
+  return { order, items };
+};
+
+export const getOrderHistoryForStokvel = async (stokvelId) => {
+  const [orders] = await pool.query(
+    `SELECT
+      od.order_id,
+      od.user_id,
+      od.stokvel_id,
+      od.delivery_id,
+      od.order_date,
+      od.total_amount,
+      od.order_status,
+      COALESCE(
+        GROUP_CONCAT(DISTINCT multi_dd.delivery_status ORDER BY multi_dd.delivery_status SEPARATOR ', '),
+        legacy_dd.delivery_status
+      ) AS delivery_status,
+      COUNT(DISTINCT oi.order_item_id) AS item_count,
+      COUNT(DISTINCT odel.order_delivery_id) AS delivery_count
+     FROM order_details od
+     LEFT JOIN delivery_details legacy_dd
+       ON legacy_dd.delivery_id = od.delivery_id
+     LEFT JOIN order_deliveries odel
+       ON odel.order_id = od.order_id
+     LEFT JOIN delivery_details multi_dd
+       ON multi_dd.delivery_id = odel.delivery_id
+     LEFT JOIN order_items oi
+       ON oi.order_id = od.order_id
+     WHERE od.stokvel_id = ?
+       AND od.order_status <> 'Pending'
+     GROUP BY
+       od.order_id,
+       od.user_id,
+       od.stokvel_id,
+       od.delivery_id,
+       od.order_date,
+       od.total_amount,
+       od.order_status,
+       legacy_dd.delivery_status
+     ORDER BY od.order_date DESC, od.order_id DESC`,
+    [stokvelId],
+  );
+
+  return orders.map((order) => ({
+    ...order,
+    item_count: Number(order.item_count || 0),
+    delivery_count: Number(order.delivery_count || 0),
+    funding_source: "Group Wallet",
+  }));
+};
+
+export const getOrderDetailsForStokvel = async (orderId, stokvelId) => {
+  const [orders] = await pool.query(
+    `SELECT
+      od.order_id,
+      od.user_id,
+      od.stokvel_id,
+      od.delivery_id,
+      od.order_date,
+      od.total_amount,
+      od.order_status,
+      s.stokvel_name
+     FROM order_details od
+     INNER JOIN stokvels s ON s.stokvel_id = od.stokvel_id
+     WHERE od.order_id = ?
+       AND od.stokvel_id = ?
+       AND od.order_status <> 'Pending'
+     LIMIT 1`,
+    [orderId, stokvelId],
+  );
+
+  if (!orders.length) return null;
+
+  const order = orders[0];
+
+  const [items] = await pool.query(
+    `SELECT
+      oi.order_item_id,
+      oi.product_id,
+      oi.supplier_price_id,
+      oi.quantity,
+      oi.unit_price,
+      oi.subtotal,
+      p.product_name,
+      p.image_url,
+      sp.supplier_name
+     FROM order_items oi
+     INNER JOIN products p ON p.product_id = oi.product_id
+     INNER JOIN supplier_prices sp ON sp.supplier_price_id = oi.supplier_price_id
+     WHERE oi.order_id = ?
+     ORDER BY oi.order_item_id ASC`,
+    [orderId],
+  );
+
+  const [deliveries] = await pool.query(
+    `SELECT
+      odel.order_delivery_id,
+      odel.stokvel_member_id,
+      dd.delivery_id,
+      dd.delivery_address,
+      dd.transport_type,
+      dd.driver_name,
+      dd.driver_contact,
+      dd.delivery_date,
+      dd.delivery_status
+     FROM order_deliveries odel
+     INNER JOIN delivery_details dd ON dd.delivery_id = odel.delivery_id
+     WHERE odel.order_id = ?
+     ORDER BY odel.order_delivery_id ASC`,
+    [orderId],
+  );
+
+  let legacyDelivery = null;
+
+  if (!deliveries.length && order.delivery_id) {
+    const [legacyRows] = await pool.query(
+      `SELECT
+        delivery_id,
+        delivery_address,
+        transport_type,
+        driver_name,
+        driver_contact,
+        delivery_date,
+        delivery_status
+       FROM delivery_details
+       WHERE delivery_id = ?
+       LIMIT 1`,
+      [order.delivery_id],
+    );
+
+    legacyDelivery = legacyRows[0] || null;
+  }
+
+  return {
+    order: {
+      ...order,
+      funding_source: "Group Wallet",
+      delivery_address: legacyDelivery?.delivery_address || deliveries[0]?.delivery_address || null,
+      transport_type: legacyDelivery?.transport_type || deliveries[0]?.transport_type || null,
+      driver_name: legacyDelivery?.driver_name || deliveries[0]?.driver_name || null,
+      driver_contact: legacyDelivery?.driver_contact || deliveries[0]?.driver_contact || null,
+      delivery_date: legacyDelivery?.delivery_date || deliveries[0]?.delivery_date || null,
+      delivery_status: legacyDelivery?.delivery_status || deliveries[0]?.delivery_status || null,
+    },
+    items,
+    deliveries,
+  };
+};
+
+export const confirmPendingOrder = async (stokvelId, deliveryAddress) => {
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [orders] = await connection.query(
+      `SELECT
+        order_id,
+        user_id,
+        stokvel_id,
+        delivery_id,
+        order_date,
+        total_amount,
+        order_status
+       FROM order_details
+       WHERE stokvel_id = ?
+         AND order_status = 'Pending'
+       ORDER BY order_id DESC
+       LIMIT 1
+       FOR UPDATE`,
+      [stokvelId],
+    );
+
+    if (!orders.length) {
+      const error = new Error("No pending group basket was found for this Stokvel.");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const order = orders[0];
+
+    const [items] = await connection.query(
+      `SELECT
+        oi.order_item_id,
+        oi.product_id,
+        oi.quantity,
+        p.quantity_available,
+        p.product_name
+       FROM order_items oi
+       INNER JOIN products p ON p.product_id = oi.product_id
+       WHERE oi.order_id = ?
+       FOR UPDATE`,
+      [order.order_id],
+    );
+
+    if (!items.length) {
+      const error = new Error("The group basket has no items.");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    for (const item of items) {
+      if (Number(item.quantity) > Number(item.quantity_available)) {
+        const error = new Error(`${item.product_name} no longer has enough stock for this group order.`);
+        error.statusCode = 409;
+        throw error;
+      }
+    }
+
+    const [wallets] = await connection.query(
+      `SELECT wallet_id, balance
+       FROM stokvel_wallets
+       WHERE stokvel_id = ?
+       LIMIT 1
+       FOR UPDATE`,
+      [stokvelId],
+    );
+
+    if (!wallets.length) {
+      const error = new Error("The Stokvel wallet has not been set up yet. Run backend/sql/stokvel_wallet.sql first.");
+      error.statusCode = 503;
+      throw error;
+    }
+
+    const balance = Number(wallets[0].balance);
+    const total = Number(order.total_amount);
+
+    if (balance < total) {
+      const error = new Error(`Insufficient group wallet funds. Available: R ${balance.toFixed(2)}. Required: R ${total.toFixed(2)}.`);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const [delivery] = await connection.query(
+      `INSERT INTO delivery_details (delivery_address, transport_type, delivery_status)
+       VALUES (?, 'Van', 'Pending')`,
+      [deliveryAddress],
+    );
+
+    for (const item of items) {
+      await connection.query(
+        `UPDATE products
+         SET quantity_available = quantity_available - ?
+         WHERE product_id = ?`,
+        [Number(item.quantity), item.product_id],
+      );
+    }
+
+    await connection.query(
+      `UPDATE stokvel_wallets
+       SET balance = balance - ?
+       WHERE wallet_id = ?`,
+      [total, wallets[0].wallet_id],
+    );
+
+    await connection.query(
+      `INSERT INTO stokvel_wallet_transactions
+        (stokvel_id, user_id, transaction_type, amount, reference_id, description)
+       VALUES (?, ?, 'PURCHASE', ?, ?, ?)`,
+      [stokvelId, order.user_id, total, order.order_id, `Group purchase #${order.order_id}`],
+    );
+
+    await connection.query(
+      `UPDATE order_details
+       SET delivery_id = ?, order_status = 'Processing'
+       WHERE order_id = ?
+         AND order_status = 'Pending'`,
+      [delivery.insertId, order.order_id],
+    );
+
+    await connection.commit();
+
+    return {
+      ...order,
+      delivery_id: delivery.insertId,
+      order_status: "Processing",
+      funding_source: "Group Wallet",
+      wallet_balance: Number((balance - total).toFixed(2)),
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
