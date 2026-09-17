@@ -69,4 +69,10 @@ export const updateAdminOrderStatus = async (id, status) => (await api.patch(`/a
 export const getAdminDeliveries = async () => (await api.get("/api/admin/deliveries")).data;
 export const updateAdminDelivery = async (id, data) => (await api.patch(`/api/admin/deliveries/${id}`, data)).data;
 
+// Suggestions
+export const createSuggestion = async (data) => (await api.post("/api/suggestions", data)).data;
+export const getMySuggestions = async () => (await api.get("/api/suggestions/mine")).data;
+export const getAllSuggestions = async () => (await api.get("/api/suggestions/admin")).data;
+export const updateSuggestion = async (id, status, admin_response) => (await api.patch(`/api/suggestions/admin/${id}`, { status, admin_response })).data;
+
 export default api;
