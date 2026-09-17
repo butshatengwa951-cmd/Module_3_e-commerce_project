@@ -3,16 +3,18 @@ import pool from "../config/db.js";
 const getMembership = async (userId, db = pool) => {
   const [rows] = await db.query(
     `SELECT sm.stokvel_member_id,sm.stokvel_id,sm.user_id,
-            COALESCE(smr.stokvel_role,CASE WHEN s.chairperson_id=? THEN 'CHAIRPERSON' ELSE 'MEMBER' END) AS stokvel_role,
+            COALESCE(smr.stokvel_role,'MEMBER') AS stokvel_role,
             s.stokvel_name
      FROM stokvel_members sm
      INNER JOIN stokvels s ON s.stokvel_id=sm.stokvel_id
      LEFT JOIN stokvel_member_roles smr ON smr.stokvel_member_id=sm.stokvel_member_id
-     WHERE sm.user_id=? LIMIT 1`,[userId,userId]);
+     WHERE sm.user_id=? LIMIT 1`,
+    [userId]
+  );
   return rows[0]||null;
 };
 const assertMember=async(userId,db=pool)=>{const membership=await getMembership(userId,db);if(!membership)throw Object.assign(new Error("You are not a member of a Stokvel."),{statusCode:403});return membership;};
-const assertOfficer=(membership)=>{if(!["CHAIRPERSON","TREASURER"].includes(membership.stokvel_role))throw Object.assign(new Error("Only the Stokvel chairperson or treasurer can perform this action."),{statusCode:403});};
+const assertOfficer=(membership)=>{if(!["CHAIRPERSON","TREASURER"].includes(String(membership.stokvel_role).toUpperCase()))throw Object.assign(new Error("Only the Stokvel chairperson or treasurer can perform this action."),{statusCode:403});};
 
 export const getProposalDashboard=async(userId)=>{
   const membership=await assertMember(userId);
