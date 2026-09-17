@@ -1,0 +1,65 @@
+/* =========================================================
+   STOCKWELL LIGHT-MODE CONTRAST FIXES
+   Keeps the existing glass aesthetic while making light cards,
+   borders and controls visible against the warm page background.
+   ========================================================= */
+
+html:not(.dark-mode) {
+  --sw-page-surface: rgba(255, 255, 255, 0.72);
+
+  --sw-input-border: rgba(49, 43, 80, 0.21);
+  --sw-input-background: rgba(255, 255, 255, 0.68);
+  --sw-input-background-focus: rgba(255, 255, 255, 0.9);
+
+  --sw-glass-light: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.86),
+    rgba(255, 255, 255, 0.6)
+  );
+
+  --sw-glass-light-border: rgba(49, 43, 80, 0.16);
+  --sw-glass-light-text: var(--sw-purple-900);
+
+  --sw-glass-shadow-light:
+    0 20px 55px rgba(49, 43, 80, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 1px rgba(49, 43, 80, 0.06);
+
+  --sw-glass-shadow-light-hover:
+    0 25px 65px rgba(49, 43, 80, 0.16),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px rgba(49, 43, 80, 0.07);
+
+  --sw-toggle-border: rgba(49, 43, 80, 0.2);
+}
+
+/* Shared glass treatment used by the member dashboard, order history,
+   and other StockWell cards. Dark mode keeps its existing theme tokens. */
+html:not(.dark-mode) .glass {
+  border: 1px solid var(--sw-glass-light-border);
+  background: var(--sw-glass-light);
+  color: var(--sw-glass-light-text);
+  box-shadow: var(--sw-glass-shadow-light);
+  -webkit-backdrop-filter: blur(var(--sw-glass-blur)) saturate(var(--sw-glass-saturation));
+  backdrop-filter: blur(var(--sw-glass-blur)) saturate(var(--sw-glass-saturation));
+}
+
+html:not(.dark-mode) .glass:hover {
+  box-shadow: var(--sw-glass-shadow-light-hover);
+}
+
+/* Give native controls enough contrast in light mode without changing the
+   existing dark-mode appearance. */
+html:not(.dark-mode) select,
+html:not(.dark-mode) input,
+html:not(.dark-mode) textarea {
+  border-color: var(--sw-input-border);
+  background-color: var(--sw-input-background);
+  color: var(--sw-input-text);
+}
+
+html:not(.dark-mode) select:focus,
+html:not(.dark-mode) input:focus,
+html:not(.dark-mode) textarea:focus {
+  background-color: var(--sw-input-background-focus);
+}
