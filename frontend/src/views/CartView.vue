@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { getCart, updateCartItem, removeCartItem, confirmCurrentOrder } from "../services/api.js";
-import { readCheckoutState, saveCartState, saveCheckoutState, clearCartState } from "../composables/useCartState.js";
+import { readCartState, readCheckoutState, saveCartState, saveCheckoutState, clearCartState } from "../composables/useCartState.js";
 
 const router = useRouter();
 const items = ref([]);
@@ -20,38 +20,58 @@ function syncState() { saveCartState({ items: items.value, order: order.value, s
 
 async function loadCart() {
   loading.value = true; error.value = "";
+
+  // Restore the last known cart immediately so navigation back to Cart does
+  // not briefly replace the user's basket with an empty state.
+  const savedCart = readCartState();
+  if (savedCart?.items?.length) {
+    items.value = savedCart.items;
+    stokvel.value = savedCart.stokvel || null;
+    order.value = savedCart.order || null;
+  }
+
   try {
     const response = await getCart();
-    items.value = response.items || [];
-    stokvel.value = response.stokvel || null;
-    order.value = response.order || null;
+    const backendItems = response.items || [];
 
-    // A confirmed order is no longer returned by /api/cart, but it is still
-    // the user's active checkout until payment succeeds. Restore that snapshot
-    // when returning from Payment instead of showing an empty basket.
-    if (!items.value.length) {
+    if (backendItems.length) {
+      items.value = backendItems;
+      stokvel.value = response.stokvel || stokvel.value;
+      order.value = response.order || order.value;
+      syncState();
+    } else {
       const checkout = readCheckoutState();
+
+      // Confirmed checkout is still active until payment succeeds.
       if (checkout?.items?.length && checkout?.order?.order_status === "Confirmed") {
         items.value = checkout.items;
-        stokvel.value = checkout.stokvel || null;
+        stokvel.value = checkout.stokvel || stokvel.value;
         order.value = checkout.order;
         syncState();
-      } else {
+      } else if (!savedCart?.items?.length) {
         clearCartState();
+        items.value = [];
+        stokvel.value = response.stokvel || null;
+        order.value = response.order || null;
       }
-    } else {
-      syncState();
+      // When savedCart contains items, keep them. The backend can return an
+      // empty cart while navigating between pages, but the local cart remains
+      // the user's visible basket until an explicit remove/payment clears it.
     }
   } catch (err) {
     console.error("Failed to load group basket:", err);
 
-    // If the backend is temporarily unavailable, retain the last checkout
-    // snapshot so navigating back does not destroy the user's visible cart.
     const checkout = readCheckoutState();
     if (checkout?.items?.length && checkout?.order?.order_status === "Confirmed") {
       items.value = checkout.items;
-      stokvel.value = checkout.stokvel || null;
+      stokvel.value = checkout.stokvel || stokvel.value;
       order.value = checkout.order;
+      syncState();
+    } else if (savedCart?.items?.length) {
+      // Preserve the last known pending cart if the backend request fails.
+      items.value = savedCart.items;
+      stokvel.value = savedCart.stokvel || null;
+      order.value = savedCart.order || null;
       syncState();
     } else {
       error.value = err.response?.data?.message || "Unable to load your group basket.";
