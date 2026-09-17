@@ -37,7 +37,11 @@ const buildAuthResponse = ({ user, membership, accessToken, refreshToken, sessio
     phone_number: user.phone_number,
     role: user.role,
   },
-  stokvel: membership ? { stokvel_id: membership.stokvel_id, stokvel_name: membership.stokvel_name } : null,
+  stokvel: membership ? {
+    stokvel_id: membership.stokvel_id,
+    stokvel_name: membership.stokvel_name,
+    stokvel_role: String(membership.stokvel_role || "MEMBER").toUpperCase(),
+  } : null,
 });
 
 export const signup = async (req, res) => {
