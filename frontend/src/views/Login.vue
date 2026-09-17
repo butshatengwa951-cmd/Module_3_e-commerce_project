@@ -9,19 +9,41 @@ import { login } from "../services/api.js";
 import { useTheme } from "../composables/useTheme.js";
 
 const router = useRouter();
+
 const { isDark } = useTheme();
+
 const email = ref("");
 const password = ref("");
+
 const showPassword = ref(false);
+
 const loading = ref(false);
 const leaving = ref(false);
-const notification = ref({ visible: false, type: "", title: "", message: "" });
+
+const notification = ref({
+  visible: false,
+  type: "",
+  title: "",
+  message: "",
+});
+
 let notificationTimer = null;
 
 const showNotification = (type, title, message) => {
-  if (notificationTimer) clearTimeout(notificationTimer);
-  notification.value = { visible: true, type, title, message };
-  notificationTimer = setTimeout(closeNotification, 4500);
+  if (notificationTimer) {
+    clearTimeout(notificationTimer);
+  }
+
+  notification.value = {
+    visible: true,
+    type,
+    title,
+    message,
+  };
+
+  notificationTimer = setTimeout(() => {
+    closeNotification();
+  }, 4500);
 };
 
 const closeNotification = () => {
@@ -29,39 +51,66 @@ const closeNotification = () => {
     clearTimeout(notificationTimer);
     notificationTimer = null;
   }
+
   notification.value.visible = false;
 };
 
 const handleLogin = async () => {
   closeNotification();
+
   if (!email.value || !password.value) {
-    showNotification("error", "Login unsuccessful", "Email and password are required.");
+    showNotification(
+      "error",
+      "Login unsuccessful",
+      "Email and password are required.",
+    );
+
     return;
   }
+
   loading.value = true;
+
   try {
-    const response = await login({ email: email.value, password: password.value });
+    const response = await login({
+      email: email.value,
+      password: password.value,
+    });
+
     if (response.success) {
       localStorage.setItem("token", response.token);
       localStorage.setItem("user", JSON.stringify(response.user));
       localStorage.setItem("stokvel", JSON.stringify(response.stokvel));
-      window.dispatchEvent(new Event("auth-updated"));
-      window.dispatchEvent(new Event("login-completed"));
+
       console.log("Logged in user:", response.user);
       console.log("User Stokvel:", response.stokvel);
-      showNotification("success", "Login successful", response.message || "Welcome back to StockWell.");
-      setTimeout(() => {
-        router.push(response.user?.role === "admin" ? "/admin" : "/");
-      }, 450);
+
+      showNotification(
+        "success",
+        "Login successful",
+        response.message || "Welcome back to StockWell.",
+      );
     } else {
-      showNotification("error", "Login unsuccessful", response.message || "Unable to log you in.");
+      showNotification(
+        "error",
+        "Login unsuccessful",
+        response.message || "Unable to log you in.",
+      );
     }
   } catch (err) {
     console.error("Login error:", err);
+
     if (err.response?.data?.message) {
-      showNotification("error", "Login unsuccessful", err.response.data.message);
+      showNotification(
+        "error",
+        "Login unsuccessful",
+        err.response.data.message,
+      );
     } else {
-      showNotification("error", "Connection error", "Unable to connect to the server.");
+      showNotification(
+        "error",
+        "Connection error",
+        "Unable to connect to the server.",
+      );
     }
   } finally {
     loading.value = false;
@@ -69,37 +118,770 @@ const handleLogin = async () => {
 };
 
 const goBackToAuth = () => {
-  if (leaving.value) return;
+  if (leaving.value) {
+    return;
+  }
+
   leaving.value = true;
-  setTimeout(() => router.push("/"), 450);
+
+  setTimeout(() => {
+    router.push("/");
+  }, 450);
 };
 
 onBeforeUnmount(() => {
-  if (notificationTimer) clearTimeout(notificationTimer);
+  if (notificationTimer) {
+    clearTimeout(notificationTimer);
+  }
 });
 </script>
 
 <template>
-  <main class="login-page" :class="{ 'is-leaving': leaving }">
+  <main
+    class="login-page"
+    :class="{
+      'is-leaving': leaving,
+    }"
+  >
     <PageBackground />
+
     <Transition name="notification">
-      <div v-if="notification.visible" class="notification" :class="[`notification-${notification.type}`, { 'notification-dark': isDark }]" role="alert" aria-live="polite">
+      <div
+        v-if="notification.visible"
+        class="notification"
+        :class="[
+          `notification-${notification.type}`,
+          {
+            'notification-dark': isDark,
+          },
+        ]"
+        role="alert"
+        aria-live="polite"
+      >
         <div class="notification-icon">
-          <svg v-if="notification.type === 'success'" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M7.5 12.5l3 3 6-6" /></svg>
-          <svg v-else viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 8v5" /><circle cx="12" cy="16.5" r="0.8" fill="currentColor" stroke="none" /></svg>
+          <svg
+            v-if="notification.type === 'success'"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M7.5 12.5l3 3 6-6" />
+          </svg>
+
+          <svg v-else viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v5" />
+            <circle
+              cx="12"
+              cy="16.5"
+              r="0.8"
+              fill="currentColor"
+              stroke="none"
+            />
+          </svg>
         </div>
-        <div class="notification-content"><strong>{{ notification.title }}</strong><span>{{ notification.message }}</span></div>
-        <button type="button" class="notification-close" aria-label="Close notification" title="Close notification" @click="closeNotification">×</button>
+
+        <div class="notification-content">
+          <strong>{{ notification.title }}</strong>
+          <span>{{ notification.message }}</span>
+        </div>
+
+        <button
+          type="button"
+          class="notification-close"
+          aria-label="Close notification"
+          title="Close notification"
+          @click="closeNotification"
+        >
+          ×
+        </button>
       </div>
     </Transition>
-    <button type="button" class="back-auth-button" :disabled="leaving" aria-label="Back to authentication selection" @click="goBackToAuth"><span class="back-arrow" aria-hidden="true"> ← </span><span> Back to Select </span></button>
-    <header class="page-brand"><div class="brand-mark"><span class="brand-handshake" aria-hidden="true"> 🤝 </span></div><span> LOGIN to StockWell </span></header>
-    <GlassCard :variant="isDark ? 'dark' : 'light'"><div class="login-content"><span class="eyebrow"> Welcome back </span><h1>Login</h1><p class="intro">Continue your StockWell journey.</p><form @submit.prevent="handleLogin"><div class="field"><label for="email"> Email </label><input id="email" v-model="email" type="email" placeholder="you@example.com" autocomplete="email" required /></div><div class="field"><label for="password"> Password </label><div class="password-input-wrapper"><input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" autocomplete="current-password" required /><button type="button" class="password-toggle" :aria-label="showPassword ? 'Hide password' : 'Show password'" :title="showPassword ? 'Hide password' : 'Show password'" @click="showPassword = !showPassword"><svg v-if="!showPassword" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12C4.5 8 8 6 12 6C16 6 19.5 8 22 12C19.5 16 16 18 12 18C8 18 4.5 16 2 12Z" /><circle cx="12" cy="12" r="2.5" /></svg><svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18" /><path d="M10.6 6.2C11.05 6.07 11.52 6 12 6C16 6 19.5 8 22 12C21.25 13.2 20.35 14.25 19.25 15.15" /><path d="M6.1 6.1C3.7 7.6 2.5 9.7 2 12C4.5 16 8 18 12 18C13.65 18 15.2 17.6 16.6 17" /><path d="M9.9 9.9C8.75 11.05 8.75 12.95 9.9 14.1C11.05 15.25 12.95 15.25 14.1 14.1" /></svg></button></div></div><div class="forgot"><router-link to="/forgot-password">Forgot your password?</router-link></div><button type="submit" :disabled="loading" class="login-submit"><span v-if="!loading"> Login </span><span v-else> Logging in... </span></button></form><div class="bottom-link"><span> Don't have an account? </span><router-link to="/signup"> Sign up </router-link></div></div></GlassCard>
+
+    <button
+      type="button"
+      class="back-auth-button"
+      :disabled="leaving"
+      aria-label="Back to authentication selection"
+      @click="goBackToAuth"
+    >
+      <span class="back-arrow" aria-hidden="true"> ← </span>
+      <span> Back to Select </span>
+    </button>
+
+    <header class="page-brand">
+      <div class="brand-mark">
+        <span class="brand-handshake" aria-hidden="true"> 🤝 </span>
+      </div>
+      <span> LOGIN to StockWell </span>
+    </header>
+
+    <GlassCard :variant="isDark ? 'dark' : 'light'">
+      <div class="login-content">
+        <span class="eyebrow"> Welcome back </span>
+        <h1>Login</h1>
+        <p class="intro">Continue your StockWell journey.</p>
+
+        <form @submit.prevent="handleLogin">
+          <div class="field">
+            <label for="email"> Email </label>
+            <input
+              id="email"
+              v-model="email"
+              type="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="password"> Password </label>
+
+            <div class="password-input-wrapper">
+              <input
+                id="password"
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                :title="showPassword ? 'Hide password' : 'Show password'"
+                @click="showPassword = !showPassword"
+              >
+                <svg
+                  v-if="!showPassword"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="
+                      M2 12
+                      C4.5 8 8 6 12 6
+                      C16 6 19.5 8 22 12
+                      C19.5 16 16 18 12 18
+                      C8 18 4.5 16 2 12 Z
+                    "
+                  />
+                  <circle cx="12" cy="12" r="2.5" />
+                </svg>
+
+                <svg v-else viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 3l18 18" />
+                  <path
+                    d="
+                      M10.6 6.2
+                      C11.05 6.07 11.52 6 12 6
+                      C16 6 19.5 8 22 12
+                      C21.25 13.2 20.35 14.25 19.25 15.15
+                    "
+                  />
+                  <path
+                    d="
+                      M6.1 6.1
+                      C3.7 7.6 2.5 9.7 2 12
+                      C4.5 16 8 18 12 18
+                      C13.65 18 15.2 17.6 16.6 17
+                    "
+                  />
+                  <path
+                    d="
+                      M9.9 9.9
+                      C8.75 11.05 8.75 12.95 9.9 14.1
+                      C11.05 15.25 12.95 15.25 14.1 14.1
+                    "
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="forgot">
+            <router-link to="/forgot-password">
+              Forgot your password?
+            </router-link>
+          </div>
+
+          <button type="submit" :disabled="loading" class="login-submit">
+            <span v-if="!loading"> Login </span>
+            <span v-else> Logging in... </span>
+          </button>
+        </form>
+
+        <div class="bottom-link">
+          <span> Don't have an account? </span>
+          <router-link to="/signup"> Sign up </router-link>
+        </div>
+      </div>
+    </GlassCard>
+
     <footer>Save · Grow · Together</footer>
   </main>
 </template>
 
 <style scoped>
-.login-page{position:relative;min-height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:var(--sw-space-14) var(--sw-space-7);background:var(--sw-page-gradient);color:var(--sw-page-text);font-family:var(--sw-font-body);box-sizing:border-box;transition:background var(--sw-transition-slow),color var(--sw-transition-slow),opacity 450ms ease,transform 450ms cubic-bezier(.22,1,.36,1),filter 450ms ease}.login-page.is-leaving{opacity:0;transform:translateY(24px) scale(.98);filter:blur(8px);pointer-events:none}.login-page :deep(.page-gradient){opacity:.9;filter:saturate(1.3) brightness(1.08);animation-duration:18s}.login-page :deep(.background-orb){opacity:.52;filter:blur(68px) saturate(1.2);animation-duration:14s;animation-timing-function:ease-in-out}.login-page :deep(.orb-gold),.login-page :deep(.orb-orange),.login-page :deep(.orb-purple),.login-page :deep(.orb-lavender){transform:scale(.9)}@keyframes loginOrbGold{0%,100%{transform:translate(0,0) scale(.9)}50%{transform:translate(72px,48px) scale(1.06)}}@keyframes loginOrbOrange{0%,100%{transform:translate(0,0) scale(.9)}50%{transform:translate(-72px,64px) scale(1.04)}}@keyframes loginOrbPurple{0%,100%{transform:translate(0,0) scale(.92)}50%{transform:translate(44px,-56px) scale(1.02)}}@keyframes loginOrbLavender{0%,100%{transform:translate(0,0) scale(.9)}50%{transform:translate(-40px,-48px) scale(1.02)}}.login-page :deep(.orb-gold){animation-name:loginOrbGold}.login-page :deep(.orb-orange){animation-name:loginOrbOrange}.login-page :deep(.orb-purple){animation-name:loginOrbPurple}.login-page :deep(.orb-lavender){animation-name:loginOrbLavender}.notification{position:fixed;top:82px;left:32px;z-index:100;width:min(360px,calc(100vw - 64px));display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border:1px solid rgba(255,255,255,.35);border-radius:20px;background:rgba(255,255,255,.14);box-shadow:0 18px 55px rgba(49,43,80,.24),inset 0 1px 1px rgba(255,255,255,.35);backdrop-filter:blur(24px) saturate(145%);-webkit-backdrop-filter:blur(24px) saturate(145%);color:var(--sw-white)}.notification-icon{width:38px;height:38px;flex:0 0 38px;display:flex;align-items:center;justify-content:center;border-radius:13px;background:rgba(255,255,255,.15)}.notification-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.notification-success .notification-icon{color:var(--sw-gold-500)}.notification-error .notification-icon{color:#ffb3a6}.notification-content{display:flex;flex-direction:column;gap:3px;flex:1}.notification-content strong{font-size:13px}.notification-content span{font-size:11px;line-height:1.5}.notification-close{border:0;background:transparent;color:currentColor;font-size:20px;cursor:pointer}.back-auth-button{position:absolute;top:28px;left:28px;z-index:20;border:0;background:transparent;color:var(--sw-page-text);font:600 12px var(--sw-font-body);cursor:pointer}.page-brand{position:absolute;top:28px;display:flex;align-items:center;gap:10px;font:800 14px var(--sw-font-body);letter-spacing:.08em}.page-brand .brand-mark{width:34px;height:34px;border-radius:50%;background:var(--sw-gold-500);display:grid;place-items:center}.login-content{width:min(100%,430px);padding:10px}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--sw-gold-500)}h1{margin:8px 0;font-size:42px}.intro{color:var(--sw-page-text-soft);margin-bottom:28px}.field{margin-bottom:18px}.field label{display:block;margin-bottom:7px;font-size:12px;font-weight:700}.field input{width:100%;box-sizing:border-box;padding:13px 14px;border:1px solid var(--sw-input-border);border-radius:12px;background:var(--sw-input-background);color:var(--sw-page-text);outline:none}.password-input-wrapper{position:relative}.password-input-wrapper input{padding-right:48px}.password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--sw-page-text-soft);cursor:pointer}.password-toggle svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.forgot{text-align:right;margin:8px 0 20px}.forgot a,.bottom-link a{color:var(--sw-gold-500);text-decoration:none}.login-submit{width:100%;padding:14px;border:0;border-radius:999px;background:var(--sw-gold-500);color:var(--sw-purple-900);font-weight:800;cursor:pointer}.login-submit:disabled{opacity:.6;cursor:not-allowed}.bottom-link{text-align:center;margin-top:20px;color:var(--sw-page-text-soft);font-size:12px}.login-page footer{position:absolute;bottom:22px;font-size:11px;color:var(--sw-page-text-soft)}
-@media(max-width:600px){.login-page{padding:90px 18px 70px}.back-auth-button{left:18px;top:18px}.page-brand{top:18px;right:18px;font-size:11px}.page-brand .brand-mark{width:30px;height:30px}}
+.login-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sw-space-14) var(--sw-space-7);
+  background: var(--sw-page-gradient);
+  color: var(--sw-page-text);
+  font-family: var(--sw-font-body);
+  box-sizing: border-box;
+  transition:
+    background var(--sw-transition-slow),
+    color var(--sw-transition-slow),
+    opacity 450ms ease,
+    transform 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 450ms ease;
+}
+
+.login-page.is-leaving {
+  opacity: 0;
+  transform: translateY(24px) scale(0.98);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.login-page :deep(.page-gradient) {
+  opacity: 0.9;
+  filter: saturate(1.3) brightness(1.08);
+  animation-duration: 18s;
+}
+
+.login-page :deep(.background-orb) {
+  opacity: 0.52;
+  filter: blur(68px) saturate(1.2);
+  animation-duration: 14s;
+  animation-timing-function: ease-in-out;
+}
+
+.login-page :deep(.orb-gold),
+.login-page :deep(.orb-orange),
+.login-page :deep(.orb-purple),
+.login-page :deep(.orb-lavender) {
+  transform: scale(0.9);
+}
+
+.login-page :deep(.orb-gold) { animation-name: loginOrbGold; }
+.login-page :deep(.orb-orange) { animation-name: loginOrbOrange; }
+.login-page :deep(.orb-purple) { animation-name: loginOrbPurple; }
+.login-page :deep(.orb-lavender) { animation-name: loginOrbLavender; }
+
+@keyframes loginOrbGold {
+  0%, 100% { transform: translate(0, 0) scale(0.9); }
+  50% { transform: translate(72px, 48px) scale(1.06); }
+}
+
+@keyframes loginOrbOrange {
+  0%, 100% { transform: translate(0, 0) scale(0.9); }
+  50% { transform: translate(-72px, 64px) scale(1.04); }
+}
+
+@keyframes loginOrbPurple {
+  0%, 100% { transform: translate(0, 0) scale(0.92); }
+  50% { transform: translate(44px, -56px) scale(1.02); }
+}
+
+@keyframes loginOrbLavender {
+  0%, 100% { transform: translate(0, 0) scale(0.9); }
+  50% { transform: translate(-40px, -48px) scale(1.02); }
+}
+
+.notification {
+  position: fixed;
+  top: 82px;
+  left: 32px;
+  z-index: 100;
+  width: min(360px, calc(100vw - 64px));
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 18px 55px rgba(49, 43, 80, 0.24),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  color: var(--sw-white);
+  transition:
+    background var(--sw-transition-slow),
+    border-color var(--sw-transition-slow),
+    box-shadow var(--sw-transition-slow),
+    color var(--sw-transition-slow);
+}
+
+.notification-success {
+  box-shadow:
+    0 18px 55px rgba(49, 43, 80, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.notification-error {
+  box-shadow:
+    0 18px 55px rgba(163, 60, 45, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.notification-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.15);
+  transition:
+    background var(--sw-transition-slow),
+    color var(--sw-transition-slow);
+}
+
+.notification-success .notification-icon { color: var(--sw-gold-500); }
+.notification-error .notification-icon { color: #ffb3a6; }
+
+.notification-icon svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.notification-content {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 1px;
+}
+
+.notification-content strong {
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.notification-content span {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  opacity: 0.82;
+  overflow-wrap: anywhere;
+}
+
+.notification-close {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: currentColor;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.65;
+  transition:
+    transform var(--sw-transition-fast),
+    opacity var(--sw-transition-fast),
+    background var(--sw-transition-fast);
+}
+
+.notification-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.06);
+}
+
+.notification-close:active { transform: scale(0.92); }
+.notification-close:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+.notification-enter-active,
+.notification-leave-active {
+  transition:
+    opacity 450ms ease,
+    transform 550ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 450ms ease;
+}
+
+.notification-enter-from,
+.notification-leave-to {
+  opacity: 0;
+  transform: translate3d(42px, -12px, 0) scale(0.96);
+  filter: blur(8px);
+}
+
+.back-auth-button {
+  position: absolute;
+  right: var(--sw-space-11);
+  bottom: var(--sw-space-6);
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sw-space-2);
+  padding: var(--sw-space-3) var(--sw-space-5);
+  border: 1px solid var(--sw-glass-light-border);
+  border-radius: var(--sw-radius-pill);
+  background: var(--sw-glass-light);
+  color: var(--sw-white);
+  box-shadow: var(--sw-glass-shadow-light);
+  backdrop-filter: blur(var(--sw-glass-blur)) saturate(var(--sw-glass-saturation));
+  -webkit-backdrop-filter: blur(var(--sw-glass-blur)) saturate(var(--sw-glass-saturation));
+  font-family: inherit;
+  font-size: var(--sw-text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    transform 300ms ease,
+    background var(--sw-transition-slow),
+    border-color var(--sw-transition-slow),
+    color var(--sw-transition-slow),
+    box-shadow var(--sw-transition-slow),
+    opacity 300ms ease;
+}
+
+.back-auth-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: var(--sw-glass-shadow-light-hover);
+}
+
+.back-auth-button:active:not(:disabled) { transform: translateY(0); }
+.back-auth-button:disabled { cursor: default; opacity: 0.55; }
+
+.back-arrow { font-size: 1rem; transition: transform 300ms ease; }
+.back-auth-button:hover:not(:disabled) .back-arrow { transform: translateX(-3px); }
+
+.page-brand {
+  position: absolute;
+  top: var(--sw-space-9);
+  left: var(--sw-space-11);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-3);
+  color: var(--sw-white);
+  font-weight: 700;
+  font-size: var(--sw-text-xl);
+  letter-spacing: 0.02em;
+}
+
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-handshake {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 1.55rem;
+  line-height: 1;
+  transition:
+    transform 300ms ease,
+    filter 300ms ease;
+}
+
+.brand-mark:hover .brand-handshake {
+  transform: scale(1.08) rotate(-3deg);
+  filter: drop-shadow(0 3px 5px rgba(49, 43, 80, 0.18));
+}
+
+.login-content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.eyebrow {
+  margin: 0 0 var(--sw-space-3);
+  font-size: var(--sw-text-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sw-page-text-muted);
+  transition: color var(--sw-transition-slow);
+}
+
+h1 {
+  margin: 0;
+  font-size: var(--sw-heading-xl);
+  line-height: 1;
+  letter-spacing: -0.06em;
+  color: var(--sw-page-text);
+  transition: color var(--sw-transition-slow);
+}
+
+.intro {
+  margin: var(--sw-space-3) 0 var(--sw-space-12);
+  color: var(--sw-page-text-soft);
+  font-size: var(--sw-text-lg);
+  line-height: 1.7;
+  transition: color var(--sw-transition-slow);
+}
+
+.field { margin-bottom: var(--sw-space-7); }
+
+.field label {
+  display: block;
+  margin-bottom: var(--sw-space-2);
+  font-size: var(--sw-text-md);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--sw-page-text);
+  transition: color var(--sw-transition-slow);
+}
+
+.field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--sw-space-4) var(--sw-space-5);
+  border: 1px solid var(--sw-input-border);
+  border-radius: var(--sw-radius-md);
+  outline: none;
+  background: var(--sw-input-background);
+  color: var(--sw-input-text);
+  font-family: inherit;
+  font-size: var(--sw-text-base);
+  transition:
+    border-color var(--sw-transition),
+    background var(--sw-transition),
+    color var(--sw-transition),
+    box-shadow var(--sw-transition),
+    transform var(--sw-transition);
+}
+
+.field input::placeholder { color: var(--sw-placeholder); }
+
+.field input:focus {
+  border-color: var(--sw-focus);
+  background: var(--sw-input-background-focus);
+  color: var(--sw-input-text);
+  box-shadow: 0 0 0 4px var(--sw-focus-ring);
+  transform: translateY(-1px);
+}
+
+.password-input-wrapper { position: relative; width: 100%; }
+.password-input-wrapper input { padding-right: 56px; }
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--sw-page-text-muted);
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition:
+    background var(--sw-transition-fast),
+    color var(--sw-transition-fast),
+    transform var(--sw-transition-fast);
+}
+
+.password-toggle:hover {
+  background: rgba(121, 93, 137, 0.08);
+  color: var(--sw-page-text);
+  transform: translateY(-50%) scale(1.06);
+}
+
+.password-toggle:active { transform: translateY(-50%) scale(0.94); }
+.password-toggle:focus-visible { outline: 2px solid var(--sw-focus); outline-offset: 2px; }
+
+.password-toggle svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.forgot {
+  margin-top: -6px;
+  margin-bottom: var(--sw-space-9);
+  text-align: right;
+}
+
+.forgot a {
+  font-size: var(--sw-text-sm);
+  color: var(--sw-purple-700);
+  text-decoration: none;
+  transition: color var(--sw-transition-fast);
+}
+
+.forgot a:hover {
+  color: var(--sw-orange-600);
+  text-decoration: underline;
+}
+
+.login-submit {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: var(--sw-radius-pill);
+  background: var(--sw-button-gradient);
+  color: var(--sw-white);
+  font-family: inherit;
+  font-size: var(--sw-text-base);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  transition:
+    transform var(--sw-transition),
+    box-shadow var(--sw-transition),
+    opacity var(--sw-transition),
+    filter var(--sw-transition);
+}
+
+.login-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--sw-button-shadow-hover);
+  filter: brightness(1.03);
+}
+
+.login-submit:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--sw-button-shadow);
+}
+
+.login-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bottom-link {
+  margin-top: var(--sw-space-10);
+  text-align: center;
+  font-size: var(--sw-text-md);
+  color: var(--sw-page-text-muted);
+  transition: color var(--sw-transition-slow);
+}
+
+.bottom-link a {
+  margin-left: var(--sw-space-1);
+  color: var(--sw-page-text);
+  font-weight: 700;
+  text-decoration: none;
+  transition: color var(--sw-transition-fast);
+}
+
+.bottom-link a:hover {
+  color: var(--sw-orange-600);
+  text-decoration: underline;
+}
+
+footer {
+  position: absolute;
+  left: var(--sw-space-11);
+  bottom: var(--sw-space-6);
+  color: var(--sw-white);
+  font-size: var(--sw-text-xs);
+  letter-spacing: 0.12em;
+  opacity: 0.55;
+  transition: opacity var(--sw-transition-slow);
+}
+
+html.dark-mode .back-auth-button {
+  border-color: var(--sw-glass-dark-border);
+  background: var(--sw-glass-dark);
+  color: var(--sw-glass-dark-text);
+  box-shadow: var(--sw-glass-shadow-dark);
+}
+
+html.dark-mode .back-auth-button:hover:not(:disabled) { box-shadow: var(--sw-glass-shadow-dark-hover); }
+html.dark-mode .brand-handshake { filter: drop-shadow(0 2px 5px rgba(255, 255, 255, 0.08)); }
+
+html.dark-mode .notification {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(28, 23, 38, 0.62);
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.42),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+html.dark-mode .notification-error .notification-icon { color: #ff9d8c; }
+html.dark-mode .forgot a { color: var(--sw-lavender-500); }
+html.dark-mode .forgot a:hover,
+html.dark-mode .bottom-link a:hover { color: #d47a64; }
+html.dark-mode .password-toggle:hover { background: rgba(155, 134, 167, 0.12); }
+
+@media (max-width: 768px) {
+  .login-page { padding: var(--sw-space-14) var(--sw-space-5); }
+
+  .page-brand {
+    top: var(--sw-space-7);
+    left: var(--sw-space-7);
+  }
+
+  .back-auth-button {
+    right: var(--sw-space-7);
+    bottom: var(--sw-space-6);
+    padding: var(--sw-space-2) var(--sw-space-4);
+    font-size: 0.62rem;
+  }
+
+  .notification {
+    top: 78px;
+    left: 18px;
+    right: 18px;
+    width: auto;
+    max-width: 360px;
+    padding: 14px 15px;
+    border-radius: 18px;
+  }
+
+  h1 { font-size: clamp(2.6rem, 12vw, var(--sw-heading-xl)); }
+
+  footer {
+    left: var(--sw-space-7);
+    bottom: var(--sw-space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-page,
+  .back-auth-button,
+  .back-arrow,
+  .brand-handshake,
+  .password-toggle,
+  .notification,
+  .notification-enter-active,
+  .notification-leave-active {
+    transition: none !important;
+  }
+}
 </style>
