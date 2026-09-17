@@ -3,15 +3,7 @@ import { saveCartState, saveCheckoutState, clearCartState, clearCheckoutState } 
 
 const api = axios.create({ baseURL: "http://localhost:4040", headers: { "Content-Type": "application/json" } });
 api.interceptors.request.use((config) => { const token = localStorage.getItem("token") || localStorage.getItem("sw_token"); if (token) config.headers.Authorization = `Bearer ${token}`; return config; });
-
-async function refreshCartStorage({ preserveSavedCart = false } = {}) {
-  try {
-    const response = await api.get("/api/cart"); const backendItems = response.data.items || [];
-    if (preserveSavedCart && !backendItems.length) { try { const saved = JSON.parse(localStorage.getItem("stockwellCartState") || "null"); if (Array.isArray(saved?.items) && saved.items.length) return { ...response.data, items: saved.items, order: saved.order || response.data.order || null, stokvel: saved.stokvel || response.data.stokvel || null }; } catch {} }
-    saveCartState({ items: backendItems, order: response.data.order || null, stokvel: response.data.stokvel || null }); return response.data;
-  } catch (error) { if (error.response?.status !== 403 && error.response?.status !== 401) console.error("Cart storage sync failed:", error); throw error; }
-}
-
+async function refreshCartStorage({ preserveSavedCart = false } = {}) { try { const response = await api.get("/api/cart"); const backendItems = response.data.items || []; if (preserveSavedCart && !backendItems.length) { try { const saved = JSON.parse(localStorage.getItem("stockwellCartState") || "null"); if (Array.isArray(saved?.items) && saved.items.length) return { ...response.data, items: saved.items, order: saved.order || response.data.order || null, stokvel: saved.stokvel || response.data.stokvel || null }; } catch {} } saveCartState({ items: backendItems, order: response.data.order || null, stokvel: response.data.stokvel || null }); return response.data; } catch (error) { if (error.response?.status !== 403 && error.response?.status !== 401) console.error("Cart storage sync failed:", error); throw error; } }
 export const getStokvels = async () => (await api.get("/api/stokvels")).data;
 export const getProducts = async () => (await api.get("/api/products")).data;
 export const getProduct = async (productId) => (await api.get(`/api/products/${productId}`)).data;
@@ -22,7 +14,12 @@ export const removeCartItem = async (itemId) => { const response = await api.del
 export const getCurrentOrder = async () => { const response = await api.get("/api/orders/current"); if (response.data?.order) saveCheckoutState({ order: response.data.order, items: response.data.items || [] }); return response.data; };
 export const getOrderHistory = async () => (await api.get("/api/orders/history")).data;
 export const getOrderDetails = async (orderId) => (await api.get(`/api/orders/history/${orderId}`)).data;
+export const reorderOrder = async (orderId) => { const response = await api.post(`/api/reorder/${orderId}`); await refreshCartStorage(); return response.data; };
 export const getMemberDashboard = async () => (await api.get("/api/users/member-dashboard")).data;
+export const getStokvelFeatures = async () => (await api.get("/api/stokvel-features")).data;
+export const contributeToStokvel = async (data) => (await api.post("/api/stokvel-features/contributions", data)).data;
+export const saveStokvelGoal = async (data) => (await api.put("/api/stokvel-features/goal", data)).data;
+export const voteForProduct = async (product_id) => (await api.post("/api/stokvel-features/votes", { product_id })).data;
 export const confirmCurrentOrder = async () => { const response = await api.post("/api/orders/current/confirm"); if (response.data?.order) { const current = JSON.parse(localStorage.getItem("stockwellCartState") || "null"); const items = Array.isArray(current?.items) ? current.items : []; const stokvel = current?.stokvel || null; saveCheckoutState({ order: response.data.order, items, stokvel }); saveCartState({ items, order: response.data.order, stokvel }); } return response.data; };
 export const getPaymentOptions = async () => { const response = await api.get("/api/payment/current"); if (response.data?.order) { const checkout = JSON.parse(localStorage.getItem("stockwellCheckoutState") || "null"); saveCheckoutState({ order: response.data.order, items: checkout?.items || [], stokvel: checkout?.stokvel || null }); if (checkout?.items?.length) saveCartState({ items: checkout.items, order: response.data.order, stokvel: checkout.stokvel || null }); } return response.data; };
 export const payCurrentOrder = async ({ card_id, delivery_address }) => { const response = await api.post("/api/payment/current/pay", { card_id, delivery_address }); clearCartState(); clearCheckoutState(); return response.data; };
@@ -31,7 +28,6 @@ export const login = async (userData) => { const response = await api.post("/api
 export const forgotPassword = async (email) => (await api.post("/api/auth/forgot-password", { email })).data;
 export const resetPassword = async (resetData) => (await api.post("/api/auth/reset-password", resetData)).data;
 export const verifyResetToken = async (token) => (await api.get("/api/auth/verify-reset-token", { params: { token } })).data;
-
 export const getAdminDashboard = async () => (await api.get("/api/admin/dashboard")).data;
 export const getAdminUsers = async () => (await api.get("/api/admin/users")).data;
 export const getAdminStokvels = async () => (await api.get("/api/admin/stokvels")).data;
