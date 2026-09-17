@@ -54,6 +54,51 @@ export const getPendingOrderForStokvel = async (stokvelId) => {
   return { order, items };
 };
 
+export const getOrderHistoryForStokvel = async (stokvelId) => {
+  const [orders] = await pool.query(
+    `
+      SELECT
+        od.order_id,
+        od.user_id,
+        od.stokvel_id,
+        od.card_id,
+        od.delivery_id,
+        od.order_date,
+        od.total_amount,
+        od.order_status,
+        cd.card_type,
+        cd.last_four_digits,
+        dd.delivery_status,
+        COUNT(oi.order_item_id) AS item_count
+      FROM order_details od
+      LEFT JOIN card_details cd ON cd.card_id = od.card_id
+      LEFT JOIN delivery_details dd ON dd.delivery_id = od.delivery_id
+      LEFT JOIN order_items oi ON oi.order_id = od.order_id
+      WHERE od.stokvel_id = ?
+        AND od.order_status <> 'Pending'
+      GROUP BY
+        od.order_id,
+        od.user_id,
+        od.stokvel_id,
+        od.card_id,
+        od.delivery_id,
+        od.order_date,
+        od.total_amount,
+        od.order_status,
+        cd.card_type,
+        cd.last_four_digits,
+        dd.delivery_status
+      ORDER BY od.order_date DESC, od.order_id DESC
+    `,
+    [stokvelId],
+  );
+
+  return orders.map((order) => ({
+    ...order,
+    item_count: Number(order.item_count || 0),
+  }));
+};
+
 export const confirmPendingOrder = async (stokvelId) => {
   const connection = await pool.getConnection();
 
