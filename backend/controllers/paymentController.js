@@ -1,58 +1,48 @@
-import {
-  getPaymentOptionsForUser,
-  payCurrentOrder,
-} from "../models/Payment.js";
+import { getStokvelFeatures, contributeToStokvel } from "../models/StokvelFeatures.js";
 
 export const getPaymentOptions = async (req, res) => {
   try {
-    const data = await getPaymentOptionsForUser(req.user.user_id);
-
+    const data = await getStokvelFeatures(req.user.user_id);
     if (!data) {
-      return res.status(404).json({
-        success: false,
-        message: "No confirmed order is ready for payment.",
-      });
+      return res.status(404).json({ success: false, message: "You are not a member of a Stokvel." });
     }
-
-    return res.json({ success: true, ...data });
-  } catch (error) {
-    console.error("Get payment options error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to load payment options.",
+    return res.json({
+      success: true,
+      stokvel: data.membership,
+      cards: data.cards || [],
+      wallet: data.wallet || { available_balance: 0 },
     });
+  } catch (error) {
+    console.error("Get contribution payment options error:", error);
+    return res.status(500).json({ success: false, message: "Failed to load contribution payment options." });
   }
 };
 
 export const payOrder = async (req, res) => {
   try {
-    const { card_id, delivery_address } = req.body;
-
-    const cardId = Number(card_id);
+    const cardId = Number(req.body?.card_id);
+    const amount = Number(req.body?.amount);
 
     if (!Number.isInteger(cardId) || cardId < 1) {
-      return res.status(400).json({
-        success: false,
-        message: "A valid payment card is required.",
-      });
+      return res.status(400).json({ success: false, message: "Select a valid payment method for your contribution." });
     }
 
-    const result = await payCurrentOrder({
+    const result = await contributeToStokvel({
       userId: req.user.user_id,
       cardId,
-      deliveryAddress: delivery_address,
+      amount,
     });
 
-    return res.json({
+    return res.status(201).json({
       success: true,
-      message: "Payment successful. Your order is now processing.",
-      ...result,
+      message: "Contribution added to the Group Wallet.",
+      contribution: result,
     });
   } catch (error) {
-    console.error("Payment error:", error);
+    console.error("Contribution payment error:", error);
     return res.status(error.statusCode || 500).json({
       success: false,
-      message: error.message || "Payment failed.",
+      message: error.message || "Contribution could not be completed.",
     });
   }
 };
