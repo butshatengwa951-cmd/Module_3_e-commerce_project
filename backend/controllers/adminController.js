@@ -49,8 +49,9 @@ export const getUsers = async (req, res) => {
 
 export const getStokvels = async (req, res) => {
   try {
-    // Stokvel membership is authoritative here. Do not depend on a
-    // chairperson column/role because the current system does not require one.
+    // The current application does not require chairpersons for a Stokvel.
+    // Load directly from stokvels + stokvel_members so the admin section
+    // remains valid even when no chairperson accounts exist.
     const [stokvels] = await pool.query(`
       SELECT
         s.stokvel_id,
@@ -61,14 +62,9 @@ export const getStokvels = async (req, res) => {
         COUNT(sm.stokvel_member_id) AS member_count
       FROM stokvels s
       LEFT JOIN stokvel_members sm ON sm.stokvel_id = s.stokvel_id
-      GROUP BY
-        s.stokvel_id,
-        s.stokvel_name,
-        s.description,
-        s.created_at
+      GROUP BY s.stokvel_id, s.stokvel_name, s.description, s.created_at
       ORDER BY s.stokvel_id
     `);
-
     return res.json({ success: true, stokvels });
   } catch (error) {
     return sendError(res, error, "Unable to load Stokvels.");
@@ -184,3 +180,59 @@ export const deleteSupplierPrice = async (req, res) => {
 };
 
 export const getOrders = async (req, res) => {
+  try {
+    const [orders] = await pool.query(`
+      SELECT
+        o.order_id, o.order_date, o.total_amount, o.order_status,
+        u.full_name AS customer_name, u.email AS customer_email,
+        s.stokvel_name,
+        d.delivery_id, d.delivery_address, d.transport_type, d.driver_name, d.driver_contact, d.delivery_date, d.delivery_status
+      FROM order_details o
+      LEFT JOIN users u ON u.user_id = o.user_id
+      LEFT JOIN stokvels s ON s.stokvel_id = o.stokvel_id
+      LEFT JOIN delivery_details d ON d.delivery_id = o.delivery_id
+      ORDER BY o.order_date DESC, o.order_id DESC
+    `);
+    return res.json({ success: true, orders });
+  } catch (error) {
+    return sendError(res, error, "Unable to load orders.");
+  }
+};
+
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const allowed = ["Pending", "Confirmed", "Processing", "Completed", "Cancelled"];
+    const { status } = req.body;
+    if (!allowed.includes(status)) return res.status(400).json({ success: false, message: "Invalid order status." });
+    const [result] = await pool.query(`UPDATE order_details SET order_status = ? WHERE order_id = ?`, [status, req.params.id]);
+    if (!result.affectedRows) return res.status(404).json({ success: false, message: "Order not found." });
+    return res.json({ success: true, message: "Order status updated." });
+  } catch (error) {
+    return sendError(res, error, "Unable to update order status.");
+  }
+};
+
+export const getDeliveries = async (req, res) => {
+  try {
+    const [deliveries] = await pool.query(`SELECT * FROM delivery_details ORDER BY delivery_id DESC`);
+    return res.json({ success: true, deliveries });
+  } catch (error) {
+    return sendError(res, error, "Unable to load deliveries.");
+  }
+};
+
+export const updateDelivery = async (req, res) => {
+  try {
+    const allowed = ["Pending", "In Transit", "Delivered", "Cancelled"];
+    const { delivery_status, driver_name, driver_contact, transport_type, delivery_date, delivery_address } = req.body;
+    if (delivery_status && !allowed.includes(delivery_status)) return res.status(400).json({ success: false, message: "Invalid delivery status." });
+    const [result] = await pool.query(
+      `UPDATE delivery_details SET delivery_status = COALESCE(?, delivery_status), driver_name = COALESCE(?, driver_name), driver_contact = COALESCE(?, driver_contact), transport_type = COALESCE(?, transport_type), delivery_date = COALESCE(?, delivery_date), delivery_address = COALESCE(?, delivery_address) WHERE delivery_id = ?`,
+      [delivery_status || null, driver_name, driver_contact, transport_type, delivery_date || null, delivery_address, req.params.id]
+    );
+    if (!result.affectedRows) return res.status(404).json({ success: false, message: "Delivery not found." });
+    return res.json({ success: true, message: "Delivery updated." });
+  } catch (error) {
+    return sendError(res, error, "Unable to update delivery.");
+  }
+};
