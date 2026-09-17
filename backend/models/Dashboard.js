@@ -1,7 +1,19 @@
 import pool from "../config/db.js";
 
 export const getMemberDashboardData = async (userId) => {
-  const [membershipRows] = await pool.query(`SELECT sm.stokvel_id, s.stokvel_name, s.description FROM stokvel_members sm INNER JOIN stokvels s ON s.stokvel_id = sm.stokvel_id WHERE sm.user_id = ? LIMIT 1`, [userId]);
+  const [membershipRows] = await pool.query(`
+    SELECT sm.stokvel_member_id, sm.stokvel_id, s.stokvel_name, s.description,
+           CASE
+             WHEN UPPER(TRIM(COALESCE(smr.stokvel_role, 'MEMBER'))) IN ('CHAIRPERSON', 'TREASURER')
+               THEN UPPER(TRIM(smr.stokvel_role))
+             ELSE 'MEMBER'
+           END AS stokvel_role
+    FROM stokvel_members sm
+    INNER JOIN stokvels s ON s.stokvel_id = sm.stokvel_id
+    LEFT JOIN stokvel_member_roles smr ON smr.stokvel_member_id = sm.stokvel_member_id
+    WHERE sm.user_id = ?
+    LIMIT 1
+  `, [userId]);
   if (!membershipRows.length) return null;
   const stokvel = membershipRows[0];
 
@@ -10,13 +22,15 @@ export const getMemberDashboardData = async (userId) => {
   // being shown against the wrong member.
   const [members] = await pool.query(`
     SELECT u.user_id, u.full_name, u.email, u.role, sm.joined_at,
+           COALESCE(smr.stokvel_role, 'MEMBER') AS stokvel_role,
            COALESCE(SUM(CASE WHEN mc.payment_status = 'Paid' THEN mc.amount ELSE 0 END),0) AS paid_contributions,
            COALESCE(SUM(mc.amount),0) AS recorded_contributions
     FROM stokvel_members sm
     INNER JOIN users u ON u.user_id = sm.user_id
+    LEFT JOIN stokvel_member_roles smr ON smr.stokvel_member_id = sm.stokvel_member_id
     LEFT JOIN money_contributions mc ON mc.user_id = u.user_id AND mc.stokvel_id = sm.stokvel_id
     WHERE sm.stokvel_id = ?
-    GROUP BY u.user_id,u.full_name,u.email,u.role,sm.joined_at
+    GROUP BY u.user_id,u.full_name,u.email,u.role,sm.joined_at,smr.stokvel_role
     ORDER BY u.full_name ASC`, [stokvel.stokvel_id]);
 
   const [walletRows] = await pool.query(`
@@ -34,9 +48,22 @@ export const getMemberDashboardData = async (userId) => {
     ORDER BY mc.contribution_date DESC,mc.contribution_id DESC`, [stokvel.stokvel_id, stokvel.stokvel_id]);
 
   const wallet = walletRows[0] || { balance: 0, paid_contributions: 0, spent_amount: 0 };
+  const normalizedRole = String(stokvel.stokvel_role || "MEMBER").trim().toUpperCase();
   return {
     stokvel,
-    members: members.map((m)=>({...m,paid_contributions:Number(m.paid_contributions||0),recorded_contributions:Number(m.recorded_contributions||0)})),
+    membership: {
+      ...stokvel,
+      stokvel_role: normalizedRole,
+      can_manage_goal: ["CHAIRPERSON", "TREASURER"].includes(normalizedRole),
+    },
+    members: members.map((m)=>({
+      ...m,
+      stokvel_role: ["CHAIRPERSON", "TREASURER"].includes(String(m.stokvel_role || "").toUpperCase())
+        ? String(m.stokvel_role).toUpperCase()
+        : "MEMBER",
+      paid_contributions:Number(m.paid_contributions||0),
+      recorded_contributions:Number(m.recorded_contributions||0)
+    })),
     contributions: contributionRows.map((c)=>({...c,amount:Number(c.amount||0)})),
     wallet: { paid_contributions:Number(wallet.paid_contributions||0), spent_amount:Number(wallet.spent_amount||0), available_balance:Number(wallet.balance||0) }
   };
