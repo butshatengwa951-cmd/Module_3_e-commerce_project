@@ -686,11 +686,13 @@ onUnmounted(() => {
 }
 
 .price-row {
-  min-height: 66px;
+  min-height: 72px;
+  height: 72px;
+  flex: 0 0 72px;
   margin: 18px 0;
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: center;
   gap: 12px;
 }
 
@@ -714,7 +716,10 @@ onUnmounted(() => {
 }
 
 .best-supplier {
+  min-height: 64px;
+  flex: 0 0 64px;
   display: grid;
+  align-content: center;
   gap: 4px;
   padding: 12px;
   border: 1px solid var(--catalogue-border-soft);
@@ -724,12 +729,16 @@ onUnmounted(() => {
 
 .best-supplier strong {
   font-size: 14px;
+  line-height: 1.25;
 }
 
 .stock-row {
   min-height: 20px;
+  height: 20px;
+  flex: 0 0 20px;
   margin: 12px 0;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   color: var(--catalogue-muted);
@@ -757,6 +766,9 @@ onUnmounted(() => {
 }
 
 .compare-button {
+  min-height: 46px;
+  height: 46px;
+  flex: 0 0 46px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -765,6 +777,9 @@ onUnmounted(() => {
 }
 
 .add-button {
+  min-height: 46px;
+  height: 46px;
+  flex: 0 0 46px;
   margin-top: auto;
   padding-top: 12px;
   padding-bottom: 12px;
