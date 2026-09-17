@@ -6,14 +6,28 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+const clearAuthStorage = () => {
+  ["token", "sw_token", "refresh_token", "session_id", "user", "stokvel"].forEach((key) => localStorage.removeItem(key));
+};
+
+const saveAuthResponse = (data) => {
+  localStorage.setItem("token", data.access_token || data.token);
+  localStorage.setItem("refresh_token", data.refresh_token);
+  localStorage.setItem("session_id", data.session_id);
+  localStorage.setItem("user", JSON.stringify(data.user));
+  localStorage.setItem("stokvel", JSON.stringify(data.stokvel));
+};
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token") || localStorage.getItem("sw_token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// A short retry for idempotent GET requests prevents transient backend/network
-// hiccups from making pages such as Group Hub appear unavailable until refresh.
+let refreshPromise = null;
+
+// Access tokens are deliberately short-lived. A failed authenticated request gets
+// one refresh attempt; the original request is retried only after the session rotates.
 api.interceptors.response.use(undefined, async (error) => {
   const config = error.config;
   const status = error.response?.status;
@@ -24,6 +38,32 @@ api.interceptors.response.use(undefined, async (error) => {
     config.__swRetried = true;
     await new Promise((resolve) => window.setTimeout(resolve, 350));
     return api(config);
+  }
+
+  const canRefresh = status === 401 && !config?.__swRefreshAttempted;
+  const refreshToken = localStorage.getItem("refresh_token");
+  const sessionId = localStorage.getItem("session_id");
+  const isAuthEndpoint = String(config?.url || "").includes("/api/auth/");
+
+  if (canRefresh && refreshToken && sessionId && !isAuthEndpoint) {
+    config.__swRefreshAttempted = true;
+    try {
+      if (!refreshPromise) {
+        refreshPromise = axios.post(
+          `${api.defaults.baseURL}/api/auth/refresh`,
+          { refresh_token: refreshToken, session_id: sessionId },
+          { headers: { "Content-Type": "application/json" } }
+        ).finally(() => { refreshPromise = null; });
+      }
+      const refreshed = await refreshPromise;
+      saveAuthResponse(refreshed.data);
+      window.dispatchEvent(new Event("auth-updated"));
+      return api(config);
+    } catch (refreshError) {
+      clearAuthStorage();
+      window.dispatchEvent(new Event("auth-updated"));
+      return Promise.reject(refreshError);
+    }
   }
 
   return Promise.reject(error);
@@ -73,7 +113,33 @@ export const getPaymentOptions = async () => (await api.get("/api/payment/curren
 export const createPayfastCheckout = async (data) => (await api.post("/api/payment/payfast/checkout", data)).data;
 
 export const signup = async (data) => (await api.post("/api/auth/signup", data)).data;
-export const login = async (data) => { const r = await api.post("/api/auth/login", data); if (r.data?.success) { localStorage.setItem("token", r.data.token); localStorage.setItem("user", JSON.stringify(r.data.user)); localStorage.setItem("stokvel", JSON.stringify(r.data.stokvel)); window.dispatchEvent(new Event("login-completed")); window.dispatchEvent(new Event("auth-updated")); } return r.data; };
+export const login = async (data) => {
+  const r = await api.post("/api/auth/login", data);
+  if (r.data?.success) {
+    saveAuthResponse(r.data);
+    window.dispatchEvent(new Event("login-completed"));
+    window.dispatchEvent(new Event("auth-updated"));
+  }
+  return r.data;
+};
+export const refreshSession = async () => {
+  const r = await axios.post(`${api.defaults.baseURL}/api/auth/refresh`, {
+    refresh_token: localStorage.getItem("refresh_token"),
+    session_id: localStorage.getItem("session_id"),
+  });
+  saveAuthResponse(r.data);
+  window.dispatchEvent(new Event("auth-updated"));
+  return r.data;
+};
+export const logout = async () => {
+  const sessionId = localStorage.getItem("session_id");
+  try {
+    if (sessionId) await axios.post(`${api.defaults.baseURL}/api/auth/logout`, { session_id: sessionId });
+  } finally {
+    clearAuthStorage();
+    window.dispatchEvent(new Event("auth-updated"));
+  }
+};
 export const forgotPassword = async (email) => (await api.post("/api/auth/forgot-password", { email })).data;
 export const resetPassword = async (data) => (await api.post("/api/auth/reset-password", data)).data;
 export const verifyResetToken = async (token) => (await api.get("/api/auth/verify-reset-token", { params: { token } })).data;
