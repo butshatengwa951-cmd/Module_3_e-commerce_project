@@ -19,6 +19,15 @@ import {
   getDeliveries,
   updateDelivery,
 } from "../controllers/adminController.js";
+import {
+  getManagedUsers,
+  updateUserRole,
+  getStokvelMembers,
+  addStokvelMember,
+  removeStokvelMember,
+  getAdminAnalytics,
+  getAuditLog,
+} from "../controllers/adminManagementController.js";
 
 const router = express.Router();
 
@@ -39,5 +48,14 @@ router.get("/orders", getOrders);
 router.patch("/orders/:id/status", updateOrderStatus);
 router.get("/deliveries", getDeliveries);
 router.patch("/deliveries/:id", updateDelivery);
+
+// Additional company administration controls.
+router.get("/management/users", getManagedUsers);
+router.patch("/management/users/:id/role", updateUserRole);
+router.get("/management/stokvels/:id/members", getStokvelMembers);
+router.post("/management/stokvels/:id/members", addStokvelMember);
+router.delete("/management/stokvels/:id/members/:userId", removeStokvelMember);
+router.get("/analytics", getAdminAnalytics);
+router.get("/audit-log", getAuditLog);
 
 export default router;
