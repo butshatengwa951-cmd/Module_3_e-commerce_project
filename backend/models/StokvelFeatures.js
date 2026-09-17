@@ -6,7 +6,11 @@ const getMembership = async (userId) => {
             sm.stokvel_id,
             s.stokvel_name,
             s.description,
-            COALESCE(smr.stokvel_role, 'MEMBER') AS stokvel_role
+            CASE
+              WHEN UPPER(TRIM(COALESCE(smr.stokvel_role, 'MEMBER'))) IN ('CHAIRPERSON', 'TREASURER')
+                THEN UPPER(TRIM(smr.stokvel_role))
+              ELSE 'MEMBER'
+            END AS stokvel_role
      FROM stokvel_members sm
      INNER JOIN stokvels s ON s.stokvel_id = sm.stokvel_id
      LEFT JOIN stokvel_member_roles smr ON smr.stokvel_member_id = sm.stokvel_member_id
@@ -37,8 +41,13 @@ export const getStokvelFeatures = async (userId) => {
     [membership.stokvel_id]
   );
 
+  const stokvelRole = String(membership.stokvel_role || "MEMBER").toUpperCase();
   return {
-    membership,
+    membership: {
+      ...membership,
+      stokvel_role: stokvelRole,
+      can_manage_goal: ["TREASURER", "CHAIRPERSON"].includes(stokvelRole),
+    },
     goal: goals[0] || null,
     wallet: { available_balance: Number(walletRows[0]?.balance || 0) },
   };
