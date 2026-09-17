@@ -1,6 +1,98 @@
 import pool from "../config/db.js";
-const shapeVotes=(rows)=>rows.map(p=>({...p,vote_count:Number(p.vote_count||0),user_voted:Boolean(p.user_voted)}));
-export const getStokvelFeatures=async(userId)=>{const[m]=await pool.query(`SELECT sm.stokvel_id,s.stokvel_name,s.description,u.role FROM stokvel_members sm INNER JOIN stokvels s ON s.stokvel_id=sm.stokvel_id INNER JOIN users u ON u.user_id=? WHERE sm.user_id=? LIMIT 1`,[userId,userId]);if(!m.length)return null;const membership=m[0];const[goals]=await pool.query(`SELECT goal_id,target_amount,deadline,created_at,updated_at FROM stokvel_goals WHERE stokvel_id=? LIMIT 1`,[membership.stokvel_id]);const[cards]=await pool.query(`SELECT card_id,card_type,last_four_digits,available_amount FROM card_details WHERE expiry_date IS NULL OR expiry_date>=CURDATE() ORDER BY card_id ASC`);const[rows]=await pool.query(`SELECT p.product_id,p.product_name,p.category,p.image_url,COALESCE(SUM(CASE WHEN sv.vote_id IS NOT NULL THEN 1 ELSE 0 END),0) vote_count,MAX(CASE WHEN sv.user_id=? THEN 1 ELSE 0 END) user_voted FROM products p LEFT JOIN stokvel_product_votes sv ON sv.product_id=p.product_id AND sv.stokvel_id=? GROUP BY p.product_id,p.product_name,p.category,p.image_url ORDER BY p.category ASC,vote_count DESC,p.product_name ASC`,[userId,membership.stokvel_id]);const[w]=await pool.query(`SELECT balance FROM stokvel_wallets WHERE stokvel_id=? LIMIT 1`,[membership.stokvel_id]);const votes=shapeVotes(rows);const grouped=Object.values(votes.reduce((acc,p)=>{const key=p.category||"Other";(acc[key] ||= {category:key,options:[]}).options.push(p);return acc},{}));return{membership,goal:goals[0]||null,cards,wallet:{available_balance:Number(w[0]?.balance||0)},votes,products:grouped}};
-export const contributeToStokvel=async({userId,cardId,amount})=>{const a=Number(amount);if(!Number.isFinite(a)||a<=0){const e=new Error("Contribution amount must be greater than zero.");e.statusCode=400;throw e}const db=await pool.getConnection();try{await db.beginTransaction();const[m]=await db.query(`SELECT sm.stokvel_id,u.full_name FROM stokvel_members sm INNER JOIN users u ON u.user_id=sm.user_id WHERE sm.user_id=? LIMIT 1 FOR UPDATE`,[userId]);if(!m.length){const e=new Error("You are not a member of a Stokvel.");e.statusCode=403;throw e}const[card]=await db.query(`SELECT card_id,card_type,last_four_digits,available_amount FROM card_details WHERE card_id=? LIMIT 1 FOR UPDATE`,[cardId]);if(!card.length){const e=new Error("Payment method not found.");e.statusCode=400;throw e}if(Number(card[0].available_amount)<a){const e=new Error(`Insufficient available funds. Available amount: R ${Number(card[0].available_amount).toFixed(2)}`);e.statusCode=400;throw e}const[w]=await db.query(`SELECT wallet_id,balance FROM stokvel_wallets WHERE stokvel_id=? LIMIT 1 FOR UPDATE`,[m[0].stokvel_id]);if(!w.length){const e=new Error("The Stokvel wallet has not been set up yet. Run backend/sql/stokvel_wallet.sql first.");e.statusCode=503;throw e}await db.query(`UPDATE card_details SET available_amount=available_amount-? WHERE card_id=?`,[a,cardId]);const[c]=await db.query(`INSERT INTO money_contributions (card_id,stokvel_id,member_name,amount,payment_status) VALUES (?,?,?,?,'Paid')`,[cardId,m[0].stokvel_id,m[0].full_name,a]);const nextBalance=Number(w[0].balance)+a;await db.query(`UPDATE stokvel_wallets SET balance=? WHERE wallet_id=?`,[nextBalance,w[0].wallet_id]);await db.query(`INSERT INTO stokvel_wallet_transactions (stokvel_id,user_id,transaction_type,amount,reference_id,description) VALUES (?,?,'CONTRIBUTION',?,?,?)`,[m[0].stokvel_id,userId,a,c.insertId,`Member contribution #${c.insertId}`]);await db.commit();return{contribution_id:c.insertId,amount:Number(a.toFixed(2)),payment_status:"Paid",card_type:card[0].card_type,last_four_digits:card[0].last_four_digits,wallet_balance:Number(nextBalance.toFixed(2))}}catch(e){await db.rollback();throw e}finally{db.release()}};
-export const saveStokvelGoal=async({userId,targetAmount,deadline})=>{const t=Number(targetAmount);if(!Number.isFinite(t)||t<=0){const e=new Error("Target amount must be greater than zero.");e.statusCode=400;throw e}if(!deadline){const e=new Error("A funding deadline is required.");e.statusCode=400;throw e}const[m]=await pool.query(`SELECT sm.stokvel_id,u.role FROM stokvel_members sm INNER JOIN users u ON u.user_id=sm.user_id WHERE sm.user_id=? LIMIT 1`,[userId]);if(!m.length){const e=new Error("You are not a member of a Stokvel.");e.statusCode=403;throw e}if(!['chairperson','admin'].includes(m[0].role)){const e=new Error("Only the Stokvel chairperson can manage the funding goal.");e.statusCode=403;throw e}await pool.query(`INSERT INTO stokvel_goals (stokvel_id,target_amount,deadline) VALUES (?,?,?) ON DUPLICATE KEY UPDATE target_amount=VALUES(target_amount),deadline=VALUES(deadline),updated_at=CURRENT_TIMESTAMP`,[m[0].stokvel_id,t,deadline]);const[r]=await pool.query(`SELECT goal_id,target_amount,deadline,created_at,updated_at FROM stokvel_goals WHERE stokvel_id=? LIMIT 1`,[m[0].stokvel_id]);return r[0]};
-export const voteForProduct=async({userId,productId})=>{const db=await pool.getConnection();try{await db.beginTransaction();const[m]=await db.query(`SELECT stokvel_id FROM stokvel_members WHERE user_id=? LIMIT 1`,[userId]);if(!m.length){const e=new Error("You are not a member of a Stokvel.");e.statusCode=403;throw e}const[p]=await db.query(`SELECT product_id,category FROM products WHERE product_id=? LIMIT 1`,[productId]);if(!p.length){const e=new Error("Product not found.");e.statusCode=404;throw e}await db.query(`DELETE sv FROM stokvel_product_votes sv INNER JOIN products oldp ON oldp.product_id=sv.product_id WHERE sv.stokvel_id=? AND sv.user_id=? AND oldp.category=?`,[m[0].stokvel_id,userId,p[0].category]);await db.query(`INSERT INTO stokvel_product_votes (stokvel_id,user_id,product_id) VALUES (?,?,?)`,[m[0].stokvel_id,userId,productId]);await db.commit();return{product_id:productId,category:p[0].category}}catch(e){await db.rollback();throw e}finally{db.release()}};
+
+const getMembership = async (userId) => {
+  const [rows] = await pool.query(
+    `SELECT sm.stokvel_member_id,
+            sm.stokvel_id,
+            s.stokvel_name,
+            s.description,
+            COALESCE(
+              smr.stokvel_role,
+              CASE WHEN s.chairperson_id = ? THEN 'CHAIRPERSON' ELSE 'MEMBER' END
+            ) AS stokvel_role
+     FROM stokvel_members sm
+     INNER JOIN stokvels s ON s.stokvel_id = sm.stokvel_id
+     LEFT JOIN stokvel_member_roles smr ON smr.stokvel_member_id = sm.stokvel_member_id
+     WHERE sm.user_id = ?
+     LIMIT 1`,
+    [userId, userId]
+  );
+  return rows[0] || null;
+};
+
+export const getStokvelFeatures = async (userId) => {
+  const membership = await getMembership(userId);
+  if (!membership) return null;
+
+  const [goals] = await pool.query(
+    `SELECT goal_id,target_amount,deadline,created_at,updated_at
+     FROM stokvel_goals
+     WHERE stokvel_id = ?
+     LIMIT 1`,
+    [membership.stokvel_id]
+  );
+
+  const [walletRows] = await pool.query(
+    `SELECT balance
+     FROM stokvel_wallets
+     WHERE stokvel_id = ?
+     LIMIT 1`,
+    [membership.stokvel_id]
+  );
+
+  return {
+    membership,
+    goal: goals[0] || null,
+    wallet: {
+      available_balance: Number(walletRows[0]?.balance || 0),
+    },
+  };
+};
+
+export const saveStokvelGoal = async ({ userId, targetAmount, deadline }) => {
+  const target = Number(targetAmount);
+  if (!Number.isFinite(target) || target <= 0) {
+    const error = new Error("Target amount must be greater than zero.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (!deadline) {
+    const error = new Error("A funding deadline is required.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const membership = await getMembership(userId);
+  if (!membership) {
+    const error = new Error("You are not a member of a Stokvel.");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  if (!["CHAIRPERSON", "TREASURER"].includes(String(membership.stokvel_role).toUpperCase())) {
+    const error = new Error("Only the Stokvel chairperson or treasurer can manage the funding goal.");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  await pool.query(
+    `INSERT INTO stokvel_goals (stokvel_id,target_amount,deadline)
+     VALUES (?,?,?)
+     ON DUPLICATE KEY UPDATE
+       target_amount = VALUES(target_amount),
+       deadline = VALUES(deadline),
+       updated_at = CURRENT_TIMESTAMP`,
+    [membership.stokvel_id, target, deadline]
+  );
+
+  const [rows] = await pool.query(
+    `SELECT goal_id,target_amount,deadline,created_at,updated_at
+     FROM stokvel_goals
+     WHERE stokvel_id = ?
+     LIMIT 1`,
+    [membership.stokvel_id]
+  );
+
+  return rows[0];
+};
