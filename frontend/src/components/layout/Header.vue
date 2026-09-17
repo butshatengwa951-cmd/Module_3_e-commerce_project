@@ -1,7 +1,7 @@
 <template>
   <header class="sw-header" :class="{ 'admin-header': isAdmin }">
     <button class="menu-button" type="button" aria-label="Open menu" @click="menuOpen = !menuOpen">☰</button>
-    <router-link :to="isAdmin ? '/admin' : '/home-placeholder'" class="brand" @click="menuOpen = false">
+    <router-link :to="isAdmin ? '/admin' : '/'" class="brand" @click="menuOpen = false">
       <span class="brand-mark">🤝</span><span class="brand-name">STOCK<span>WELL</span></span>
     </router-link>
     <nav v-if="!isAdmin" class="desktop-nav">
