@@ -35,7 +35,31 @@ export const getUsers = async (req, res) => {
 
 export const getStokvels = async (req, res) => {
   try {
-    const [stokvels] = await pool.query(`SELECT s.stokvel_id,s.stokvel_name,s.description,s.created_at,COALESCE((SELECT u.full_name FROM users u WHERE u.user_id=s.chairperson_id LIMIT 1),'Chairperson not assigned') AS chairperson_name,COUNT(sm.stokvel_member_id) AS member_count FROM stokvels s LEFT JOIN stokvel_members sm ON sm.stokvel_id=s.stokvel_id GROUP BY s.stokvel_id,s.stokvel_name,s.description,s.created_at,s.chairperson_id ORDER BY s.stokvel_id`);
+    const [stokvels] = await pool.query(`
+      SELECT
+        s.stokvel_id,
+        s.stokvel_name,
+        s.description,
+        s.created_at,
+        COALESCE((
+          SELECT u.full_name
+          FROM stokvel_members smc
+          INNER JOIN stokvel_member_roles smr
+            ON smr.stokvel_member_id = smc.stokvel_member_id
+          INNER JOIN users u
+            ON u.user_id = smc.user_id
+          WHERE smc.stokvel_id = s.stokvel_id
+            AND UPPER(smr.stokvel_role) = 'CHAIRPERSON'
+          ORDER BY smc.stokvel_member_id
+          LIMIT 1
+        ), 'Chairperson not assigned') AS chairperson_name,
+        COUNT(sm.stokvel_member_id) AS member_count
+      FROM stokvels s
+      LEFT JOIN stokvel_members sm
+        ON sm.stokvel_id = s.stokvel_id
+      GROUP BY s.stokvel_id, s.stokvel_name, s.description, s.created_at
+      ORDER BY s.stokvel_id
+    `);
     return res.json({ success: true, stokvels });
   } catch (error) { return sendError(res, error, "Unable to load Stokvels."); }
 };
@@ -48,7 +72,7 @@ export const deleteProduct = async (req, res) => { try { const [result]=await po
 export const getSupplierPrices = async (req,res)=>{try{const[prices]=await pool.query(`SELECT sp.*,p.product_name FROM supplier_prices sp JOIN products p ON p.product_id=sp.product_id ORDER BY sp.supplier_price_id DESC`);return res.json({success:true,supplierPrices:prices});}catch(error){return sendError(res,error,"Unable to load supplier prices.");}};
 export const createSupplierPrice = async (req,res)=>{try{const{product_id,supplier_name,price,minimum_quantity=10}=req.body;if(!product_id||!supplier_name||price==null)return res.status(400).json({success:false,message:"Product, supplier and price are required."});const[result]=await pool.query(`INSERT INTO supplier_prices (product_id,supplier_name,price,minimum_quantity) VALUES (?,?,?,?)`,[product_id,supplier_name.trim(),Number(price),Math.max(1,Number(minimum_quantity)||10)]);const[rows]=await pool.query(`SELECT sp.*,p.product_name FROM supplier_prices sp JOIN products p ON p.product_id=sp.product_id WHERE sp.supplier_price_id=?`,[result.insertId]);return res.status(201).json({success:true,supplierPrice:rows[0]});}catch(error){if(error.code==="ER_DUP_ENTRY")return res.status(409).json({success:false,message:"That supplier already has a price for this product."});return sendError(res,error,"Unable to create supplier price.");}};
 export const updateSupplierPrice = async(req,res)=>{try{const{supplier_name,price,minimum_quantity}=req.body;const[result]=await pool.query(`UPDATE supplier_prices SET supplier_name=COALESCE(?,supplier_name),price=COALESCE(?,price),minimum_quantity=COALESCE(?,minimum_quantity) WHERE supplier_price_id=?`,[supplier_name,price==null?null:Number(price),minimum_quantity==null?null:Math.max(1,Number(minimum_quantity)||1),req.params.id]);if(!result.affectedRows)return res.status(404).json({success:false,message:"Supplier price not found."});const[rows]=await pool.query(`SELECT sp.*,p.product_name FROM supplier_prices sp JOIN products p ON p.product_id=sp.product_id WHERE sp.supplier_price_id=?`,[req.params.id]);return res.json({success:true,supplierPrice:rows[0]});}catch(error){return sendError(res,error,"Unable to update supplier price.");}};
-export const deleteSupplierPrice = async(req,res)=>{try{const[result]=await pool.query(`DELETE FROM supplier_prices WHERE supplier_price_id=?`,[req.params.id]);if(!result.affectedRows)return res.status(404).json({success:false,message:"Supplier price not found."});return res.json({success:true,message:"Supplier price deleted successfully."});}catch(error){return sendError(res,error,"Unable to delete supplier price. It may already be referenced by an order.");}};
+export const deleteSupplierPrice=async(req,res)=>{try{const[result]=await pool.query(`DELETE FROM supplier_prices WHERE supplier_price_id=?`,[req.params.id]);if(!result.affectedRows)return res.status(404).json({success:false,message:"Supplier price not found."});return res.json({success:true,message:"Supplier price deleted successfully."});}catch(error){return sendError(res,error,"Unable to delete supplier price. It may already be referenced by an order.");}};
 
 export const getOrders = async (req,res)=>{try{const[orders]=await pool.query(`SELECT o.order_id,o.order_date,o.total_amount,o.order_status,u.full_name AS customer_name,u.email AS customer_email,s.stokvel_name,d.delivery_id,d.delivery_address,d.transport_type,d.driver_name,d.driver_contact,d.delivery_date,d.delivery_status,COUNT(DISTINCT odel.order_delivery_id) AS delivery_count FROM order_details o LEFT JOIN users u ON u.user_id=o.user_id LEFT JOIN stokvels s ON s.stokvel_id=o.stokvel_id LEFT JOIN delivery_details d ON d.delivery_id=o.delivery_id LEFT JOIN order_deliveries odel ON odel.order_id=o.order_id GROUP BY o.order_id,o.order_date,o.total_amount,o.order_status,u.full_name,u.email,s.stokvel_name,d.delivery_id,d.delivery_address,d.transport_type,d.driver_name,d.driver_contact,d.delivery_date,d.delivery_status ORDER BY o.order_date DESC,o.order_id DESC`);return res.json({success:true,orders});}catch(error){return sendError(res,error,"Unable to load orders.");}};
 export const updateOrderStatus=async(req,res)=>{try{const allowed=["Pending","Confirmed","Processing","Completed","Cancelled"],{status}=req.body;if(!allowed.includes(status))return res.status(400).json({success:false,message:"Invalid order status."});const[result]=await pool.query(`UPDATE order_details SET order_status=? WHERE order_id=?`,[status,req.params.id]);if(!result.affectedRows)return res.status(404).json({success:false,message:"Order not found."});return res.json({success:true,message:"Order status updated."});}catch(error){return sendError(res,error,"Unable to update order status.");}};
