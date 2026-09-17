@@ -69,7 +69,7 @@ export const payfastNotify = async (req, res) => {
     }
     console.log("PayFast ITN source verified", { m_payment_id: itnId, sourceIp: verifiedSourceIp });
 
-    if (!verifyPayfastSignature(req.body || {})) {
+    if (!verifyPayfastSignature(req.body || {}, req.rawBody || null)) {
       console.warn("PayFast ITN rejected: invalid signature", { m_payment_id: itnId });
       return res.status(400).send("Invalid signature");
     }
