@@ -1,0 +1,63 @@
+/* StockWell shared design tokens. Loaded after theme.css so every page uses the same surface, status and typography primitives. */
+:root {
+  --sw-font-heading: "DM Mono", monospace;
+
+  --sw-card-shadow: var(--sw-glass-shadow-light);
+  --sw-card-shadow-hover: var(--sw-glass-shadow-light-hover);
+
+  --sw-success: #247747;
+  --sw-danger: var(--sw-red-600);
+  --sw-warning: var(--sw-orange-600);
+  --sw-info: #6f9eff;
+
+  --sw-button-radius: var(--sw-radius-md);
+  --sw-button-padding-y: 10px;
+  --sw-button-padding-x: 16px;
+  --sw-control-height: 42px;
+}
+
+html.dark-mode {
+  --sw-card-shadow: var(--sw-glass-shadow-dark);
+  --sw-card-shadow-hover: var(--sw-glass-shadow-dark-hover);
+
+  --sw-success: #6fc58d;
+  --sw-danger: #e27b6b;
+  --sw-warning: #e49a7e;
+  --sw-info: #9bb9ff;
+}
+
+button,
+input,
+select,
+textarea {
+  border-radius: var(--sw-radius-md);
+}
+
+button {
+  min-height: var(--sw-control-height);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--sw-font-heading);
+}
+
+input,
+select,
+textarea {
+  border-color: var(--sw-input-border);
+  background: var(--sw-input-background);
+  color: var(--sw-input-text);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--sw-focus);
+  box-shadow: 0 0 0 3px var(--sw-focus-ring);
+  outline: none;
+}
