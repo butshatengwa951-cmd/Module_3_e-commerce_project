@@ -32,6 +32,8 @@ html:not(.dark-mode) {
     inset 0 -1px 1px rgba(49, 43, 80, 0.07);
 
   --sw-toggle-border: rgba(49, 43, 80, 0.2);
+  --sw-orbit-border: rgba(49, 43, 80, 0.22);
+  --sw-hero-ring-border: rgba(49, 43, 80, 0.15);
 }
 
 html:not(.dark-mode) .glass {
@@ -62,6 +64,11 @@ html:not(.dark-mode) textarea:focus {
 }
 
 /* DARK MODE */
+html.dark-mode {
+  --sw-orbit-border: rgba(255, 255, 255, 0.18);
+  --sw-hero-ring-border: rgba(255, 255, 255, 0.14);
+}
+
 html.dark-mode .glass {
   border: 1px solid var(--sw-glass-dark-border);
   background: var(--sw-glass-dark);
@@ -87,4 +94,14 @@ html.dark-mode select:focus,
 html.dark-mode input:focus,
 html.dark-mode textarea:focus {
   background-color: var(--sw-input-background-focus);
+}
+
+/* MEMBER DASHBOARD + ORDER HISTORY HERO RINGS */
+.orbit {
+  border-color: var(--sw-orbit-border) !important;
+}
+
+.dashboard-hero::after,
+.history-hero::after {
+  border-color: var(--sw-hero-ring-border) !important;
 }
