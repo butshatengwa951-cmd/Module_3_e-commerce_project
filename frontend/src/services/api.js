@@ -22,10 +22,7 @@ export const getStokvels = async () => (await api.get("/api/stokvels")).data;
 export const getProducts = async () => {
   const token = localStorage.getItem("token") || localStorage.getItem("sw_token");
   try { return (await api.get(token ? "/api/products/group" : "/api/products")).data; }
-  catch (error) {
-    if (token && [401, 403, 500].includes(error.response?.status)) return (await api.get("/api/products")).data;
-    throw error;
-  }
+  catch (error) { if (token && [401,403,500].includes(error.response?.status)) return (await api.get("/api/products")).data; throw error; }
 };
 export const getProduct = async (id) => (await api.get(`/api/products/${id}`)).data;
 export const getCart = async () => refreshCartStorage();
@@ -42,6 +39,12 @@ export const getMemberDashboard = async () => (await api.get("/api/users/member-
 export const getStokvelFeatures = async () => (await api.get("/api/stokvel-features")).data;
 export const saveStokvelGoal = async (data) => (await api.put("/api/stokvel-features/goal", data)).data;
 
+export const getMemberAddresses = async () => (await api.get("/api/stokvel-addresses")).data;
+export const createMemberAddress = async (data) => (await api.post("/api/stokvel-addresses", data)).data;
+export const updateMemberAddress = async (id, data) => (await api.put(`/api/stokvel-addresses/${id}`, data)).data;
+export const deleteMemberAddress = async (id) => (await api.delete(`/api/stokvel-addresses/${id}`)).data;
+export const setDefaultMemberAddress = async (id) => (await api.post(`/api/stokvel-addresses/${id}/default`)).data;
+
 export const getStokvelProposals = async () => (await api.get("/api/stokvel-proposals")).data;
 export const createPurchaseProposal = async (data) => (await api.post("/api/stokvel-proposals", data)).data;
 export const createProposalFromCart = async (data) => (await api.post("/api/stokvel-proposals/from-cart", data)).data;
@@ -53,17 +56,7 @@ export const getPaymentOptions = async () => (await api.get("/api/payment/curren
 export const createPayfastCheckout = async (data) => (await api.post("/api/payment/payfast/checkout", data)).data;
 
 export const signup = async (data) => (await api.post("/api/auth/signup", data)).data;
-export const login = async (data) => {
-  const r = await api.post("/api/auth/login", data);
-  if (r.data?.success) {
-    localStorage.setItem("token", r.data.token);
-    localStorage.setItem("user", JSON.stringify(r.data.user));
-    localStorage.setItem("stokvel", JSON.stringify(r.data.stokvel));
-    window.dispatchEvent(new Event("login-completed"));
-    window.dispatchEvent(new Event("auth-updated"));
-  }
-  return r.data;
-};
+export const login = async (data) => { const r = await api.post("/api/auth/login", data); if (r.data?.success) { localStorage.setItem("token", r.data.token); localStorage.setItem("user", JSON.stringify(r.data.user)); localStorage.setItem("stokvel", JSON.stringify(r.data.stokvel)); window.dispatchEvent(new Event("login-completed")); window.dispatchEvent(new Event("auth-updated")); } return r.data; };
 export const forgotPassword = async (email) => (await api.post("/api/auth/forgot-password", { email })).data;
 export const resetPassword = async (data) => (await api.post("/api/auth/reset-password", data)).data;
 export const verifyResetToken = async (token) => (await api.get("/api/auth/verify-reset-token", { params: { token } })).data;
