@@ -22,8 +22,8 @@ import { useTheme } from '../../composables/useTheme.js';
 import { readCartState } from '../../composables/useCartState.js';
 const router=useRouter(); const route=useRoute(); const {isDark,toggleTheme}=useTheme(); const menuOpen=ref(false); const cartCount=ref(readCartState().itemCount||0); const authVersion=ref(0);
 const hasSession=computed(()=>{authVersion.value;return Boolean(localStorage.getItem('token')||localStorage.getItem('sw_token'))});
-const isLoggedIn=computed(()=>hasSession.value && route.name !== 'Home');
-const isAdmin=computed(()=>{authVersion.value;try{return hasSession.value && JSON.parse(localStorage.getItem('user')||'null')?.role==='admin' && route.name !== 'Home'}catch{return false}});
+const isLoggedIn=computed(()=>hasSession.value);
+const isAdmin=computed(()=>{authVersion.value;try{return hasSession.value && JSON.parse(localStorage.getItem('user')||'null')?.role==='admin'}catch{return false}});
 function refreshAuthState(){authVersion.value+=1} function updateCart(e){cartCount.value=Number(e.detail?.itemCount??e.detail??0)} function refreshCart(){cartCount.value=Number(readCartState().itemCount||0)}
 function logout(){['token','sw_token','user','stokvel','stockwellCheckoutState','stockwellCartState','basketCount'].forEach(k=>localStorage.removeItem(k));cartCount.value=0;menuOpen.value=false;refreshAuthState();router.push('/')}
 function handleStorage(){refreshAuthState();refreshCart()}
