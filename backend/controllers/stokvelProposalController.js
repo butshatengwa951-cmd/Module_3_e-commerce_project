@@ -5,6 +5,7 @@ import {
   createProposal,
   getProposalDashboard,
 } from "../models/StokvelPurchaseProposal.js";
+import { createProposalFromCurrentCart } from "../models/StokvelProposalFromCart.js";
 
 const handle = (action) => async (req, res) => {
   try {
@@ -24,6 +25,13 @@ export const createPurchaseProposal = handle(async (req) => createProposal({
   description: req.body?.description,
   delivery_address: req.body?.delivery_address,
   items: req.body?.items,
+}));
+
+export const createProposalFromCart = handle(async (req) => createProposalFromCurrentCart({
+  userId: req.user.user_id,
+  title: req.body?.title,
+  description: req.body?.description,
+  delivery_address: req.body?.delivery_address,
 }));
 
 export const voteOnProposal = handle(async (req) => castProposalVote({
