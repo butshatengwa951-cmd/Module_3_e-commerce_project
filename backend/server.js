@@ -33,7 +33,7 @@ const allowedOrigins = String(process.env.FRONTEND_URL || "http://localhost:5173
   .filter(Boolean);
 
 app.use(cors({ origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins }));
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, verify: (req, res, buffer) => { if (req.path === "/api/payment/payfast/notify") req.rawBody = buffer.toString("utf8"); } }));
 app.use(express.json());
 
 app.get("/", (req, res) => res.json({ success: true, message: "StockWell API is running." }));
