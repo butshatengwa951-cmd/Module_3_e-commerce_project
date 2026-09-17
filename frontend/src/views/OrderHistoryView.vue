@@ -1,21 +1,34 @@
 <template>
   <section class="history-page">
     <div class="history-wrap">
-      <div class="history-heading">
-        <div>
-          <p class="eyebrow">MEMBER ACTIVITY</p>
-          <h1>Order History</h1>
-          <p class="intro">A record of your StockWell group orders and their current status.</p>
-          <p v-if="stokvelName" class="stokvel-name">{{ stokvelName }}</p>
+      <header class="history-hero glass">
+        <div class="hero-copy">
+          <div class="eyebrow"><span>●</span> MEMBER ACTIVITY</div>
+          <h1>Order <em>History</em></h1>
+          <p class="hero-text">Keep track of what your group has bought, when it was ordered, and where each order currently stands.</p>
+          <div class="hero-meta">
+            <span class="meta-pill">{{ orders.length }} total orders</span>
+            <span v-if="stokvelName" class="meta-pill">{{ stokvelName }}</span>
+          </div>
         </div>
-        <div class="history-icon" aria-hidden="true">🧾</div>
-      </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="orbit orbit-a"></div>
+          <div class="orbit orbit-b"></div>
+          <div class="receipt-card">
+            <div class="receipt-line short"></div>
+            <div class="receipt-line"></div>
+            <div class="receipt-line"></div>
+            <div class="receipt-total"></div>
+            <span>✓</span>
+          </div>
+        </div>
+      </header>
 
       <div class="stats-grid">
-        <article class="stat-card glass">
-          <span>ORDERS</span>
+        <article class="stat-card glass featured">
+          <span>ORDERS SHOWN</span>
           <strong>{{ displayedOrders.length }}</strong>
-          <small>Orders in your history</small>
+          <small>{{ selectedStatus ? selectedStatus : 'All order statuses' }}</small>
         </article>
         <article class="stat-card glass">
           <span>TOTAL VALUE</span>
@@ -23,17 +36,18 @@
           <small>Value of displayed orders</small>
         </article>
         <article class="stat-card glass">
-          <span>LAST ORDER</span>
+          <span>LATEST ORDER</span>
           <strong>{{ lastOrderDate }}</strong>
-          <small>{{ lastOrder ? `#${lastOrder.order_id}` : "No orders yet" }}</small>
+          <small>{{ lastOrder ? `Order #${lastOrder.order_id}` : 'No orders yet' }}</small>
         </article>
       </div>
 
       <article class="panel glass">
         <div class="panel-heading">
           <div>
-            <div class="panel-title">ORDER HISTORY</div>
-            <p class="muted">Completed and in-progress orders for your current StockWell group.</p>
+            <span class="section-label">PURCHASE TIMELINE</span>
+            <h2>Your group orders</h2>
+            <p>Browse the history of orders placed through StockWell.</p>
           </div>
           <select v-model="selectedStatus" class="status-filter" aria-label="Filter orders by status">
             <option value="">All statuses</option>
@@ -44,26 +58,35 @@
         <div v-if="loading" class="state-card">Loading your order history...</div>
         <div v-else-if="error" class="state-card error">{{ error }}</div>
         <div v-else-if="!displayedOrders.length" class="state-card">
+          <div class="empty-icon">↗</div>
           <strong>No order history yet</strong>
           <span>Orders will appear here after they move beyond the pending cart stage.</span>
-          <button type="button" @click="goToCatalogue">Browse Catalogue</button>
+          <button type="button" @click="goToCatalogue">Browse Catalogue <b>→</b></button>
         </div>
 
         <div v-else class="orders-list">
-          <div v-for="order in displayedOrders" :key="order.order_id" class="order-row">
-            <div class="order-main">
-              <div class="order-number">#{{ order.order_id }}</div>
-              <div>
-                <strong>{{ order.item_count }} item{{ order.item_count === 1 ? '' : 's' }}</strong>
-                <small>{{ formatDate(order.order_date) }}</small>
+          <div v-for="(order, index) in displayedOrders" :key="order.order_id" class="order-row">
+            <div class="timeline-marker">
+              <span>{{ String(displayedOrders.length - index).padStart(2, '0') }}</span>
+              <i></i>
+            </div>
+            <div class="order-card">
+              <div class="order-top">
+                <div>
+                  <div class="order-number">ORDER #{{ order.order_id }}</div>
+                  <strong>{{ order.item_count }} item{{ order.item_count === 1 ? '' : 's' }}</strong>
+                  <small>{{ formatDate(order.order_date) }}</small>
+                </div>
+                <strong class="order-total">R {{ money(order.total_amount) }}</strong>
+              </div>
+              <div class="order-bottom">
+                <span class="status" :class="statusClass(order.order_status)"><i></i>{{ order.order_status }}</span>
+                <div class="order-details">
+                  <span v-if="order.card_type">{{ order.card_type }}{{ order.last_four_digits ? ` •••• ${order.last_four_digits}` : '' }}</span>
+                  <span v-if="order.delivery_status">Delivery: {{ order.delivery_status }}</span>
+                </div>
               </div>
             </div>
-            <div class="order-meta">
-              <span class="status" :class="statusClass(order.order_status)">{{ order.order_status }}</span>
-              <small v-if="order.card_type">{{ order.card_type }}{{ order.last_four_digits ? ` •••• ${order.last_four_digits}` : '' }}</small>
-              <small v-if="order.delivery_status">Delivery: {{ order.delivery_status }}</small>
-            </div>
-            <strong class="order-total">R {{ money(order.total_amount) }}</strong>
           </div>
         </div>
       </article>
@@ -84,30 +107,19 @@ const error = ref("");
 const selectedStatus = ref("");
 
 const statusOptions = computed(() => [...new Set(orders.value.map((order) => order.order_status).filter(Boolean))]);
-const displayedOrders = computed(() => selectedStatus.value
-  ? orders.value.filter((order) => order.order_status === selectedStatus.value)
-  : orders.value);
+const displayedOrders = computed(() => selectedStatus.value ? orders.value.filter((order) => order.order_status === selectedStatus.value) : orders.value);
 const totalValue = computed(() => displayedOrders.value.reduce((sum, order) => sum + Number(order.total_amount || 0), 0));
 const lastOrder = computed(() => displayedOrders.value[0] || null);
 const lastOrderDate = computed(() => lastOrder.value ? formatDate(lastOrder.value.order_date) : "—");
 
-function money(value) {
-  return Number(value || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
+function money(value) { return Number(value || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function formatDate(value) {
   if (!value) return "—";
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString("en-ZA", { day: "2-digit", month: "short", year: "numeric" });
 }
-
-function statusClass(status) {
-  return String(status || "unknown").toLowerCase().replace(/\s+/g, "-");
-}
-
-function goToCatalogue() {
-  router.push("/catalogue");
-}
+function statusClass(status) { return String(status || "unknown").toLowerCase().replace(/\s+/g, "-"); }
+function goToCatalogue() { router.push("/catalogue"); }
 
 async function loadHistory() {
   loading.value = true;
@@ -129,40 +141,65 @@ onMounted(loadHistory);
 </script>
 
 <style scoped>
-.history-page { min-height: 100vh; background: var(--sw-page-background); color: var(--sw-page-text); }
-.history-wrap { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 52px 0 80px; }
-.history-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
-.eyebrow { margin: 0 0 8px; color: var(--sw-gold-500); font: 800 11px var(--sw-font-body); letter-spacing: .16em; }
-h1 { margin: 0; font: 800 clamp(42px, 6vw, 72px)/.95 var(--sw-font-heading); letter-spacing: -.04em; }
-.intro { max-width: 650px; margin: 16px 0 0; color: var(--sw-page-text-soft); font: 15px/1.6 var(--sw-font-body); }
-.stokvel-name { margin: 12px 0 0; color: var(--sw-page-text-soft); font: 700 12px var(--sw-font-body); }
-.history-icon { width: 64px; height: 64px; display: grid; place-items: center; border: 1px solid var(--sw-input-border); border-radius: 20px; background: var(--sw-page-surface); font-size: 28px; }
-.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
-.stat-card { padding: 20px; }
-.stat-card span { display: block; color: var(--sw-page-text-soft); font: 800 10px var(--sw-font-body); letter-spacing: .12em; }
-.stat-card strong { display: block; margin-top: 8px; font: 800 25px var(--sw-font-heading); }
-.stat-card small { display: block; margin-top: 7px; color: var(--sw-page-text-soft); font: 11px var(--sw-font-body); }
-.panel { padding: 22px; }
-.panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--sw-input-border); }
-.panel-title { color: var(--sw-page-text); font: 800 11px var(--sw-font-body); letter-spacing: .12em; }
-.muted { margin: 7px 0 0; color: var(--sw-page-text-soft); font: 12px/1.5 var(--sw-font-body); }
-.status-filter { min-width: 145px; padding: 9px 11px; border: 1px solid var(--sw-input-border); border-radius: 9px; background: var(--sw-page-surface); color: var(--sw-page-text); font: 11px var(--sw-font-body); }
-.state-card { display: grid; gap: 8px; place-items: center; min-height: 220px; padding: 30px; text-align: center; color: var(--sw-page-text-soft); font: 12px var(--sw-font-body); }
-.state-card strong { color: var(--sw-page-text); font-size: 16px; }
-.state-card button { margin-top: 8px; padding: 10px 16px; border: 1px solid var(--sw-gold-500); border-radius: 999px; background: var(--sw-gold-500); color: var(--sw-purple-900); cursor: pointer; font: 800 11px var(--sw-font-body); }
-.state-card.error { color: var(--sw-orange-600); }
-.orders-list { display: grid; }
-.order-row { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 18px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--sw-input-border); }
-.order-row:last-child { border-bottom: 0; }
-.order-main { display: flex; align-items: center; gap: 14px; }
-.order-number { min-width: 58px; color: var(--sw-gold-500); font: 800 13px var(--sw-font-body); }
-.order-main strong { display: block; font: 700 13px var(--sw-font-body); }
-.order-row small { display: block; margin-top: 5px; color: var(--sw-page-text-soft); font: 10px var(--sw-font-body); }
-.order-meta { display: grid; gap: 2px; }
-.status { width: max-content; padding: 5px 9px; border-radius: 999px; background: rgba(200,176,25,.14); color: var(--sw-gold-500); font: 800 9px var(--sw-font-body); }
-.status.processing, .status.in-transit { background: rgba(90,130,220,.14); color: #6f9eff; }
-.status.completed, .status.delivered { background: rgba(55,170,105,.14); color: #48b97a; }
-.status.cancelled, .status.failed { background: rgba(210,75,55,.14); color: #e27b6b; }
-.order-total { white-space: nowrap; font: 800 14px var(--sw-font-body); }
-@media (max-width: 760px) { .history-wrap { padding-top: 32px; } .history-heading { flex-direction: column; } .stats-grid { grid-template-columns: 1fr; } .panel-heading { flex-direction: column; } .status-filter { width: 100%; } .order-row { grid-template-columns: 1fr auto; } .order-meta { grid-column: 1; } .order-total { grid-column: 2; grid-row: 1 / span 2; } }
+.history-page { min-height:100vh; background:var(--sw-page-background); color:var(--sw-page-text); }
+.history-wrap { width:min(1180px,calc(100% - 32px)); margin:0 auto; padding:44px 0 82px; }
+.history-hero { position:relative; overflow:hidden; min-height:350px; padding:48px 52px; display:grid; grid-template-columns:1.25fr .75fr; align-items:center; background:var(--sw-page-gradient); border-radius:26px; }
+.history-hero::after { content:""; position:absolute; width:330px; height:330px; right:-120px; bottom:-170px; border:1px solid rgba(255,255,255,.1); border-radius:50%; }
+.hero-copy { position:relative; z-index:2; }
+.eyebrow { display:inline-flex; gap:8px; align-items:center; padding:8px 12px; border:1px solid var(--sw-input-border); border-radius:999px; color:var(--sw-page-text-soft); font:800 10px var(--sw-font-body); letter-spacing:.13em; }
+.eyebrow span { color:var(--sw-gold-500); }
+h1 { margin:20px 0 15px; font:800 clamp(48px,7vw,78px)/.9 var(--sw-font-heading); letter-spacing:-.07em; }
+h1 em { color:var(--sw-purple-700); font-style:normal; }
+.hero-text { max-width:610px; margin:0; color:var(--sw-page-text-soft); font:15px/1.7 var(--sw-font-body); }
+.hero-meta { display:flex; flex-wrap:wrap; gap:9px; margin-top:23px; }
+.meta-pill { padding:8px 12px; border:1px solid var(--sw-input-border); border-radius:999px; color:var(--sw-page-text-soft); background:rgba(255,255,255,.04); font:700 10px var(--sw-font-body); }
+.hero-visual { position:relative; min-height:240px; display:grid; place-items:center; }
+.orbit { position:absolute; border:1px solid rgba(255,255,255,.12); border-radius:50%; }
+.orbit-a { width:220px; height:220px; }
+.orbit-b { width:300px; height:300px; opacity:.45; }
+.receipt-card { position:relative; z-index:3; width:150px; min-height:190px; padding:30px 23px 22px; background:var(--sw-page-surface); border:1px solid var(--sw-input-border); border-radius:8px 8px 15px 15px; box-shadow:var(--sw-glass-shadow-light); transform:rotate(4deg); }
+.receipt-card::after { content:""; position:absolute; left:0; right:0; bottom:-7px; height:14px; background:linear-gradient(135deg,transparent 5px,var(--sw-page-surface) 0) 0 0/10px 10px repeat-x; }
+.receipt-card span { position:absolute; right:16px; bottom:18px; width:29px; height:29px; display:grid; place-items:center; border-radius:50%; background:var(--sw-gold-500); color:var(--sw-purple-900); font-weight:900; }
+.receipt-line { width:100%; height:5px; margin-bottom:12px; border-radius:4px; background:var(--sw-input-border); }
+.receipt-line.short { width:55%; }
+.receipt-total { width:72%; height:9px; margin-top:27px; border-radius:4px; background:var(--sw-purple-700); }
+.stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:13px; margin:22px 0 18px; }
+.stat-card { min-height:145px; padding:20px; border-radius:18px; }
+.stat-card.featured { background:var(--sw-page-gradient); border-color:rgba(200,176,25,.24); }
+.stat-card span { display:block; color:var(--sw-page-text-soft); font:800 9px var(--sw-font-body); letter-spacing:.12em; }
+.stat-card strong { display:block; margin-top:18px; font:800 clamp(24px,3vw,32px) var(--sw-font-heading); letter-spacing:-.04em; }
+.stat-card small { display:block; margin-top:7px; color:var(--sw-page-text-soft); font:10px var(--sw-font-body); }
+.panel { padding:23px; border-radius:20px; }
+.panel-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; padding-bottom:20px; border-bottom:1px solid var(--sw-input-border); }
+.section-label { color:var(--sw-purple-700); font:800 10px var(--sw-font-body); letter-spacing:.13em; }
+.panel-heading h2 { margin:6px 0 0; font:800 25px var(--sw-font-heading); letter-spacing:-.04em; }
+.panel-heading p { margin:6px 0 0; color:var(--sw-page-text-soft); font:11px/1.5 var(--sw-font-body); }
+.status-filter { min-width:150px; padding:10px 12px; border:1px solid var(--sw-input-border); border-radius:10px; background:var(--sw-page-surface); color:var(--sw-page-text); font:11px var(--sw-font-body); }
+.orders-list { padding-top:8px; }
+.order-row { display:grid; grid-template-columns:50px 1fr; gap:14px; }
+.timeline-marker { position:relative; display:flex; align-items:flex-start; justify-content:center; padding-top:22px; color:var(--sw-gold-500); font:800 9px var(--sw-font-body); }
+.timeline-marker i { position:absolute; top:45px; bottom:0; width:1px; background:var(--sw-input-border); }
+.order-row:last-child .timeline-marker i { display:none; }
+.order-card { margin:10px 0; padding:18px; border:1px solid var(--sw-input-border); border-radius:16px; background:var(--sw-page-surface); transition:transform .2s ease,border-color .2s ease; }
+.order-card:hover { transform:translateY(-2px); border-color:var(--sw-purple-700); }
+.order-top { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; }
+.order-number { color:var(--sw-purple-700); font:800 9px var(--sw-font-body); letter-spacing:.12em; }
+.order-top > div > strong { display:block; margin-top:7px; font:800 15px var(--sw-font-body); }
+.order-top small { display:block; margin-top:4px; color:var(--sw-page-text-soft); font:10px var(--sw-font-body); }
+.order-total { white-space:nowrap; font:800 16px var(--sw-font-body); }
+.order-bottom { display:flex; align-items:center; justify-content:space-between; gap:15px; margin-top:16px; padding-top:13px; border-top:1px solid var(--sw-input-border); }
+.status { display:inline-flex; align-items:center; gap:6px; padding:5px 9px; border-radius:999px; background:rgba(200,176,25,.13); color:var(--sw-gold-500); font:800 9px var(--sw-font-body); }
+.status i { width:5px; height:5px; border-radius:50%; background:currentColor; }
+.status.processing { background:rgba(90,130,220,.13); color:#6f9eff; }
+.status.completed { background:rgba(55,170,105,.13); color:#48b97a; }
+.status.cancelled { background:rgba(210,75,55,.13); color:#e27b6b; }
+.order-details { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:12px; color:var(--sw-page-text-soft); font:9px var(--sw-font-body); }
+.state-card { display:grid; place-items:center; gap:8px; min-height:240px; padding:40px; color:var(--sw-page-text-soft); text-align:center; font:12px var(--sw-font-body); }
+.state-card strong { color:var(--sw-page-text); font:800 17px var(--sw-font-body); }
+.state-card button { margin-top:8px; padding:11px 17px; border:0; border-radius:999px; background:var(--sw-gold-500); color:var(--sw-purple-900); cursor:pointer; font:800 10px var(--sw-font-body); }
+.state-card button b { margin-left:7px; }
+.state-card.error { color:var(--sw-orange-600); }
+.empty-icon { width:48px; height:48px; display:grid; place-items:center; border:1px solid var(--sw-input-border); border-radius:15px; color:var(--sw-gold-500); font-size:20px; }
+@media (max-width:850px) { .history-hero { grid-template-columns:1fr .55fr; padding:38px; } .stats-grid { grid-template-columns:1fr; } }
+@media (max-width:650px) { .history-wrap { width:min(100% - 22px,1180px); padding-top:28px; } .history-hero { grid-template-columns:1fr; padding:30px 24px; } .hero-visual { min-height:180px; } .panel-heading { flex-direction:column; align-items:stretch; } .status-filter { width:100%; } .order-row { grid-template-columns:34px 1fr; gap:7px; } .timeline-marker span { font-size:8px; } .order-top { flex-direction:column; } .order-bottom { align-items:flex-start; flex-direction:column; } .order-details { justify-content:flex-start; } }
 </style>
