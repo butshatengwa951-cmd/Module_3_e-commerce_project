@@ -68,7 +68,7 @@
           </article>
           <article class="panel glass">
             <div class="section-title compact"><div><span class="label">GROUP MEMBERS</span><h2>Contributors.</h2></div><span class="pill">{{ memberCount }}</span></div>
-            <div v-for="member in dashboard.members.slice(0,6)" :key="member.user_id" class="row"><span class="avatar">{{ initials(member.full_name) }}</span><div><b>{{ member.full_name }}</b><small>{{ member.role }}</small></div><strong>R {{ money(member.paid_contributions) }}</strong></div>
+            <div v-for="member in dashboard.members.slice(0,6)" :key="member.user_id" class="row"><span class="avatar">{{ initials(member.full_name) }}</span><div><b>{{ member.full_name }}</b><small>{{ member.stokvel_role || 'MEMBER' }}</small></div><strong>R {{ money(member.paid_contributions) }}</strong></div>
           </article>
         </section>
       </template>
