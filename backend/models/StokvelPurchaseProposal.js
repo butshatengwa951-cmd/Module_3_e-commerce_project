@@ -13,8 +13,20 @@ const getMembership = async (userId, db = pool) => {
   );
   return rows[0]||null;
 };
-const assertMember=async(userId,db=pool)=>{const membership=await getMembership(userId,db);if(!membership)throw Object.assign(new Error("You are not a member of a Stokvel."),{statusCode:403});return membership;};
-const assertOfficer=(membership)=>{if(!["CHAIRPERSON","TREASURER"].includes(String(membership.stokvel_role).toUpperCase()))throw Object.assign(new Error("Only the Stokvel chairperson or treasurer can perform this action."),{statusCode:403});};
+
+const assertMember=async(userId,db=pool)=>{
+  const membership=await getMembership(userId,db);
+  if(!membership)throw Object.assign(new Error("You are not a member of a Stokvel."),{statusCode:403});
+  return membership;
+};
+
+const roleOf=membership=>String(membership?.stokvel_role||"MEMBER").toUpperCase();
+const assertChairperson=membership=>{
+  if(roleOf(membership)!=="CHAIRPERSON")throw Object.assign(new Error("Only the Stokvel chairperson can approve a proposal after the member vote."),{statusCode:403});
+};
+const assertTreasurer=membership=>{
+  if(roleOf(membership)!=="TREASURER")throw Object.assign(new Error("Only the Stokvel treasurer can authorise an approved proposal and release group wallet funds."),{statusCode:403});
+};
 
 export const getProposalDashboard=async(userId)=>{
   const membership=await assertMember(userId);
@@ -37,7 +49,13 @@ export const createProposal=async({userId,title,description,delivery_address,del
 
 export const castProposalVote=async({userId,proposalId,vote})=>{const membership=await assertMember(userId);if(!["APPROVE","REJECT"].includes(vote))throw Object.assign(new Error("Vote must be APPROVE or REJECT."),{statusCode:400});const[p]=await pool.query(`SELECT proposal_id,status,voting_deadline FROM stokvel_purchase_proposals WHERE proposal_id=? AND stokvel_id=? LIMIT 1`,[proposalId,membership.stokvel_id]);if(!p.length)throw Object.assign(new Error("Purchase proposal not found."),{statusCode:404});if(p[0].status!=="VOTING")throw Object.assign(new Error("This proposal is no longer open for voting."),{statusCode:409});if(p[0].voting_deadline&&new Date(p[0].voting_deadline)<new Date())throw Object.assign(new Error("The voting period has ended."),{statusCode:409});await pool.query(`INSERT INTO stokvel_purchase_proposal_votes (proposal_id,user_id,vote) VALUES (?,?,?) ON DUPLICATE KEY UPDATE vote=VALUES(vote),updated_at=CURRENT_TIMESTAMP`,[proposalId,userId,vote]);return{proposal_id:proposalId,vote};};
 
-export const approveProposal=async({userId,proposalId})=>{const membership=await assertMember(userId);assertOfficer(membership);const db=await pool.getConnection();try{await db.beginTransaction();const[rows]=await db.query(`SELECT p.*, (SELECT COUNT(DISTINCT sm.user_id) FROM stokvel_members sm WHERE sm.stokvel_id=p.stokvel_id) AS member_count, (SELECT COUNT(*) FROM stokvel_purchase_proposal_votes v WHERE v.proposal_id=p.proposal_id AND v.vote='APPROVE') AS approve_votes, (SELECT COUNT(*) FROM stokvel_purchase_proposal_votes v WHERE v.proposal_id=p.proposal_id AND v.vote='REJECT') AS reject_votes FROM stokvel_purchase_proposals p WHERE p.proposal_id=? AND p.stokvel_id=? FOR UPDATE`,[proposalId,membership.stokvel_id]);if(!rows.length)throw Object.assign(new Error("Purchase proposal not found."),{statusCode:404});const p=rows[0],required=Math.floor(Number(p.member_count)/2)+1;if(p.status!=="VOTING")throw Object.assign(new Error("Only proposals in voting can be approved."),{statusCode:409});if(Number(p.approve_votes)<required||Number(p.approve_votes)<=Number(p.reject_votes))throw Object.assign(new Error(`A majority is required. ${required} approval votes are needed.`),{statusCode:409});await db.query(`UPDATE stokvel_purchase_proposals SET status='APPROVED',approved_at=NOW(),approved_by=? WHERE proposal_id=?`,[userId,proposalId]);await db.commit();return{proposal_id:proposalId,status:"APPROVED"};}catch(e){await db.rollback();throw e}finally{db.release()}};
+export const approveProposal=async({userId,proposalId})=>{
+  const membership=await assertMember(userId);assertChairperson(membership);const db=await pool.getConnection();
+  try{await db.beginTransaction();const[rows]=await db.query(`SELECT p.*, (SELECT COUNT(DISTINCT sm.user_id) FROM stokvel_members sm WHERE sm.stokvel_id=p.stokvel_id) AS member_count, (SELECT COUNT(*) FROM stokvel_purchase_proposal_votes v WHERE v.proposal_id=p.proposal_id AND v.vote='APPROVE') AS approve_votes, (SELECT COUNT(*) FROM stokvel_purchase_proposal_votes v WHERE v.proposal_id=p.proposal_id AND v.vote='REJECT') AS reject_votes FROM stokvel_purchase_proposals p WHERE p.proposal_id=? AND p.stokvel_id=? FOR UPDATE`,[proposalId,membership.stokvel_id]);
+    if(!rows.length)throw Object.assign(new Error("Purchase proposal not found."),{statusCode:404});const p=rows[0],required=Math.floor(Number(p.member_count)/2)+1;if(p.status!=="VOTING")throw Object.assign(new Error("Only proposals in voting can be approved."),{statusCode:409});if(Number(p.approve_votes)<required||Number(p.approve_votes)<=Number(p.reject_votes))throw Object.assign(new Error(`A majority is required. ${required} approval votes are needed.`),{statusCode:409});
+    await db.query(`UPDATE stokvel_purchase_proposals SET status='APPROVED',approved_at=NOW(),approved_by=? WHERE proposal_id=?`,[userId,proposalId]);await db.commit();return{proposal_id:proposalId,status:"APPROVED"};
+  }catch(e){await db.rollback();throw e}finally{db.release()}
+};
 
 const makeIndividualAllocations=async(db,proposalId,stokvelId)=>{
   const[members]=await db.query(`SELECT sm.stokvel_member_id,sm.user_id,a.address_id FROM stokvel_members sm LEFT JOIN stokvel_member_addresses a ON a.stokvel_member_id=sm.stokvel_member_id AND a.is_default=1 WHERE sm.stokvel_id=? ORDER BY sm.stokvel_member_id ASC FOR UPDATE`,[stokvelId]);
@@ -48,10 +66,10 @@ const makeIndividualAllocations=async(db,proposalId,stokvelId)=>{
 };
 
 export const authoriseProposal=async({userId,proposalId})=>{
-  const membership=await assertMember(userId);assertOfficer(membership);const db=await pool.getConnection();
+  const membership=await assertMember(userId);assertTreasurer(membership);const db=await pool.getConnection();
   try{await db.beginTransaction();
-    const[rows]=await db.query(`SELECT proposal_id,stokvel_id,created_by,status,delivery_address,delivery_mode FROM stokvel_purchase_proposals WHERE proposal_id=? AND stokvel_id=? FOR UPDATE`,[proposalId,membership.stokvel_id]);
-    if(!rows.length)throw Object.assign(new Error("Purchase proposal not found."),{statusCode:404});const proposal=rows[0];if(proposal.status!=="APPROVED")throw Object.assign(new Error("Only an approved proposal can be authorised."),{statusCode:409});if(proposal.delivery_mode==="GROUP"&&!proposal.delivery_address)throw Object.assign(new Error("A group delivery address is required before authorisation."),{statusCode:400});
+    const[rows]=await db.query(`SELECT p.proposal_id,p.stokvel_id,p.created_by,p.status,p.delivery_address,p.delivery_mode,p.approved_by,chair_role.stokvel_role AS approved_by_role FROM stokvel_purchase_proposals p LEFT JOIN stokvel_members approved_member ON approved_member.user_id=p.approved_by AND approved_member.stokvel_id=p.stokvel_id LEFT JOIN stokvel_member_roles chair_role ON chair_role.stokvel_member_id=approved_member.stokvel_member_id WHERE p.proposal_id=? AND p.stokvel_id=? FOR UPDATE`,[proposalId,membership.stokvel_id]);
+    if(!rows.length)throw Object.assign(new Error("Purchase proposal not found."),{statusCode:404});const proposal=rows[0];if(proposal.status!=="APPROVED")throw Object.assign(new Error("The Chairperson must approve the proposal before the Treasurer can authorise it."),{statusCode:409});if(String(proposal.approved_by_role||"").toUpperCase()!=="CHAIRPERSON")throw Object.assign(new Error("This proposal does not have a valid Chairperson approval."),{statusCode:409});if(Number(proposal.approved_by)===Number(userId))throw Object.assign(new Error("The Chairperson and Treasurer must be different Stokvel officers."),{statusCode:409});if(proposal.delivery_mode==="GROUP"&&!proposal.delivery_address)throw Object.assign(new Error("A group delivery address is required before authorisation."),{statusCode:400});
     const[items]=await db.query(`SELECT i.*,p.quantity_available,p.product_name FROM stokvel_purchase_proposal_items i INNER JOIN products p ON p.product_id=i.product_id WHERE i.proposal_id=? FOR UPDATE`,[proposalId]);if(!items.length)throw Object.assign(new Error("The proposal has no items."),{statusCode:400});
     if(proposal.delivery_mode==="INDIVIDUAL")await makeIndividualAllocations(db,proposalId,membership.stokvel_id);
     const total=Number(items.reduce((s,i)=>s+Number(i.subtotal),0).toFixed(2));for(const item of items){if(Number(item.quantity)>Number(item.quantity_available))throw Object.assign(new Error(`${item.product_name} no longer has enough stock.`),{statusCode:409});}
@@ -67,6 +85,6 @@ export const authoriseProposal=async({userId,proposalId})=>{
       for(const row of grouped.values()){const[delivery]=await db.query(`INSERT INTO delivery_details (delivery_address,transport_type,driver_contact,delivery_status) VALUES (?,'Van',?,'Pending')`,[row.full_address,row.phone_number||null]);await db.query(`INSERT INTO order_deliveries (order_id,delivery_id,stokvel_member_id) VALUES (?,?,?)`,[order.insertId,delivery.insertId,row.stokvel_member_id]);}
     }
     for(const item of items){await db.query(`UPDATE products SET quantity_available=quantity_available-? WHERE product_id=?`,[item.quantity,item.product_id]);await db.query(`INSERT INTO order_items (order_id,product_id,supplier_price_id,quantity,unit_price,subtotal) VALUES (?,?,?,?,?,?)`,[order.insertId,item.product_id,item.supplier_price_id,item.quantity,item.unit_price,item.subtotal]);}
-    await db.query(`UPDATE stokvel_wallets SET balance=balance-? WHERE wallet_id=?`,[total,wallets[0].wallet_id]);await db.query(`INSERT INTO stokvel_wallet_transactions (stokvel_id,user_id,transaction_type,amount,reference_id,description) VALUES (?,?,'PURCHASE',?,?,?)`,[membership.stokvel_id,userId,total,order.insertId,`Authorised ${proposal.delivery_mode.toLowerCase()} group purchase proposal #${proposalId}`]);await db.query(`UPDATE stokvel_purchase_proposals SET status='ORDERED',authorised_at=NOW(),authorised_by=?,order_id=? WHERE proposal_id=?`,[userId,order.insertId,proposalId]);await db.commit();return{proposal_id:proposalId,status:"ORDERED",order_id:order.insertId,wallet_balance:Number((balance-total).toFixed(2))};
+    await db.query(`UPDATE stokvel_wallets SET balance=balance-? WHERE wallet_id=?`,[total,wallets[0].wallet_id]);await db.query(`INSERT INTO stokvel_wallet_transactions (stokvel_id,user_id,transaction_type,amount,reference_id,description) VALUES (?,?,'PURCHASE',?,?,?)`,[membership.stokvel_id,userId,total,order.insertId,`Treasurer authorised ${proposal.delivery_mode.toLowerCase()} group purchase proposal #${proposalId}`]);await db.query(`UPDATE stokvel_purchase_proposals SET status='ORDERED',authorised_at=NOW(),authorised_by=?,order_id=? WHERE proposal_id=?`,[userId,order.insertId,proposalId]);await db.commit();return{proposal_id:proposalId,status:"ORDERED",order_id:order.insertId,wallet_balance:Number((balance-total).toFixed(2))};
   }catch(e){await db.rollback();throw e}finally{db.release()}
 };
