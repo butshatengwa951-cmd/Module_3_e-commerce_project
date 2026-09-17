@@ -6,7 +6,6 @@ import CartView from "../views/CartView.vue";
 import PaymentView from "../views/PaymentView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import MemberDashboard from "../views/MemberDashboard.vue";
-import StokvelHubView from "../views/StokvelHubView.vue";
 import OrderHistoryView from "../views/OrderHistoryView.vue";
 import OrderTrackingView from "../views/OrderTrackingView.vue";
 import AdminProfileView from "../views/AdminProfileView.vue";
@@ -24,8 +23,8 @@ const routes = [
   { path: "/catalogue", name: "Catalogue", component: CatalogueView },
   { path: "/cart", name: "Cart", component: CartView, meta: { requiresAuth: true } },
   { path: "/payment", name: "Payment", component: PaymentView, meta: { requiresAuth: true } },
-  { path: "/member-dashboard", name: "MemberDashboard", component: MemberDashboard, meta: { requiresAuth: true } },
-  { path: "/group-hub", name: "GroupHub", component: StokvelHubView, meta: { requiresAuth: true } },
+  { path: "/member-dashboard", name: "GroupHub", component: MemberDashboard, meta: { requiresAuth: true } },
+  { path: "/group-hub", redirect: "/member-dashboard" },
   { path: "/order-history", name: "OrderHistory", component: OrderHistoryView, meta: { requiresAuth: true } },
   { path: "/order-history/:orderId", name: "OrderTracking", component: OrderTrackingView, meta: { requiresAuth: true } },
   { path: "/profile", name: "Profile", component: ProfileView, meta: { requiresAuth: true } },
