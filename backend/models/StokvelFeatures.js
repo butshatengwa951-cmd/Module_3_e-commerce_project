@@ -6,16 +6,13 @@ const getMembership = async (userId) => {
             sm.stokvel_id,
             s.stokvel_name,
             s.description,
-            COALESCE(
-              smr.stokvel_role,
-              CASE WHEN s.chairperson_id = ? THEN 'CHAIRPERSON' ELSE 'MEMBER' END
-            ) AS stokvel_role
+            COALESCE(smr.stokvel_role, 'MEMBER') AS stokvel_role
      FROM stokvel_members sm
      INNER JOIN stokvels s ON s.stokvel_id = sm.stokvel_id
      LEFT JOIN stokvel_member_roles smr ON smr.stokvel_member_id = sm.stokvel_member_id
      WHERE sm.user_id = ?
      LIMIT 1`,
-    [userId, userId]
+    [userId]
   );
   return rows[0] || null;
 };
