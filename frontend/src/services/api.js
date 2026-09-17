@@ -1,5 +1,5 @@
 import axios from "axios";
-import { saveCartState, clearCartState } from "../composables/useCartState.js";
+import { saveCartState } from "../composables/useCartState.js";
 const api=axios.create({baseURL:"http://localhost:4040",headers:{"Content-Type":"application/json"}});api.interceptors.request.use(config=>{const token=localStorage.getItem("token")||localStorage.getItem("sw_token");if(token)config.headers.Authorization=`Bearer ${token}`;return config});
 async function refreshCartStorage(){const response=await api.get("/api/cart");saveCartState({items:response.data.items||[],order:response.data.order||null,stokvel:response.data.stokvel||null});return response.data}
 export const getStokvels=async()=> (await api.get("/api/stokvels")).data;
