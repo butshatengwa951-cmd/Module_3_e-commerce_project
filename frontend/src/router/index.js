@@ -7,6 +7,8 @@ import CartView from "../views/CartView.vue";
 import PaymentView from "../views/PaymentView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import AdminDashboard from "../views/AdminDashboard.vue";
+import AdminSuggestionsView from "../views/AdminSuggestionsView.vue";
+import SuggestionsView from "../views/SuggestionsView.vue";
 import Login from "../views/Login.vue";
 import Signup from "../views/Signup.vue";
 import ForgotPassword from "../views/ForgotPassword.vue";
@@ -18,7 +20,9 @@ const routes = [
   { path: "/cart", name: "Cart", component: CartView, meta: { requiresAuth: true } },
   { path: "/payment", name: "Payment", component: PaymentView, meta: { requiresAuth: true } },
   { path: "/profile", name: "Profile", component: ProfileView, meta: { requiresAuth: true } },
+  { path: "/suggestions", name: "Suggestions", component: SuggestionsView, meta: { requiresAuth: true } },
   { path: "/admin", name: "AdminDashboard", component: AdminDashboard, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: "/admin/suggestions", name: "AdminSuggestions", component: AdminSuggestionsView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: "/login-signup", name: "AuthSelector", component: AuthSelector },
   { path: "/login", name: "Login", component: Login },
   { path: "/signup", name: "Signup", component: Signup },
@@ -42,14 +46,8 @@ function isAdmin() {
 }
 
 router.beforeEach((to) => {
-  if (to.meta.requiresAuth && !hasAuthToken()) {
-    return { path: "/login-signup", query: { redirect: to.fullPath } };
-  }
-
-  if (to.meta.requiresAdmin && !isAdmin()) {
-    return { path: "/", query: { admin: "forbidden" } };
-  }
-
+  if (to.meta.requiresAuth && !hasAuthToken()) return { path: "/login-signup", query: { redirect: to.fullPath } };
+  if (to.meta.requiresAdmin && !isAdmin()) return { path: "/", query: { admin: "forbidden" } };
   return true;
 });
 
