@@ -23,6 +23,7 @@ import {
   getManagedUsers,
   updateUserRole,
   getStokvelMembers,
+  setStokvelMemberRole,
   addStokvelMember,
   removeStokvelMember,
   getAdminAnalytics,
@@ -49,11 +50,11 @@ router.patch("/orders/:id/status", updateOrderStatus);
 router.get("/deliveries", getDeliveries);
 router.patch("/deliveries/:id", updateDelivery);
 
-// Additional company administration controls.
 router.get("/management/users", getManagedUsers);
 router.patch("/management/users/:id/role", updateUserRole);
 router.get("/management/stokvels/:id/members", getStokvelMembers);
 router.post("/management/stokvels/:id/members", addStokvelMember);
+router.patch("/management/stokvels/:id/members/:userId/role", setStokvelMemberRole);
 router.delete("/management/stokvels/:id/members/:userId", removeStokvelMember);
 router.get("/analytics", getAdminAnalytics);
 router.get("/audit-log", getAuditLog);
