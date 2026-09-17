@@ -79,6 +79,7 @@ export const updateAdminDelivery = async (id, data) => (await api.patch(`/api/ad
 export const getAdminManagedUsers = async () => (await api.get("/api/admin/management/users")).data;
 export const updateAdminUserRole = async (id, role) => (await api.patch(`/api/admin/management/users/${id}/role`, { role })).data;
 export const getAdminStokvelMembers = async (id) => (await api.get(`/api/admin/management/stokvels/${id}/members`)).data;
+export const setAdminStokvelMemberRole = async (stokvelId, userId, role) => (await api.patch(`/api/admin/management/stokvels/${stokvelId}/members/${userId}/role`, { role })).data;
 export const addAdminStokvelMember = async (id, user_id) => (await api.post(`/api/admin/management/stokvels/${id}/members`, { user_id })).data;
 export const removeAdminStokvelMember = async (stokvelId, userId) => (await api.delete(`/api/admin/management/stokvels/${stokvelId}/members/${userId}`)).data;
 export const getAdminAnalytics = async () => (await api.get("/api/admin/analytics")).data;
