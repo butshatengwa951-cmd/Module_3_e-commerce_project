@@ -79,8 +79,10 @@
         <article v-for="product in filteredProducts" :key="product.product_id" class="product-card">
           <div class="product-image">
             <span v-if="getSaving(product) > 0" class="deal-badge">BEST DEAL</span>
-            <span class="bulk-badge">10+</span>
+            <span v-if="getMinimumQuantity(product) > 1" class="bulk-badge">MIN {{ getMinimumQuantity(product) }}</span>
+            <span v-else class="bulk-badge">1+</span>
             <img :src="getProductImage(product)" :alt="product.product_name" @error="handleImageError" />
+            <button class="details-button" type="button" @click="openProductDetails(product)">View details</button>
           </div>
 
           <div class="product-info">
@@ -91,40 +93,68 @@
             <div class="price-row">
               <div>
                 <small>Best group price</small>
-                <strong>R{{ getLowestPrice(product).toFixed(2) }}</strong>
+                <strong v-if="getBestSupplier(product)">R{{ getBestSupplier(product).price.toFixed(2) }}</strong>
+                <strong v-else>Unavailable</strong>
               </div>
               <div v-if="getSaving(product) > 0" class="saving">
-                Save R{{ getSaving(product).toFixed(2) }}
+                Save up to R{{ getSaving(product).toFixed(2) }}
               </div>
             </div>
 
             <div class="best-supplier">
-              <span>BEST SUPPLIER</span>
-              <strong>{{ getCheapestSupplier(product) || "Price unavailable" }}</strong>
+              <span>BEST SUPPLIER FOR {{ getPurchaseQuantity(product) }} UNIT{{ getPurchaseQuantity(product) === 1 ? '' : 'S' }}</span>
+              <strong>{{ getBestSupplier(product)?.supplier_name || "No supplier meets this quantity" }}</strong>
             </div>
 
             <div class="stock-row">
               <span>{{ product.quantity_available }} available</span>
-              <span :class="product.quantity_available > 20 ? 'in-stock' : 'low-stock'">
-                {{ product.quantity_available > 20 ? "IN STOCK" : "LOW STOCK" }}
+              <span :class="product.quantity_available > 20 ? 'in-stock' : product.quantity_available > 0 ? 'low-stock' : 'out-of-stock'">
+                {{ product.quantity_available > 20 ? "IN STOCK" : product.quantity_available > 0 ? "LOW STOCK" : "OUT OF STOCK" }}
               </span>
             </div>
 
-            <button class="compare-button" type="button" @click="toggleProduct(product.product_id)">
-              <span>Compare suppliers</span>
-              <span>{{ expandedProduct === product.product_id ? "↑" : "↓" }}</span>
+            <div class="quantity-control" :class="{ disabled: product.quantity_available < 1 }">
+              <span>Quantity</span>
+              <div class="quantity-picker">
+                <button type="button" aria-label="Decrease quantity" :disabled="getPurchaseQuantity(product) <= 1" @click="changeQuantity(product, -1)">−</button>
+                <input
+                  :value="getPurchaseQuantity(product)"
+                  type="number"
+                  min="1"
+                  :max="Math.max(1, Number(product.quantity_available || 0))"
+                  aria-label="Purchase quantity"
+                  :disabled="product.quantity_available < 1"
+                  @change="setPurchaseQuantity(product, $event.target.value)"
+                />
+                <button type="button" aria-label="Increase quantity" :disabled="getPurchaseQuantity(product) >= Number(product.quantity_available || 0) || product.quantity_available < 1" @click="changeQuantity(product, 1)">+</button>
+              </div>
+            </div>
+
+            <button class="compare-button" type="button" :disabled="!product.supplier_prices?.length" @click="toggleProduct(product.product_id)">
+              <span>{{ product.supplier_prices?.length ? "Compare suppliers" : "No suppliers available" }}</span>
+              <span v-if="product.supplier_prices?.length">{{ expandedProduct === product.product_id ? "↑" : "↓" }}</span>
             </button>
 
-            <div v-if="expandedProduct === product.product_id" class="supplier-list">
+            <div v-if="expandedProduct === product.product_id && product.supplier_prices?.length" class="supplier-list">
+              <div class="supplier-toolbar">
+                <span>Supplier options</span>
+                <select v-model="supplierSort[product.product_id]" aria-label="Sort supplier options">
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="min-low">Minimum: Low to High</option>
+                  <option value="min-high">Minimum: High to Low</option>
+                </select>
+              </div>
+
               <div
-                v-for="supplier in product.supplier_prices"
+                v-for="supplier in getSortedSuppliers(product)"
                 :key="supplier.supplier_price_id"
                 class="supplier-row"
-                :class="{ cheapest: Number(supplier.price) === getLowestPrice(product) }"
+                :class="{ cheapest: getBestSupplier(product)?.supplier_price_id === supplier.supplier_price_id, unavailable: !isSupplierEligible(product, supplier) }"
               >
                 <div class="supplier-details">
                   <strong>{{ supplier.supplier_name }}</strong>
-                  <small>Minimum {{ supplier.minimum_quantity }}</small>
+                  <small>Minimum {{ supplier.minimum_quantity || 1 }} · {{ isSupplierEligible(product, supplier) ? 'Available for this quantity' : `Choose ${supplier.minimum_quantity || 1}+ units` }}</small>
                 </div>
 
                 <div class="supplier-action">
@@ -132,18 +162,19 @@
                   <button
                     class="supplier-add-button"
                     type="button"
+                    :disabled="!isSupplierEligible(product, supplier)"
                     :aria-label="`Add ${product.product_name} from ${supplier.supplier_name} to group basket`"
                     @click="addSupplierToBasket(product, supplier)"
                   >
-                    Add
+                    {{ isSupplierEligible(product, supplier) ? `Add ${getPurchaseQuantity(product)}` : `Min ${supplier.minimum_quantity || 1}` }}
                   </button>
                 </div>
               </div>
             </div>
 
-            <button class="add-button" type="button" @click="addToBasket(product)">
+            <button class="add-button" type="button" :disabled="!canAddProduct(product)" @click="addToBasket(product)">
               <span aria-hidden="true">+</span>
-              Add to Group Basket
+              {{ product.quantity_available < 1 ? "Out of Stock" : canAddProduct(product) ? "Add to Group Basket" : "Choose a valid quantity" }}
             </button>
           </div>
         </article>
@@ -156,6 +187,42 @@
         <button type="button" @click="resetFilters">Show all products</button>
       </div>
     </main>
+
+    <transition name="modal-fade">
+      <div v-if="selectedProduct" class="details-modal-backdrop" @click.self="closeProductDetails">
+        <section class="details-modal" role="dialog" aria-modal="true" :aria-label="`${selectedProduct.product_name} details`">
+          <button class="modal-close" type="button" aria-label="Close product details" @click="closeProductDetails">×</button>
+          <div class="modal-content">
+            <div class="modal-image-wrap">
+              <img :src="getProductImage(selectedProduct)" :alt="selectedProduct.product_name" @error="handleImageError" />
+            </div>
+            <div class="modal-details">
+              <span class="category-label">{{ selectedProduct.category }}</span>
+              <h2>{{ selectedProduct.product_name }}</h2>
+              <p>{{ selectedProduct.description || "Quality household essential." }}</p>
+              <div class="modal-stock">
+                <strong>{{ selectedProduct.quantity_available }}</strong>
+                <span>units available</span>
+              </div>
+              <div class="modal-supplier-summary">
+                <strong>Supplier options</strong>
+                <span>{{ selectedProduct.supplier_prices?.length || 0 }} available</span>
+              </div>
+              <div v-if="selectedProduct.supplier_prices?.length" class="modal-supplier-list">
+                <div v-for="supplier in getSortedSuppliers(selectedProduct)" :key="supplier.supplier_price_id">
+                  <span>{{ supplier.supplier_name }}</span>
+                  <strong>R{{ Number(supplier.price).toFixed(2) }}</strong>
+                  <small>Min {{ supplier.minimum_quantity || 1 }}</small>
+                </div>
+              </div>
+              <button class="modal-add-button" type="button" :disabled="!canAddProduct(selectedProduct)" @click="addToBasket(selectedProduct)">
+                {{ selectedProduct.quantity_available > 0 ? `Add ${getPurchaseQuantity(selectedProduct)} to Group Basket` : "Out of Stock" }}
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -182,6 +249,9 @@ const search = ref("");
 const selectedCategory = ref("All Products");
 const sortOption = ref("default");
 const expandedProduct = ref(null);
+const selectedProduct = ref(null);
+const requestedQuantities = ref({});
+const supplierSort = ref({});
 const loading = ref(true);
 const errorMessage = ref("");
 const message = ref("");
@@ -210,9 +280,11 @@ async function syncCloudBasket() {
     console.error("Cloud basket loading failed:", error);
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
+      localStorage.removeItem("sw_token");
       localStorage.removeItem("user");
       localStorage.removeItem("stokvel");
       syncAuth();
+      basketCount.value = 0;
     }
   }
 }
@@ -278,20 +350,79 @@ function getSaving(product) {
   return product.supplier_prices?.length >= 2 ? getHighestPrice(product) - getLowestPrice(product) : 0;
 }
 
-function getCheapestSupplier(product) {
-  if (!product.supplier_prices?.length) return "";
-  return product.supplier_prices.reduce(
-    (lowest, supplier) => Number(supplier.price) < Number(lowest.price) ? supplier : lowest,
-  ).supplier_name;
+function getMinimumQuantity(product) {
+  if (!product.supplier_prices?.length) return 1;
+  return Math.min(...product.supplier_prices.map((supplier) => Number(supplier.minimum_quantity || 1)));
+}
+
+function getPurchaseQuantity(product) {
+  const stock = Number(product.quantity_available || 0);
+  const current = Number(requestedQuantities.value[product.product_id]);
+  if (!Number.isFinite(current) || current < 1) return stock > 0 ? 1 : 0;
+  return Math.min(Math.max(Math.round(current), 1), Math.max(stock, 1));
+}
+
+function setPurchaseQuantity(product, value) {
+  const stock = Number(product.quantity_available || 0);
+  if (!stock) {
+    requestedQuantities.value[product.product_id] = 0;
+    return;
+  }
+
+  const parsed = Number(value);
+  const quantity = Number.isFinite(parsed) ? Math.round(parsed) : 1;
+  requestedQuantities.value[product.product_id] = Math.min(Math.max(quantity, 1), stock);
+}
+
+function changeQuantity(product, delta) {
+  setPurchaseQuantity(product, getPurchaseQuantity(product) + delta);
+}
+
+function getBestSupplier(product) {
+  const quantity = getPurchaseQuantity(product);
+  return [...(product.supplier_prices || [])]
+    .filter((supplier) => Number(supplier.minimum_quantity || 1) <= quantity)
+    .filter(() => Number(product.quantity_available || 0) >= quantity)
+    .sort((a, b) => Number(a.price) - Number(b.price))[0] || null;
+}
+
+function isSupplierEligible(product, supplier) {
+  const quantity = getPurchaseQuantity(product);
+  return Number(product.quantity_available || 0) >= quantity && Number(supplier.minimum_quantity || 1) <= quantity;
+}
+
+function getSortedSuppliers(product) {
+  const sort = supplierSort.value[product.product_id] || "price-low";
+  return [...(product.supplier_prices || [])].sort((a, b) => {
+    if (sort === "price-high") return Number(b.price) - Number(a.price);
+    if (sort === "min-low") return Number(a.minimum_quantity || 1) - Number(b.minimum_quantity || 1);
+    if (sort === "min-high") return Number(b.minimum_quantity || 1) - Number(a.minimum_quantity || 1);
+    return Number(a.price) - Number(b.price);
+  });
+}
+
+function canAddProduct(product) {
+  return Number(product.quantity_available || 0) > 0 && Boolean(getBestSupplier(product));
 }
 
 function toggleProduct(id) {
   expandedProduct.value = expandedProduct.value === id ? null : id;
 }
 
+function openProductDetails(product) {
+  selectedProduct.value = product;
+  if (!supplierSort.value[product.product_id]) supplierSort.value[product.product_id] = "price-low";
+}
+
+function closeProductDetails() {
+  selectedProduct.value = null;
+}
+
 function showBasketMessage(text, duration = 3000) {
   message.value = text;
-  window.setTimeout(() => { message.value = ""; }, duration);
+  window.setTimeout(() => {
+    message.value = "";
+  }, duration);
 }
 
 async function addToBasket(product) {
@@ -301,11 +432,23 @@ async function addToBasket(product) {
     return;
   }
 
+  const quantity = getPurchaseQuantity(product);
+  const supplier = getBestSupplier(product);
+
+  if (!supplier) {
+    showBasketMessage("No supplier can fulfil the selected quantity. Increase the quantity or compare suppliers.", 3500);
+    return;
+  }
+
   try {
-    await addCartItem({ product_id: product.product_id, supplier_price_id: null, quantity: 1 });
+    await addCartItem({
+      product_id: product.product_id,
+      supplier_price_id: supplier.supplier_price_id,
+      quantity,
+    });
     await syncCloudBasket();
     window.dispatchEvent(new CustomEvent("basket-updated", { detail: basketCount.value }));
-    showBasketMessage(`${product.product_name} added to your group's cloud basket.`);
+    showBasketMessage(`${quantity} × ${product.product_name} added from ${supplier.supplier_name} at R${Number(supplier.price).toFixed(2)} each.`);
   } catch (error) {
     console.error("Cloud basket add failed:", error);
     showBasketMessage(error.response?.data?.message || "We could not add this product to the group basket.");
@@ -319,15 +462,24 @@ async function addSupplierToBasket(product, supplier) {
     return;
   }
 
+  const quantity = getPurchaseQuantity(product);
+  const minimum = Number(supplier.minimum_quantity || 1);
+
+  if (!isSupplierEligible(product, supplier)) {
+    showBasketMessage(`This supplier requires at least ${minimum} unit${minimum === 1 ? "" : "s"}.`, 3500);
+    if (Number(product.quantity_available || 0) >= minimum) setPurchaseQuantity(product, minimum);
+    return;
+  }
+
   try {
     await addCartItem({
       product_id: product.product_id,
       supplier_price_id: supplier.supplier_price_id,
-      quantity: 1,
+      quantity,
     });
     await syncCloudBasket();
     window.dispatchEvent(new CustomEvent("basket-updated", { detail: basketCount.value }));
-    showBasketMessage(`${product.product_name} added from ${supplier.supplier_name} at R${Number(supplier.price).toFixed(2)}.`);
+    showBasketMessage(`${quantity} × ${product.product_name} added from ${supplier.supplier_name} at R${Number(supplier.price).toFixed(2)} each.`);
   } catch (error) {
     console.error("Supplier basket add failed:", error);
     showBasketMessage(error.response?.data?.message || "We could not add this supplier option to the group basket.");
@@ -341,8 +493,8 @@ const filteredProducts = computed(() => {
     return name.toLowerCase().includes(search.value.toLowerCase()) && (selectedCategory.value === "All Products" || category === selectedCategory.value);
   });
 
-  if (sortOption.value === "price-low") result = [...result].sort((a, b) => getLowestPrice(a) - getLowestPrice(b));
-  if (sortOption.value === "price-high") result = [...result].sort((a, b) => getLowestPrice(b) - getLowestPrice(a));
+  if (sortOption.value === "price-low") result = [...result].sort((a, b) => (getBestSupplier(a)?.price ?? Infinity) - (getBestSupplier(b)?.price ?? Infinity));
+  if (sortOption.value === "price-high") result = [...result].sort((a, b) => (getBestSupplier(b)?.price ?? -Infinity) - (getBestSupplier(a)?.price ?? -Infinity));
   if (sortOption.value === "name") result = [...result].sort((a, b) => a.product_name.localeCompare(b.product_name));
   return result;
 });
@@ -352,11 +504,19 @@ function handleAuthChange() {
   syncCloudBasket();
 }
 
+function handleEscape(event) {
+  if (event.key === "Escape" && selectedProduct.value) closeProductDetails();
+}
+
 onMounted(async () => {
   syncAuth();
   try {
     const response = await getProducts();
     products.value = Array.isArray(response) ? response : response.products || [];
+    products.value.forEach((product) => {
+      requestedQuantities.value[product.product_id] = product.quantity_available > 0 ? 1 : 0;
+      supplierSort.value[product.product_id] = "price-low";
+    });
     await syncCloudBasket();
   } catch (error) {
     console.error("Catalogue loading failed:", error);
@@ -367,11 +527,13 @@ onMounted(async () => {
 
   window.addEventListener("login-completed", handleAuthChange);
   window.addEventListener("auth-updated", handleAuthChange);
+  window.addEventListener("keydown", handleEscape);
 });
 
 onUnmounted(() => {
   window.removeEventListener("login-completed", handleAuthChange);
   window.removeEventListener("auth-updated", handleAuthChange);
+  window.removeEventListener("keydown", handleEscape);
 });
 </script>
 
@@ -520,7 +682,7 @@ onUnmounted(() => {
 .category-button:hover,
 .shop-toolbar select:hover,
 .category-list button:hover,
-.compare-button:hover {
+.compare-button:hover:not(:disabled) {
   border-color: color-mix(in srgb, var(--sw-gold-500) 55%, var(--catalogue-border));
   background: var(--catalogue-surface-raised);
 }
@@ -533,7 +695,12 @@ onUnmounted(() => {
 .add-button:focus-visible,
 .supplier-add-button:focus-visible,
 .empty-state button:focus-visible,
-.active-filter button:focus-visible {
+.active-filter button:focus-visible,
+.details-button:focus-visible,
+.modal-close:focus-visible,
+.modal-add-button:focus-visible,
+.quantity-picker button:focus-visible,
+.quantity-picker input:focus-visible {
   outline: 2px solid var(--sw-gold-500);
   outline-offset: 2px;
 }
@@ -691,6 +858,27 @@ onUnmounted(() => {
   color: #fff;
 }
 
+.details-button {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid color-mix(in srgb, #fff 35%, var(--sw-purple-700));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sw-purple-700) 88%, transparent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.details-button:hover {
+  background: var(--sw-purple-700);
+}
+
 .product-info {
   min-height: 0;
   flex: 1;
@@ -805,7 +993,8 @@ onUnmounted(() => {
 }
 
 .in-stock,
-.low-stock {
+.low-stock,
+.out-of-stock {
   font-weight: 700;
 }
 
@@ -815,6 +1004,67 @@ onUnmounted(() => {
 
 .low-stock {
   color: var(--sw-red-600);
+}
+
+.out-of-stock {
+  color: var(--sw-red-600);
+}
+
+.quantity-control {
+  min-height: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  margin-bottom: 8px;
+  padding: 6px 8px 6px 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--catalogue-border-soft);
+  border-radius: 12px;
+  background: var(--catalogue-surface-raised);
+  color: var(--catalogue-muted);
+  font-size: 12px;
+}
+
+.quantity-control.disabled {
+  opacity: 0.62;
+}
+
+.quantity-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.quantity-picker button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--catalogue-border);
+  border-radius: 8px;
+  background: var(--catalogue-surface);
+  color: var(--sw-page-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.quantity-picker button:disabled,
+.quantity-picker input:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.quantity-picker input {
+  width: 45px;
+  height: 30px;
+  border: 1px solid var(--catalogue-border);
+  border-radius: 8px;
+  background: var(--catalogue-surface);
+  color: var(--sw-page-text);
+  text-align: center;
+  font: inherit;
+  font-size: 12px;
 }
 
 .compare-button,
@@ -836,6 +1086,14 @@ onUnmounted(() => {
   color: var(--sw-page-text);
 }
 
+.compare-button:disabled,
+.add-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
 .add-button {
   min-height: 46px;
   height: 46px;
@@ -849,9 +1107,10 @@ onUnmounted(() => {
   font-weight: 700;
 }
 
-.add-button:hover,
+.add-button:hover:not(:disabled),
 .empty-state button:hover,
-.supplier-add-button:hover {
+.supplier-add-button:hover:not(:disabled),
+.modal-add-button:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: var(--catalogue-shadow);
 }
@@ -861,6 +1120,31 @@ onUnmounted(() => {
   margin-bottom: 8px;
   display: grid;
   gap: 7px;
+}
+
+.supplier-toolbar {
+  min-height: 36px;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--catalogue-border-soft);
+  border-radius: 10px;
+  background: var(--catalogue-surface-raised);
+  color: var(--catalogue-muted);
+  font-size: 11px;
+}
+
+.supplier-toolbar select {
+  max-width: 170px;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--sw-page-text);
+  font: inherit;
+  cursor: pointer;
 }
 
 .supplier-row {
@@ -873,6 +1157,10 @@ onUnmounted(() => {
   border-radius: 10px;
   background: var(--catalogue-surface-raised);
   font-size: 12px;
+}
+
+.supplier-row.unavailable {
+  opacity: 0.68;
 }
 
 .supplier-details {
@@ -916,9 +1204,14 @@ onUnmounted(() => {
   transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.supplier-add-button:hover {
+.supplier-add-button:hover:not(:disabled) {
   border-color: var(--sw-gold-500);
   background: color-mix(in srgb, var(--sw-gold-500) 10%, var(--catalogue-surface));
+}
+
+.supplier-add-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .supplier-row.cheapest {
@@ -978,13 +1271,177 @@ onUnmounted(() => {
   right: 20px;
   bottom: 20px;
   z-index: 20;
-  max-width: min(360px, calc(100vw - 32px));
+  max-width: min(420px, calc(100vw - 32px));
   padding: 14px 16px;
   border: 1px solid color-mix(in srgb, #fff 18%, var(--sw-purple-700));
   border-radius: 12px;
   background: var(--sw-purple-700);
   color: #fff;
   box-shadow: var(--catalogue-shadow);
+}
+
+.details-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(10, 8, 20, 0.65);
+  backdrop-filter: blur(7px);
+}
+
+.details-modal {
+  position: relative;
+  width: min(880px, 100%);
+  max-height: min(760px, calc(100vh - 40px));
+  overflow: auto;
+  border: 1px solid var(--catalogue-border);
+  border-radius: 22px;
+  background: var(--catalogue-surface);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--catalogue-border);
+  border-radius: 50%;
+  background: var(--catalogue-surface-raised);
+  color: var(--sw-page-text);
+  font-size: 23px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-content {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.15fr);
+  gap: 24px;
+  padding: 28px;
+}
+
+.modal-image-wrap {
+  min-height: 360px;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  border: 1px solid var(--catalogue-border-soft);
+  border-radius: 18px;
+  background: var(--catalogue-surface-raised);
+}
+
+.modal-image-wrap img {
+  max-width: 100%;
+  max-height: 330px;
+  object-fit: contain;
+}
+
+.modal-details {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 4px;
+}
+
+.modal-details h2 {
+  margin: 8px 0 10px;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.05;
+}
+
+.modal-details > p {
+  margin: 0 0 18px;
+  color: var(--catalogue-muted);
+  line-height: 1.7;
+}
+
+.modal-stock,
+.modal-supplier-summary {
+  min-height: 58px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--catalogue-border-soft);
+  border-radius: 12px;
+  background: var(--catalogue-surface-raised);
+}
+
+.modal-stock {
+  margin-bottom: 8px;
+}
+
+.modal-stock strong {
+  font-size: 24px;
+}
+
+.modal-stock span,
+.modal-supplier-summary span {
+  color: var(--catalogue-muted);
+  font-size: 12px;
+}
+
+.modal-supplier-list {
+  max-height: 220px;
+  overflow: auto;
+  margin: 10px 0 16px;
+  display: grid;
+  gap: 7px;
+}
+
+.modal-supplier-list > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--catalogue-border-soft);
+  border-radius: 10px;
+  background: var(--catalogue-surface-raised);
+  font-size: 12px;
+}
+
+.modal-supplier-list strong {
+  white-space: nowrap;
+}
+
+.modal-supplier-list small {
+  color: var(--catalogue-muted);
+  white-space: nowrap;
+}
+
+.modal-add-button {
+  min-height: 46px;
+  margin-top: auto;
+  border: 0;
+  border-radius: 12px;
+  background: var(--sw-button-gradient);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+.modal-add-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
 }
 
 .category-slide-enter-active,
@@ -1015,6 +1472,14 @@ onUnmounted(() => {
 
   .shop-toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-image-wrap {
+    min-height: 260px;
   }
 }
 
@@ -1067,6 +1532,58 @@ onUnmounted(() => {
     grid-template-columns: auto auto;
     justify-items: stretch;
     align-items: center;
+  }
+
+  .supplier-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .supplier-toolbar select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .quantity-control {
+    padding-left: 10px;
+  }
+
+  .quantity-picker input {
+    width: 42px;
+  }
+
+  .details-button {
+    bottom: 10px;
+  }
+
+  .details-modal-backdrop {
+    padding: 10px;
+  }
+
+  .details-modal {
+    max-height: calc(100vh - 20px);
+    border-radius: 18px;
+  }
+
+  .modal-content {
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .modal-image-wrap {
+    min-height: 220px;
+  }
+
+  .modal-image-wrap img {
+    max-height: 200px;
+  }
+
+  .modal-supplier-list > div {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .modal-supplier-list small {
+    grid-column: 1 / -1;
   }
 
   .toast {
