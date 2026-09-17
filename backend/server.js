@@ -21,6 +21,12 @@ dotenv.config();
 
 const app = express();
 
+// req.ip must reflect the real client IP when the API is behind a trusted
+// reverse proxy/load balancer. Set TRUST_PROXY=1 (or the correct proxy count)
+// in production; leave it false for direct/local development.
+if (String(process.env.TRUST_PROXY || "false").toLowerCase() === "true") app.set("trust proxy", true);
+else if (Number.isInteger(Number(process.env.TRUST_PROXY)) && Number(process.env.TRUST_PROXY) > 0) app.set("trust proxy", Number(process.env.TRUST_PROXY));
+
 const allowedOrigins = String(process.env.FRONTEND_URL || "http://localhost:5173")
   .split(",")
   .map((origin) => origin.trim())
