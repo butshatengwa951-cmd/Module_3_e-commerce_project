@@ -6,6 +6,7 @@ import CartView from "../views/CartView.vue";
 import PaymentView from "../views/PaymentView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import MemberDashboard from "../views/MemberDashboard.vue";
+import StokvelHubView from "../views/StokvelHubView.vue";
 import OrderHistoryView from "../views/OrderHistoryView.vue";
 import OrderTrackingView from "../views/OrderTrackingView.vue";
 import AdminProfileView from "../views/AdminProfileView.vue";
@@ -24,6 +25,7 @@ const routes = [
   { path: "/cart", name: "Cart", component: CartView, meta: { requiresAuth: true } },
   { path: "/payment", name: "Payment", component: PaymentView, meta: { requiresAuth: true } },
   { path: "/member-dashboard", name: "MemberDashboard", component: MemberDashboard, meta: { requiresAuth: true } },
+  { path: "/group-hub", name: "GroupHub", component: StokvelHubView, meta: { requiresAuth: true } },
   { path: "/order-history", name: "OrderHistory", component: OrderHistoryView, meta: { requiresAuth: true } },
   { path: "/order-history/:orderId", name: "OrderTracking", component: OrderTrackingView, meta: { requiresAuth: true } },
   { path: "/profile", name: "Profile", component: ProfileView, meta: { requiresAuth: true } },
@@ -38,13 +40,8 @@ const routes = [
   { path: "/forgot-password", name: "ForgotPassword", component: ForgotPassword },
   { path: "/reset-password", name: "ResetPassword", component: ResetPassword },
 ];
-
 const router = createRouter({ history: createWebHistory(), routes });
 function hasAuthToken() { return Boolean(localStorage.getItem("token") || localStorage.getItem("sw_token")); }
 function isAdmin() { try { return JSON.parse(localStorage.getItem("user") || "null")?.role === "admin"; } catch { return false; } }
-router.beforeEach((to) => {
-  if (to.meta.requiresAuth && !hasAuthToken()) return { path: "/login-signup", query: { redirect: to.fullPath } };
-  if (to.meta.requiresAdmin && !isAdmin()) return { path: "/", query: { admin: "forbidden" } };
-  return true;
-});
+router.beforeEach((to) => { if (to.meta.requiresAuth && !hasAuthToken()) return { path: "/login-signup", query: { redirect: to.fullPath } }; if (to.meta.requiresAdmin && !isAdmin()) return { path: "/", query: { admin: "forbidden" } }; return true; });
 export default router;
