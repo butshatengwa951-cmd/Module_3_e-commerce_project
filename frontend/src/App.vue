@@ -31,21 +31,28 @@ const showSiteShell = computed(() => !authRoutes.has(route.name));
 
 const handleLoginCompleted = () => {
   try {
-    const user = JSON.parse(localStorage.getItem("user") || "null");
     const redirect = typeof route.query.redirect === "string" ? route.query.redirect : "";
-    const destination = redirect || (user?.role === "admin" ? "/admin" : "/member-dashboard");
-    router.push(destination);
+    router.push(redirect || "/");
   } catch {
-    router.push("/member-dashboard");
+    router.push("/");
+  }
+};
+
+const handleAuthExpired = () => {
+  const protectedRoute = route.meta.requiresAuth;
+  if (protectedRoute) {
+    router.push({ path: "/login-signup", query: { redirect: route.fullPath } });
   }
 };
 
 onMounted(() => {
   window.addEventListener("login-completed", handleLoginCompleted);
+  window.addEventListener("auth-expired", handleAuthExpired);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("login-completed", handleLoginCompleted);
+  window.removeEventListener("auth-expired", handleAuthExpired);
 });
 </script>
 

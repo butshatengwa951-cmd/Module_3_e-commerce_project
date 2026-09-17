@@ -7,7 +7,38 @@ import { createUser, findUserByEmail } from "../models/User.js";
 import { findStokvelByName } from "../models/Stokvel.js";
 import { createStokvelMembership, findMembershipByUserId } from "../models/StokvelMem.js";
 import { createPasswordReset, findValidPasswordResetByTokenHash, markPasswordResetUsed, deletePasswordReset } from "../models/PasswordReset.js";
+import { createSession, findActiveSession, revokeSession, rotateSession } from "../models/AuthSession.js";
 import sendPasswordResetEmail from "../utils/mailer.js";
+
+const ACCESS_TOKEN_TTL = process.env.JWT_EXPIRES_IN || "15m";
+const REFRESH_TOKEN_DAYS = Number(process.env.REFRESH_TOKEN_DAYS || 7);
+
+const createAccessToken = (user) => jwt.sign(
+  { user_id: user.user_id, email: user.email, role: user.role },
+  process.env.JWT_SECRET,
+  { expiresIn: ACCESS_TOKEN_TTL }
+);
+
+const createRefreshToken = () => crypto.randomBytes(48).toString("base64url");
+const hashRefreshToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
+const refreshExpiresAt = () => new Date(Date.now() + REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000);
+const newSessionId = () => crypto.randomUUID();
+
+const buildAuthResponse = ({ user, membership, accessToken, refreshToken, sessionId }) => ({
+  success: true,
+  token: accessToken,
+  access_token: accessToken,
+  refresh_token: refreshToken,
+  session_id: sessionId,
+  user: {
+    user_id: user.user_id,
+    full_name: user.full_name,
+    email: user.email,
+    phone_number: user.phone_number,
+    role: user.role,
+  },
+  stokvel: membership ? { stokvel_id: membership.stokvel_id, stokvel_name: membership.stokvel_name } : null,
+});
 
 export const signup = async (req, res) => {
   let connection;
@@ -47,24 +78,73 @@ export const login = async (req, res) => {
     const passwordMatches = await bcrypt.compare(password, user.password);
     if (!passwordMatches) return res.status(401).json({ success: false, message: "Invalid email or password." });
 
-    // Company admins are not Stokvel members. Normal users still require membership.
+    // Admins are platform users and do not need Stokvel membership. Members do.
     let membership = null;
     if (user.role !== "admin") {
       membership = await findMembershipByUserId(user.user_id);
       if (!membership) return res.status(403).json({ success: false, message: "You must be a member of a Stokvel to log in." });
     }
 
-    const token = jwt.sign({ user_id: user.user_id, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    // Access tokens are short-lived. The opaque refresh token is stored only as a hash in MySQL.
+    const accessToken = createAccessToken(user);
+    const refreshToken = createRefreshToken();
+    const sessionId = newSessionId();
+    await createSession({ sessionId, userId: user.user_id, refreshTokenHash: hashRefreshToken(refreshToken), expiresAt: refreshExpiresAt() });
+
     return res.status(200).json({
-      success: true,
+      ...buildAuthResponse({ user, membership, accessToken, refreshToken, sessionId }),
       message: "Login successful.",
-      token,
-      user: { user_id: user.user_id, full_name: user.full_name, email: user.email, phone_number: user.phone_number, role: user.role },
-      stokvel: membership ? { stokvel_id: membership.stokvel_id, stokvel_name: membership.stokvel_name } : null,
     });
   } catch (error) {
     console.error("Login failed!", error);
     return res.status(500).json({ success: false, message: "Login failed." });
+  }
+};
+
+export const refresh = async (req, res) => {
+  try {
+    const refreshToken = req.body?.refresh_token;
+    const sessionId = req.body?.session_id;
+    if (!refreshToken || !sessionId) return res.status(400).json({ success: false, message: "Refresh token and session ID are required." });
+
+    const session = await findActiveSession(sessionId, hashRefreshToken(refreshToken));
+    if (!session) return res.status(401).json({ success: false, message: "Refresh session is invalid, expired, or revoked. Please log in again." });
+
+    const user = {
+      user_id: session.user_id,
+      full_name: session.full_name,
+      email: session.email,
+      phone_number: session.phone_number,
+      role: session.role,
+    };
+    let membership = null;
+    if (user.role !== "admin") {
+      membership = await findMembershipByUserId(user.user_id);
+      if (!membership) return res.status(403).json({ success: false, message: "Your Stokvel membership is no longer active." });
+    }
+
+    const nextRefreshToken = createRefreshToken();
+    const accessToken = createAccessToken(user);
+    await rotateSession({ sessionId, refreshTokenHash: hashRefreshToken(nextRefreshToken), expiresAt: refreshExpiresAt() });
+
+    return res.status(200).json({
+      ...buildAuthResponse({ user, membership, accessToken, refreshToken: nextRefreshToken, sessionId }),
+      message: "Session refreshed successfully.",
+    });
+  } catch (error) {
+    console.error("Refresh failed!", error);
+    return res.status(500).json({ success: false, message: "Unable to refresh session." });
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    const sessionId = req.body?.session_id;
+    if (sessionId) await revokeSession(sessionId);
+    return res.status(200).json({ success: true, message: "Logged out successfully." });
+  } catch (error) {
+    console.error("Logout failed!", error);
+    return res.status(500).json({ success: false, message: "Unable to log out." });
   }
 };
 

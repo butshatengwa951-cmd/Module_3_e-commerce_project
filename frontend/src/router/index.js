@@ -50,7 +50,9 @@ function isAdmin(){try{return JSON.parse(localStorage.getItem("user")||"null")?.
 
 router.beforeEach((to)=>{
   const authenticated=hasAuthToken();
-  if(to.path==="/" && authenticated)return isAdmin()?{path:"/admin"}:{path:"/member-dashboard"};
+
+  // Home is public and must remain accessible after login. Its header/content
+  // automatically reflects the authenticated session when a user is signed in.
   if(to.path==="/login-signup" && authenticated)return isAdmin()?{path:"/admin"}:{path:"/member-dashboard"};
   if(to.meta.requiresAuth&&!authenticated)return{path:"/login-signup",query:{redirect:to.fullPath}};
   if(to.meta.requiresAdmin&&!isAdmin())return{path:"/",query:{admin:"forbidden"}};

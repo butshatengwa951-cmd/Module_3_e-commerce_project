@@ -2,21 +2,26 @@
 
 ## Live Aiven database
 
-The live StockWell database is **not** rebuilt from `schema.sql`.
+The live StockWell database is **not** rebuilt from a destructive bootstrap. There is intentionally no `schema.sql` in this branch.
 
-Use migrations in this order:
+Apply additive migrations to the existing database in this order:
 
 1. `integration_hardening.sql` — baseline integration/governance tables and PayFast preparation.
 2. `stokvel_delivery_addresses.sql` — proposal, voting, address and delivery structures.
-3. `final_hardening.sql` — current final hardening: one-Stokvel-per-member enforcement, company-role cleanup, contribution user attribution and officer-role preservation.
+3. `final_hardening.sql` — one-Stokvel-per-member enforcement, company-role cleanup, contribution attribution and officer-role preservation.
+4. `auth_sessions.sql` — persisted refresh-session storage used by login, refresh and logout.
 
-Run migrations against the existing database only after checking the command and the target database. These scripts are designed to be additive/idempotent where practical.
+Run migrations against the intended database only after checking the target and taking the normal database backup/safety precautions. These scripts are designed to be additive/idempotent where practical.
 
-## Legacy files
+## Legacy migration policy
 
-- `schema.sql` is a **destructive/reset bootstrap** from an earlier project version. Do not run it against the live Aiven database.
-- `stokvel_features.sql` is an older feature migration and is not the current migration path.
-- `stokvel_governance_payfast.sql` is an older governance migration that references the retired `stokvels.chairperson_id` design. Do not run it against the current live schema.
+Superseded bootstrap and governance SQL has been removed from this branch rather than leaving destructive scripts available to accidentally run:
+
+- The old destructive `schema.sql` bootstrap has been removed.
+- The obsolete `stokvel_governance_payfast.sql` migration has been removed.
+- The superseded `stokvel_features.sql` migration has been removed.
+
+**Warning:** do not recreate a full database from an old branch's `schema.sql` or governance migration. The current application expects the integrated schema and role model documented here.
 
 ## Current role model
 
