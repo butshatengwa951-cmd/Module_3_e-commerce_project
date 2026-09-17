@@ -41,6 +41,22 @@ html:not(.dark-mode) textarea {
   color: var(--sw-input-text);
 }
 
+/* Native dropdown menus need an explicit foreground/background pair.
+   Without this, Chromium/Windows can render light option text on a light
+   native popup even when the closed select is styled correctly. */
+html:not(.dark-mode) select option,
+html:not(.dark-mode) select optgroup {
+  background-color: #ffffff;
+  color: var(--sw-page-text);
+}
+
+html:not(.dark-mode) select option:checked,
+html:not(.dark-mode) select option:hover,
+html:not(.dark-mode) select option:focus {
+  background-color: #eeeaf2;
+  color: var(--sw-purple-900);
+}
+
 html:not(.dark-mode) select:focus,
 html:not(.dark-mode) input:focus,
 html:not(.dark-mode) textarea:focus { background-color: var(--sw-input-background-focus); }
@@ -112,6 +128,20 @@ html.dark-mode .glass:hover { box-shadow: var(--sw-glass-shadow-dark-hover); }
 html.dark-mode select,
 html.dark-mode input,
 html.dark-mode textarea { border-color: var(--sw-input-border); background-color: var(--sw-input-background); color: var(--sw-input-text); }
+
+html.dark-mode select option,
+html.dark-mode select optgroup {
+  background-color: var(--sw-purple-900);
+  color: #ffffff;
+}
+
+html.dark-mode select option:checked,
+html.dark-mode select option:hover,
+html.dark-mode select option:focus {
+  background-color: var(--sw-purple-700);
+  color: #ffffff;
+}
+
 html.dark-mode select:focus,
 html.dark-mode input:focus,
 html.dark-mode textarea:focus { background-color: var(--sw-input-background-focus); }
