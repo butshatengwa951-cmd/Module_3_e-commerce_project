@@ -12,6 +12,23 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// A short retry for idempotent GET requests prevents transient backend/network
+// hiccups from making pages such as Group Hub appear unavailable until refresh.
+api.interceptors.response.use(undefined, async (error) => {
+  const config = error.config;
+  const status = error.response?.status;
+  const isGet = String(config?.method || "get").toLowerCase() === "get";
+  const transient = !status || status === 408 || status === 429 || status >= 500;
+
+  if (config && isGet && transient && !config.__swRetried) {
+    config.__swRetried = true;
+    await new Promise((resolve) => window.setTimeout(resolve, 350));
+    return api(config);
+  }
+
+  return Promise.reject(error);
+});
+
 async function refreshCartStorage() {
   const response = await api.get("/api/cart");
   saveCartState({ items: response.data.items || [], order: response.data.order || null, stokvel: response.data.stokvel || null });
