@@ -39,8 +39,28 @@ export const createContributionCheckout = async (req, res) => {
 
 export const payfastNotify = async (req, res) => {
   try {
-    const sourceIp = req.ip || req.socket?.remoteAddress;
-    if (!(await isPayfastSourceIp(sourceIp))) return res.status(403).send("Invalid source IP");
+    // Render/Cloudflare can expose PayFast's public IP through a proxy header.
+    // Check all trusted candidates instead of rejecting a valid ITN because
+    // Express only sees the reverse-proxy address.
+    const forwardedClientIp = String(req.headers["cf-connecting-ip"] || "").trim();
+    const forwardedFor = String(req.headers["x-forwarded-for"] || "").split(",").map((value) => value.trim()).filter(Boolean);
+    const trustedProxyIp = String(req.ip || "").trim();
+    const socketIp = String(req.socket?.remoteAddress || "").trim();
+    const sourceCandidates = [forwardedClientIp, ...forwardedFor, trustedProxyIp, socketIp].filter(Boolean);
+
+    let sourceVerified = false;
+    for (const candidate of sourceCandidates) {
+      if (await isPayfastSourceIp(candidate)) {
+        sourceVerified = true;
+        break;
+      }
+    }
+
+    if (!sourceVerified) {
+      console.warn("PayFast ITN rejected: source IP did not match PayFast allowlist", { sourceCandidates });
+      return res.status(403).send("Invalid source IP");
+    }
+
     if (!verifyPayfastSignature(req.body || {})) return res.status(400).send("Invalid signature");
     if (!(await validatePayfastNotification(req.body || {}))) return res.status(400).send("Invalid notification");
 
