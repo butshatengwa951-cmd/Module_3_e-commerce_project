@@ -12,25 +12,11 @@ html:not(.dark-mode) {
   --sw-input-background: rgba(255, 255, 255, 0.68);
   --sw-input-background-focus: rgba(255, 255, 255, 0.9);
 
-  --sw-glass-light: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.86),
-    rgba(255, 255, 255, 0.6)
-  );
-
+  --sw-glass-light: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.6));
   --sw-glass-light-border: rgba(49, 43, 80, 0.16);
   --sw-glass-light-text: var(--sw-purple-900);
-
-  --sw-glass-shadow-light:
-    0 20px 55px rgba(49, 43, 80, 0.12),
-    inset 0 1px 1px rgba(255, 255, 255, 0.8),
-    inset 0 -1px 1px rgba(49, 43, 80, 0.06);
-
-  --sw-glass-shadow-light-hover:
-    0 25px 65px rgba(49, 43, 80, 0.16),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9),
-    inset 0 -1px 1px rgba(49, 43, 80, 0.07);
-
+  --sw-glass-shadow-light: 0 20px 55px rgba(49, 43, 80, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.8), inset 0 -1px 1px rgba(49, 43, 80, 0.06);
+  --sw-glass-shadow-light-hover: 0 25px 65px rgba(49, 43, 80, 0.16), inset 0 1px 1px rgba(255, 255, 255, 0.9), inset 0 -1px 1px rgba(49, 43, 80, 0.07);
   --sw-toggle-border: rgba(49, 43, 80, 0.2);
   --sw-orbit-border: rgba(49, 43, 80, 0.22);
   --sw-hero-ring-border: rgba(49, 43, 80, 0.15);
@@ -45,9 +31,7 @@ html:not(.dark-mode) .glass {
   backdrop-filter: blur(var(--sw-glass-blur)) saturate(var(--sw-glass-saturation));
 }
 
-html:not(.dark-mode) .glass:hover {
-  box-shadow: var(--sw-glass-shadow-light-hover);
-}
+html:not(.dark-mode) .glass:hover { box-shadow: var(--sw-glass-shadow-light-hover); }
 
 html:not(.dark-mode) select,
 html:not(.dark-mode) input,
@@ -59,33 +43,63 @@ html:not(.dark-mode) textarea {
 
 html:not(.dark-mode) select:focus,
 html:not(.dark-mode) input:focus,
-html:not(.dark-mode) textarea:focus {
-  background-color: var(--sw-input-background-focus);
+html:not(.dark-mode) textarea:focus { background-color: var(--sw-input-background-focus); }
+
+/* ADDRESS BOOK — LIGHT MODE */
+html:not(.dark-mode) .address-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(49, 43, 80, 0.18);
+  box-shadow: 0 8px 24px rgba(49, 43, 80, 0.07);
+  color: var(--sw-page-text);
+}
+
+html:not(.dark-mode) .address-card p { color: var(--sw-page-text-soft); }
+html:not(.dark-mode) .address-card small { color: var(--sw-page-text-muted); }
+html:not(.dark-mode) .address-actions button {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(49, 43, 80, 0.22);
+  color: var(--sw-page-text);
+}
+html:not(.dark-mode) .address-actions button:hover {
+  background: rgba(121, 93, 137, 0.08);
+  border-color: var(--sw-purple-700);
+}
+html:not(.dark-mode) .address-actions .danger {
+  color: #a3261b;
+  border-color: rgba(163, 38, 27, 0.22);
+}
+html:not(.dark-mode) .member-addresses .panel,
+html:not(.dark-mode) .page .panel {
+  background: rgba(255, 255, 255, 0.82);
+}
+html:not(.dark-mode) .grid input {
+  background: #fff;
+  border-color: rgba(49, 43, 80, 0.22);
+  color: var(--sw-page-text);
+}
+html:not(.dark-mode) .grid input::placeholder { color: rgba(49, 43, 80, 0.52); }
+html:not(.dark-mode) .grid label { color: var(--sw-page-text); }
+html:not(.dark-mode) .check { color: var(--sw-page-text); }
+html:not(.dark-mode) .message {
+  background: rgba(180, 35, 24, 0.09);
+  border: 1px solid rgba(180, 35, 24, 0.2);
+}
+html:not(.dark-mode) .success {
+  background: rgba(55, 170, 105, 0.1);
+  border: 1px solid rgba(55, 170, 105, 0.2);
 }
 
 /* ORDER HISTORY — LIGHT MODE FEATURED CARD TEXT */
-html:not(.dark-mode) .history-page .stat-card.featured {
-  color: var(--sw-white);
-}
-
-html:not(.dark-mode) .history-page .stat-card.featured span {
-  color: var(--sw-white);
-}
-
-html:not(.dark-mode) .history-page .stat-card.featured strong {
-  color: var(--sw-white);
-}
-
-html:not(.dark-mode) .history-page .stat-card.featured small {
-  color: rgba(255, 255, 255, 0.82);
-}
+html:not(.dark-mode) .history-page .stat-card.featured { color: var(--sw-white); }
+html:not(.dark-mode) .history-page .stat-card.featured span { color: var(--sw-white); }
+html:not(.dark-mode) .history-page .stat-card.featured strong { color: var(--sw-white); }
+html:not(.dark-mode) .history-page .stat-card.featured small { color: rgba(255, 255, 255, 0.82); }
 
 /* DARK MODE */
 html.dark-mode {
   --sw-orbit-border: rgba(255, 255, 255, 0.18);
   --sw-hero-ring-border: rgba(255, 255, 255, 0.14);
 }
-
 html.dark-mode .glass {
   border: 1px solid var(--sw-glass-dark-border);
   background: var(--sw-glass-dark);
@@ -94,31 +108,13 @@ html.dark-mode .glass {
   -webkit-backdrop-filter: blur(var(--sw-glass-blur)) saturate(var(--sw-glass-saturation));
   backdrop-filter: blur(var(--sw-glass-blur)) saturate(var(--sw-glass-saturation));
 }
-
-html.dark-mode .glass:hover {
-  box-shadow: var(--sw-glass-shadow-dark-hover);
-}
-
+html.dark-mode .glass:hover { box-shadow: var(--sw-glass-shadow-dark-hover); }
 html.dark-mode select,
 html.dark-mode input,
-html.dark-mode textarea {
-  border-color: var(--sw-input-border);
-  background-color: var(--sw-input-background);
-  color: var(--sw-input-text);
-}
-
+html.dark-mode textarea { border-color: var(--sw-input-border); background-color: var(--sw-input-background); color: var(--sw-input-text); }
 html.dark-mode select:focus,
 html.dark-mode input:focus,
-html.dark-mode textarea:focus {
-  background-color: var(--sw-input-background-focus);
-}
-
-/* MEMBER DASHBOARD + ORDER HISTORY HERO RINGS */
-.orbit {
-  border-color: var(--sw-orbit-border) !important;
-}
-
+html.dark-mode textarea:focus { background-color: var(--sw-input-background-focus); }
+.orbit { border-color: var(--sw-orbit-border) !important; }
 .dashboard-hero::after,
-.history-hero::after {
-  border-color: var(--sw-hero-ring-border) !important;
-}
+.history-hero::after { border-color: var(--sw-hero-ring-border) !important; }
