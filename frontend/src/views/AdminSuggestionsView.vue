@@ -15,16 +15,65 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { getAllSuggestions, updateSuggestion } from "../services/api.js";
+
 const statuses = ["Submitted", "Under Review", "Planned", "Implemented", "Declined"];
-const suggestions = ref([]); const search = ref(""); const filter = ref("All"); const notice = ref(""); const saving = ref(null);
-const filtered = computed(() => { const q=search.value.toLowerCase().trim(); return suggestions.value.filter(s => (filter.value === "All" || s.status === filter.value) && (!q || `${s.subject} ${s.message} ${s.user_name} ${s.user_email} ${s.category}`.toLowerCase().includes(q))); });
-const notify=(text)=>{notice.value=text;window.setTimeout(()=>notice.value="",3500)};
-async function load(){try{const r=await getAllSuggestions();suggestions.value=r.suggestions||[]}catch(e){notify(e.response?.data?.message||"Unable to load suggestions.")}}
-async function save(item){saving.value=item.suggestion_id;try{const r=await updateSuggestion(item.suggestion_id,item.status,item.admin_response||"");Object.assign(item,r.suggestion);notify("Suggestion updated.")}catch(e){notify(e.response?.data?.message||"Unable to update suggestion.")}finally{saving.value=null}}
-function formatDate(value){return value?new Date(value).toLocaleString():"—"}
-onMounted(load);
+const suggestions = ref([]);
+const search = ref("");
+const filter = ref("All");
+const notice = ref("");
+const saving = ref(null);
+let refreshTimer = null;
+
+const filtered = computed(() => {
+  const q = search.value.toLowerCase().trim();
+  return suggestions.value.filter(s =>
+    (filter.value === "All" || s.status === filter.value) &&
+    (!q || `${s.subject} ${s.message} ${s.user_name} ${s.user_email} ${s.category}`.toLowerCase().includes(q))
+  );
+});
+
+const notify = (text) => {
+  notice.value = text;
+  window.setTimeout(() => { notice.value = ""; }, 3500);
+};
+
+async function load() {
+  try {
+    const r = await getAllSuggestions();
+    suggestions.value = r.suggestions || [];
+  } catch (e) {
+    notify(e.response?.data?.message || "Unable to load suggestions.");
+  }
+}
+
+async function save(item) {
+  saving.value = item.suggestion_id;
+  try {
+    const r = await updateSuggestion(item.suggestion_id, item.status, item.admin_response || "");
+    Object.assign(item, r.suggestion);
+    notify("Suggestion updated.");
+  } catch (e) {
+    notify(e.response?.data?.message || "Unable to update suggestion.");
+  } finally {
+    saving.value = null;
+  }
+}
+
+function formatDate(value) { return value ? new Date(value).toLocaleString() : "—"; }
+function refreshWhenVisible() { if (document.visibilityState === "visible") load(); }
+
+onMounted(() => {
+  load();
+  refreshTimer = window.setInterval(load, 15000);
+  document.addEventListener("visibilitychange", refreshWhenVisible);
+});
+
+onBeforeUnmount(() => {
+  if (refreshTimer) window.clearInterval(refreshTimer);
+  document.removeEventListener("visibilitychange", refreshWhenVisible);
+});
 </script>
 
 <style scoped>
