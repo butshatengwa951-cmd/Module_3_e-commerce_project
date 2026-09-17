@@ -42,7 +42,7 @@
             <div class="goal-numbers"><strong>R {{ money(goalCurrent) }}</strong><span>of R {{ money(goalTarget) }}</span></div>
             <div class="progress"><span :style="{width: goalPercent + '%'}"></span></div>
             <div class="meta"><span>{{ goalPercent }}% funded</span><span>{{ memberCount }} members</span></div>
-            <button v-if="canManageGoal" class="secondary full" @click="showGoal = true">Manage group goal</button>
+            <button v-if="canManageGoal" class="secondary full" @click="openGoalForm">{{ goal ? 'Update group goal' : 'Set group goal' }}</button>
             <small v-else class="permission-note">View-only group funding progress.</small>
           </article>
         </section>
@@ -122,11 +122,28 @@ async function load() {
   finally { loading.value = false; }
 }
 
+function openGoalForm() {
+  goalForm.value = {
+    target_amount: goal.value?.target_amount ? Number(goal.value.target_amount) : null,
+    deadline: goal.value?.deadline ? String(goal.value.deadline).slice(0, 10) : "",
+  };
+  showGoal.value = true;
+}
+
 async function saveGoal() {
   saving.value = true;
-  try { await saveStokvelGoal({ targetAmount: goalForm.value.target_amount, deadline: goalForm.value.deadline }); showGoal.value = false; await load(); }
-  catch (e) { alert(e.response?.data?.message || "Goal could not be saved."); }
-  finally { saving.value = false; }
+  try {
+    await saveStokvelGoal({
+      target_amount: Number(goalForm.value.target_amount),
+      deadline: goalForm.value.deadline,
+    });
+    showGoal.value = false;
+    await load();
+  } catch (e) {
+    alert(e.response?.data?.message || "Goal could not be saved.");
+  } finally {
+    saving.value = false;
+  }
 }
 
 onMounted(load);
