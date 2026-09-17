@@ -1,8 +1,12 @@
 <template>
   <header class="sw-header" :class="{ 'admin-header': isAdmin }">
     <button class="menu-button" type="button" aria-label="Open menu" @click="menuOpen = !menuOpen">☰</button>
-    <router-link :to="isAdmin ? '/admin' : '/'" class="brand" @click="menuOpen = false"><span class="brand-mark">🤝</span><span class="brand-name">STOCK<span>WELL</span></span></router-link>
-    <nav v-if="!isAdmin" class="desktop-nav"><router-link to="/">Home</router-link><router-link to="/catalogue">Catalogue</router-link><router-link v-if="isLoggedIn" to="/member-dashboard">Group Hub</router-link><router-link v-if="isLoggedIn" to="/order-history">Order History</router-link><router-link v-if="isLoggedIn" to="/suggestions">Suggestions</router-link></nav>
+    <router-link :to="isAdmin ? '/admin' : '/home-placeholder'" class="brand" @click="menuOpen = false">
+      <span class="brand-mark">🤝</span><span class="brand-name">STOCK<span>WELL</span></span>
+    </router-link>
+    <nav v-if="!isAdmin" class="desktop-nav">
+      <router-link to="/">Home</router-link><router-link to="/catalogue">Catalogue</router-link><router-link v-if="isLoggedIn" to="/member-dashboard">Group Hub</router-link><router-link v-if="isLoggedIn" to="/order-history">Order History</router-link><router-link v-if="isLoggedIn" to="/suggestions">Suggestions</router-link>
+    </nav>
     <nav v-else class="desktop-nav"><router-link to="/admin">Dashboard</router-link><router-link to="/admin/management">Management</router-link><router-link to="/admin/suggestions">Suggestions</router-link></nav>
     <div class="header-actions">
       <template v-if="isLoggedIn && isAdmin"><span class="admin-badge">ADMIN</span><router-link class="icon-button" to="/admin/profile" aria-label="Admin Profile">👤</router-link><button class="icon-button" type="button" @click="toggleTheme">{{ isDark ? '☀' : '☾' }}</button><button class="logout-btn" type="button" @click="logout">Logout</button></template>
@@ -17,12 +21,13 @@
 </template>
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useTheme } from '../../composables/useTheme.js';
 import { readCartState } from '../../composables/useCartState.js';
-const router=useRouter(); const {isDark,toggleTheme}=useTheme(); const menuOpen=ref(false); const cartCount=ref(readCartState().itemCount||0); const authVersion=ref(0);
-const isLoggedIn=computed(()=>{authVersion.value;return Boolean(localStorage.getItem('token')||localStorage.getItem('sw_token'))});
-const isAdmin=computed(()=>{authVersion.value;try{return JSON.parse(localStorage.getItem('user')||'null')?.role==='admin'}catch{return false}});
+const router=useRouter(); const route=useRoute(); const {isDark,toggleTheme}=useTheme(); const menuOpen=ref(false); const cartCount=ref(readCartState().itemCount||0); const authVersion=ref(0);
+const hasSession=computed(()=>{authVersion.value;return Boolean(localStorage.getItem('token')||localStorage.getItem('sw_token'))});
+const isLoggedIn=computed(()=>hasSession.value && route.name !== 'Home');
+const isAdmin=computed(()=>{authVersion.value;try{return hasSession.value && JSON.parse(localStorage.getItem('user')||'null')?.role==='admin' && route.name !== 'Home'}catch{return false}});
 function refreshAuthState(){authVersion.value+=1} function updateCart(e){cartCount.value=Number(e.detail?.itemCount??e.detail??0)} function refreshCart(){cartCount.value=Number(readCartState().itemCount||0)}
 function logout(){['token','sw_token','user','stokvel','stockwellCheckoutState','stockwellCartState','basketCount'].forEach(k=>localStorage.removeItem(k));cartCount.value=0;menuOpen.value=false;refreshAuthState();router.push('/')}
 function handleStorage(){refreshAuthState();refreshCart()}
