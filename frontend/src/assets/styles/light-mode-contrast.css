@@ -63,20 +63,21 @@ html:not(.dark-mode) textarea:focus {
   background-color: var(--sw-input-background-focus);
 }
 
-/* ORDER HISTORY — LIGHT MODE TEXT CONTRAST */
+/* ORDER HISTORY — LIGHT MODE FEATURED CARD TEXT */
+html:not(.dark-mode) .history-page .stat-card.featured {
+  color: var(--sw-white);
+}
+
 html:not(.dark-mode) .history-page .stat-card.featured span {
-  color: #3d335f;
-  font-weight: 900;
+  color: var(--sw-white);
 }
 
 html:not(.dark-mode) .history-page .stat-card.featured strong {
-  color: #211a38;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
+  color: var(--sw-white);
 }
 
 html:not(.dark-mode) .history-page .stat-card.featured small {
-  color: #554b6d;
-  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
 }
 
 /* DARK MODE */
