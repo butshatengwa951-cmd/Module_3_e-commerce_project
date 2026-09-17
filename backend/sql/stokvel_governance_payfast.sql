@@ -1,6 +1,6 @@
 USE StockWell;
 
--- Stokvel governance: proposals separate a member's shopping request from an authorised group purchase.
+-- Group purchase proposals: shopping requests are separate from authorised wallet spending.
 CREATE TABLE IF NOT EXISTS stokvel_purchase_proposals (
   proposal_id INT AUTO_INCREMENT PRIMARY KEY,
   stokvel_id INT NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS stokvel_purchase_proposal_votes (
   CONSTRAINT fk_proposal_vote_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Stokvel-specific roles. Platform users.role remains platform-level access.
+-- Stokvel-level roles are separate from platform users.role.
 CREATE TABLE IF NOT EXISTS stokvel_member_roles (
   stokvel_member_id INT NOT NULL PRIMARY KEY,
   stokvel_role ENUM('MEMBER','CHAIRPERSON','TREASURER') NOT NULL DEFAULT 'MEMBER',
@@ -59,15 +59,15 @@ CREATE TABLE IF NOT EXISTS stokvel_member_roles (
   CONSTRAINT fk_stokvel_member_role_membership FOREIGN KEY (stokvel_member_id) REFERENCES stokvel_members(stokvel_member_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+-- Seed only missing role rows. This preserves a Treasurer/Chairperson assignment if the migration is rerun.
 INSERT INTO stokvel_member_roles (stokvel_member_id,stokvel_role)
 SELECT sm.stokvel_member_id,
        CASE WHEN sm.user_id=s.chairperson_id THEN 'CHAIRPERSON' ELSE 'MEMBER' END
 FROM stokvel_members sm
 INNER JOIN stokvels s ON s.stokvel_id=sm.stokvel_id
-ON DUPLICATE KEY UPDATE stokvel_role=VALUES(stokvel_role);
+LEFT JOIN stokvel_member_roles smr ON smr.stokvel_member_id=sm.stokvel_member_id
+WHERE smr.stokvel_member_id IS NULL;
 
--- Member-owned payment methods. Existing card_details rows can remain as legacy/demo data;
--- new PayFast payments do not depend on storing card information in StockWell.
 CREATE TABLE IF NOT EXISTS payfast_payments (
   payment_id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
