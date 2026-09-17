@@ -17,3 +17,4 @@ npm-debug.log*
 
 #ca.pem
 backend/config/ca.pem
+frontend/.vite/
