@@ -47,15 +47,14 @@ const routes=[
 const router=createRouter({history:createWebHistory(),routes});
 function hasAuthToken(){return Boolean(localStorage.getItem("token")||localStorage.getItem("sw_token"))}
 function isAdmin(){try{return JSON.parse(localStorage.getItem("user")||"null")?.role==="admin"}catch{return false}}
+
 router.beforeEach((to)=>{
   const authenticated=hasAuthToken();
-
-  if(to.path==="/" && authenticated){
-    return isAdmin()?{path:"/admin"}:{path:"/member-dashboard"};
-  }
-
+  if(to.path==="/" && authenticated)return isAdmin()?{path:"/admin"}:{path:"/member-dashboard"};
+  if(to.path==="/login-signup" && authenticated)return isAdmin()?{path:"/admin"}:{path:"/member-dashboard"};
   if(to.meta.requiresAuth&&!authenticated)return{path:"/login-signup",query:{redirect:to.fullPath}};
   if(to.meta.requiresAdmin&&!isAdmin())return{path:"/",query:{admin:"forbidden"}};
   return true;
 });
+
 export default router;
