@@ -1,6 +1,7 @@
 import { getMembershipByUserId } from "../models/Cart.js";
 import {
   confirmPendingOrder,
+  getOrderHistoryForStokvel,
   getPendingOrderForStokvel,
 } from "../models/Order.js";
 
@@ -27,6 +28,33 @@ export const getCurrentOrder = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to retrieve the current order.",
+    });
+  }
+};
+
+export const getOrderHistory = async (req, res) => {
+  try {
+    const membership = await getMembershipByUserId(req.user.user_id);
+
+    if (!membership) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not a member of a Stokvel.",
+      });
+    }
+
+    const orders = await getOrderHistoryForStokvel(membership.stokvel_id);
+
+    return res.json({
+      success: true,
+      stokvel: membership,
+      orders,
+    });
+  } catch (error) {
+    console.error("Get order history error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve order history.",
     });
   }
 };
