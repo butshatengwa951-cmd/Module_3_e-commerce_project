@@ -24,6 +24,7 @@ export const createPurchaseProposal = handle(async (req) => createProposal({
   title: req.body?.title,
   description: req.body?.description,
   delivery_address: req.body?.delivery_address,
+  delivery_mode: req.body?.delivery_mode,
   items: req.body?.items,
 }));
 
@@ -32,6 +33,7 @@ export const createProposalFromCart = handle(async (req) => createProposalFromCu
   title: req.body?.title,
   description: req.body?.description,
   delivery_address: req.body?.delivery_address,
+  delivery_mode: req.body?.delivery_mode,
 }));
 
 export const voteOnProposal = handle(async (req) => castProposalVote({
