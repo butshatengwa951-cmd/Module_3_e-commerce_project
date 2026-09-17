@@ -14,10 +14,10 @@ export const getAllProducts = async () => {
   return shapeProducts(rows);
 };
 
-export const getGroupProductsForUser = async (userId) => {
-  const [rows] = await db.query(`SELECT p.*,sp.supplier_price_id,sp.supplier_name,sp.price,sp.minimum_quantity,COALESCE(vc.vote_count,0) AS vote_count,CASE WHEN uv.product_id IS NULL THEN 0 ELSE 1 END AS user_voted,CASE WHEN COALESCE(vc.vote_count,0)>0 THEN 1 ELSE 0 END AS is_group_pick FROM products p LEFT JOIN supplier_prices sp ON p.product_id=sp.product_id LEFT JOIN (SELECT product_id,COUNT(*) AS vote_count FROM stokvel_product_votes WHERE stokvel_id=(SELECT stokvel_id FROM stokvel_members WHERE user_id=? LIMIT 1) GROUP BY product_id) vc ON vc.product_id=p.product_id LEFT JOIN (SELECT DISTINCT product_id FROM stokvel_product_votes WHERE stokvel_id=(SELECT stokvel_id FROM stokvel_members WHERE user_id=? LIMIT 1) AND user_id=?) uv ON uv.product_id=p.product_id ORDER BY is_group_pick DESC,vote_count DESC,p.product_id,sp.price`, [userId,userId,userId]);
-  return shapeProducts(rows);
-};
+// Product voting was removed from the active Stokvel workflow. Keep the
+// authenticated group catalogue compatible with the normal catalogue query
+// instead of depending on the retired stokvel_product_votes table.
+export const getGroupProductsForUser = async () => getAllProducts();
 
 export const getProductById = async (product_id) => {
   const [rows] = await db.query(`SELECT p.*,sp.supplier_price_id,sp.supplier_name,sp.price,sp.minimum_quantity FROM products p LEFT JOIN supplier_prices sp ON p.product_id=sp.product_id WHERE p.product_id=? ORDER BY sp.price`, [product_id]);
