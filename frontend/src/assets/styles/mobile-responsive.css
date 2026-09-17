@@ -1,0 +1,136 @@
+/* StockWell site-wide mobile pass.
+   Keeps existing desktop layouts intact and adds safe narrow-screen rules
+   for shared containers, navigation, forms, grids, tables and dialogs. */
+
+html, body, #app { max-width: 100%; overflow-x: hidden; }
+img, video, svg { max-width: 100%; }
+button, input, select, textarea { max-width: 100%; }
+
+@media (max-width: 900px) {
+  .page-container, .page-content, .content-container, .dashboard-container,
+  .admin-container, .profile-container, .settings-container,
+  .addresses-container, .history-container, .proposals-container,
+  .wallet-container, .payment-container {
+    width: min(100% - 28px, 1180px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .grid, .cards-grid, .stats-grid, .dashboard-grid, .content-grid,
+  .two-column, .three-column, .four-column {
+    grid-template-columns: 1fr !important;
+  }
+
+  .table-wrap, .responsive-table, .overflow-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  table { min-width: 620px; }
+
+  .modal, .dialog, .modal-content, .dialog-content {
+    width: min(100% - 24px, 620px);
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  body { font-size: 14px; }
+
+  h1 { font-size: clamp(30px, 9vw, 44px) !important; line-height: 1.05; }
+  h2 { font-size: clamp(22px, 7vw, 32px); }
+  h3 { font-size: 18px; }
+
+  header, .site-header, .app-header, .navbar, nav {
+    max-width: 100%;
+  }
+
+  .hero, .page-hero, .catalogue-hero, .dashboard-hero,
+  .profile-hero, .tracking-hero {
+    min-height: 0 !important;
+    padding: 26px 20px !important;
+    border-radius: 20px !important;
+  }
+
+  .hero, .page-hero, .dashboard-hero, .profile-hero {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 18px;
+  }
+
+  .hero-actions, .page-actions, .header-actions, .toolbar-actions,
+  .modal-actions, .form-actions, .button-row {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 10px;
+  }
+
+  .hero-actions > *, .page-actions > *, .header-actions > *,
+  .toolbar-actions > *, .modal-actions > *, .form-actions > *, .button-row > * {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .toolbar, .shop-toolbar, .filter-bar, .search-toolbar {
+    grid-template-columns: 1fr !important;
+    display: grid !important;
+    gap: 10px;
+  }
+
+  .product-grid, .products-grid, .card-grid, .cards, .items-grid,
+  .stats-grid, .quick-actions, .feature-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .card, .panel, .glass, .items-card, .summary-card, .detail-card {
+    border-radius: 18px;
+  }
+
+  .form-row, .input-row, .field-row {
+    grid-template-columns: 1fr !important;
+    display: grid !important;
+  }
+
+  input, select, textarea { width: 100%; box-sizing: border-box; min-height: 44px; }
+  textarea { min-height: 110px; }
+
+  .toast, .message, .alert { max-width: calc(100vw - 28px); box-sizing: border-box; }
+
+  .list-row, .activity-row, .transaction-row, .member-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+
+  .stat-card, .summary-card, .info-card { padding: 18px !important; }
+}
+
+@media (max-width: 500px) {
+  .page-container, .page-content, .content-container, .dashboard-container,
+  .admin-container, .profile-container, .settings-container,
+  .addresses-container, .history-container, .proposals-container,
+  .wallet-container, .payment-container {
+    width: calc(100% - 22px);
+  }
+
+  .modal-backdrop { padding: 11px !important; }
+  .modal, .dialog, .modal-content, .dialog-content { width: 100%; border-radius: 18px; }
+
+  .section-heading { gap: 8px; }
+  .section-heading h2 { line-height: 1.1; }
+
+  .quantity-control { max-width: 100%; }
+  .quantity-picker { max-width: 100%; }
+
+  .status-orb { width: 140px !important; height: 140px !important; flex-basis: 140px !important; }
+
+  .item-image, .product-image-wrap { flex-shrink: 0; }
+}
+
+@media (max-width: 380px) {
+  .page-container, .page-content, .content-container, .dashboard-container,
+  .admin-container, .profile-container, .settings-container,
+  .addresses-container, .history-container, .proposals-container,
+  .wallet-container, .payment-container { width: calc(100% - 18px); }
+
+  .eyebrow, .card-label { font-size: 9px; }
+}
