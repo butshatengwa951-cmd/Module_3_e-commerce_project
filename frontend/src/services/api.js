@@ -62,8 +62,16 @@ api.interceptors.response.use(undefined, async (error) => {
     } catch (refreshError) {
       clearAuthStorage();
       window.dispatchEvent(new Event("auth-updated"));
+      window.dispatchEvent(new Event("auth-expired"));
       return Promise.reject(refreshError);
     }
+  }
+
+  // A protected request with no usable refresh session is treated as an invalid session.
+  if (status === 401 && !isAuthEndpoint) {
+    clearAuthStorage();
+    window.dispatchEvent(new Event("auth-updated"));
+    window.dispatchEvent(new Event("auth-expired"));
   }
 
   return Promise.reject(error);
