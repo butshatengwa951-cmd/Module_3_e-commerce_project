@@ -3,7 +3,7 @@
     <button class="menu-button" type="button" aria-label="Open menu" @click="menuOpen = !menuOpen">☰</button>
     <router-link :to="isAdmin ? '/admin' : '/'" class="brand" @click="menuOpen = false"><span class="brand-mark">🤝</span><span class="brand-name">STOCK<span>WELL</span></span></router-link>
 
-    <nav v-if="!isAdmin" class="desktop-nav"><router-link to="/">Home</router-link><router-link to="/catalogue">Catalogue</router-link></nav>
+    <nav v-if="!isAdmin" class="desktop-nav"><router-link to="/">Home</router-link><router-link to="/catalogue">Catalogue</router-link><router-link v-if="isLoggedIn" to="/suggestions">Suggestions</router-link></nav>
     <nav v-else class="desktop-nav"><router-link to="/admin">Dashboard</router-link><router-link to="/admin/suggestions">Suggestions</router-link></nav>
 
     <div class="header-actions">
