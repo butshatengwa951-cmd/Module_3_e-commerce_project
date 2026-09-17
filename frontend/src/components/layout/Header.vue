@@ -60,7 +60,7 @@ const isAdmin = computed(() => { authVersion.value; try { return JSON.parse(loca
 function refreshAuthState(){ authVersion.value += 1; }
 function updateCart(event){ cartCount.value = Number(event.detail?.itemCount ?? event.detail ?? 0); }
 function refreshCart(){ cartCount.value = Number(readCartState().itemCount || 0); }
-function logout(){ ['token','sw_token','user','stokvel','stockwellCheckoutState','stockwellCartState','basketCount'].forEach(k => localStorage.removeItem(k)); cartCount.value=0; menuOpen.value=false; refreshAuthState(); router.push('/login-signup'); }
+function logout(){ ['token','sw_token','user','stokvel','stockwellCheckoutState','stockwellCartState','basketCount'].forEach(k => localStorage.removeItem(k)); cartCount.value=0; menuOpen.value=false; refreshAuthState(); router.push('/'); }
 function handleStorage(){ refreshAuthState(); refreshCart(); }
 onMounted(()=>{ window.addEventListener('cart-state-updated',updateCart); window.addEventListener('basket-updated',updateCart); window.addEventListener('auth-updated',refreshAuthState); window.addEventListener('login-completed',refreshAuthState); window.addEventListener('storage',handleStorage); window.addEventListener('focus',handleStorage); });
 onBeforeUnmount(()=>{ window.removeEventListener('cart-state-updated',updateCart); window.removeEventListener('basket-updated',updateCart); window.removeEventListener('auth-updated',refreshAuthState); window.removeEventListener('login-completed',refreshAuthState); window.removeEventListener('storage',handleStorage); window.removeEventListener('focus',handleStorage); });
