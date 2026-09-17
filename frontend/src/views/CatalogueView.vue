@@ -117,7 +117,6 @@
                 <span :class="getStockClass(product)">{{ getStockLabel(product) }}</span>
               </div>
 
-              <!-- Keep this slot at a fixed height so basket state never shifts card controls. -->
               <div
                 class="basket-status"
                 :class="{ empty: getBasketQuantity(product) === 0 }"
@@ -130,7 +129,12 @@
               <div class="quantity-control" :class="{ disabled: product.quantity_available < 1 }">
                 <span>Quantity</span>
                 <div class="quantity-picker">
-                  <button type="button" aria-label="Decrease quantity" :disabled="getPurchaseQuantity(product) <= getMinimumSelectableQuantity(product)" @click="changeQuantity(product, -1)">−</button>
+                  <button
+                    type="button"
+                    aria-label="Decrease quantity"
+                    :disabled="getPurchaseQuantity(product) <= getMinimumSelectableQuantity(product)"
+                    @click="changeQuantity(product, -1)"
+                  >−</button>
                   <input
                     :value="getPurchaseQuantity(product)"
                     type="number"
@@ -140,7 +144,12 @@
                     :disabled="product.quantity_available < 1"
                     @change="setPurchaseQuantity(product, $event.target.value)"
                   />
-                  <button type="button" aria-label="Increase quantity" :disabled="getPurchaseQuantity(product) >= Number(product.quantity_available || 0) || product.quantity_available < 1" @click="changeQuantity(product, 1)">+</button>
+                  <button
+                    type="button"
+                    aria-label="Increase quantity"
+                    :disabled="getPurchaseQuantity(product) >= Number(product.quantity_available || 0) || product.quantity_available < 1"
+                    @click="changeQuantity(product, 1)"
+                  >+</button>
                 </div>
               </div>
 
@@ -164,7 +173,7 @@
                   v-for="supplier in getSortedSuppliers(product)"
                   :key="supplier.supplier_price_id"
                   class="supplier-row"
-                  :class="{ cheapest: getBestSupplier(product)?.supplier_price_id === supplier.supplier_price_id, selected: selectedSuppliers[product.product_id] === supplier.supplier_price_id, unavailable: !isSupplierEligible(product, supplier) }"
+                  :class="{ cheapest: getBestSupplier(product)?.supplier_price_id === supplier.supplier_price_id, selected: isSupplierSelected(product, supplier), unavailable: !isSupplierEligible(product, supplier) }"
                 >
                   <div class="supplier-details">
                     <strong>{{ supplier.supplier_name }}</strong>
@@ -180,7 +189,7 @@
                       :aria-label="`Use ${supplier.supplier_name} for ${product.product_name}`"
                       @click="addSupplierToBasket(product, supplier)"
                     >
-                      {{ isSupplierEligible(product, supplier) ? (selectedSuppliers[product.product_id] === supplier.supplier_price_id ? `Add ${getPurchaseQuantity(product)}` : "Use & Add") : `Min ${supplier.minimum_quantity || 1}` }}
+                      {{ isSupplierEligible(product, supplier) ? (isSupplierSelected(product, supplier) ? `Add ${getPurchaseQuantity(product)}` : "Use & Add") : `Min ${supplier.minimum_quantity || 1}` }}
                     </button>
                   </div>
                 </div>
@@ -229,6 +238,9 @@ import ricoffy from "../assets/ricoffy.png";
 import sunfoil from "../assets/sunfoil.png";
 import tomatoSauce from "../assets/tomato-sauce.png";
 
+const supplierStorageKey = "stockwellSelectedSuppliers";
+const imageFallback = "https://images.unsplash.com/photo-1542838132-92c53300491e?w=700&h=700&fit=crop";
+
 const products = ref([]);
 const search = ref("");
 const selectedCategory = ref("All Products");
@@ -248,12 +260,10 @@ const basketCount = ref(0);
 const toastTimer = ref(null);
 const visibleCount = ref(12);
 
-const imageFallback = "https://images.unsplash.com/photo-1542838132-92c53300491e?w=700&h=700&fit=crop";
-const supplierStorageKey = "stockwellSelectedSuppliers";
-
 function loadStoredSuppliers() {
   try {
-    return JSON.parse(localStorage.getItem(supplierStorageKey) || "{}");
+    const stored = JSON.parse(localStorage.getItem(supplierStorageKey) || "{}");
+    return stored && typeof stored === "object" ? stored : {};
   } catch {
     return {};
   }
@@ -262,6 +272,14 @@ function loadStoredSuppliers() {
 function persistSelectedSupplier(productId, supplierPriceId) {
   selectedSuppliers.value = { ...selectedSuppliers.value, [productId]: supplierPriceId };
   localStorage.setItem(supplierStorageKey, JSON.stringify(selectedSuppliers.value));
+}
+
+function supplierIdsMatch(first, second) {
+  return first != null && second != null && String(first) === String(second);
+}
+
+function isSupplierSelected(product, supplier) {
+  return supplierIdsMatch(selectedSuppliers.value[product.product_id], supplier.supplier_price_id);
 }
 
 function syncAuth() {
@@ -331,7 +349,6 @@ function resetFilters() {
 }
 
 function getProductImage(product) {
-  // Use the original local product artwork first so the catalogue stays visually consistent.
   const name = String(product.product_name || "").toLowerCase();
   if (name.includes("white star")) return whiteStar;
   if (name.includes("tastic rice")) return rice;
@@ -345,7 +362,6 @@ function getProductImage(product) {
   if (name.includes("huletts")) return hulets;
   if (name.includes("ricoffy")) return ricoffy;
   if (name.includes("kellogg")) return cornflakes;
-
   return product.image_url || imageFallback;
 }
 
@@ -407,7 +423,7 @@ function getEligibleSuppliers(product) {
 
 function getPreferredSupplier(product) {
   const selectedId = selectedSuppliers.value[product.product_id];
-  return getEligibleSuppliers(product).find((supplier) => supplier.supplier_price_id === selectedId) || null;
+  return getEligibleSuppliers(product).find((supplier) => supplierIdsMatch(supplier.supplier_price_id, selectedId)) || null;
 }
 
 function getBestSupplier(product) {
@@ -480,13 +496,15 @@ function showBasketMessage(text, duration = 3000) {
 async function refreshProductStock(product) {
   const response = await getProducts();
   const latestProducts = Array.isArray(response) ? response : response.products || [];
-  const latest = latestProducts.find((item) => item.product_id === product.product_id);
+  const latest = latestProducts.find((item) => supplierIdsMatch(item.product_id, product.product_id));
 
   if (!latest) return product;
 
-  const index = products.value.findIndex((item) => item.product_id === product.product_id);
+  const index = products.value.findIndex((item) => supplierIdsMatch(item.product_id, product.product_id));
   if (index !== -1) products.value[index] = latest;
-  initialiseProductState(latest, false);
+
+  // Keep the user's requested quantity when refreshing live stock.
+  initialiseProductState(latest, true);
   return latest;
 }
 
@@ -538,16 +556,18 @@ async function addSupplierToBasket(product, supplier) {
     return;
   }
 
-  persistSelectedSupplier(product.product_id, supplier.supplier_price_id);
-
   try {
     const latest = await refreshProductStock(product);
-    const latestSupplier = (latest.supplier_prices || []).find((item) => item.supplier_price_id === supplier.supplier_price_id);
+    const latestSupplier = (latest.supplier_prices || []).find((item) => supplierIdsMatch(item.supplier_price_id, supplier.supplier_price_id));
     if (!latestSupplier || !isSupplierEligible(latest, latestSupplier)) {
       showBasketMessage("That supplier option is no longer available for the selected quantity.", 3500);
       return;
     }
+
     await addProductToBasket(latest, latestSupplier);
+
+    // Only remember the supplier after the actual add succeeds.
+    persistSelectedSupplier(latest.product_id, latestSupplier.supplier_price_id);
   } catch (error) {
     console.error("Supplier basket add failed:", error);
     if ([400, 409, 422].includes(error.response?.status)) await loadCatalogue(false);
@@ -584,7 +604,16 @@ const visibleProducts = computed(() => filteredProducts.value.slice(0, visibleCo
 function initialiseProductState(product, preserveQuantity = true) {
   const stock = Number(product.quantity_available || 0);
   const minimum = stock > 0 ? getMinimumSelectableQuantity(product) : 0;
-  if (!preserveQuantity || !requestedQuantities.value[product.product_id]) requestedQuantities.value[product.product_id] = minimum;
+  const existing = requestedQuantities.value[product.product_id];
+
+  if (!preserveQuantity || existing == null || !Number.isFinite(Number(existing))) {
+    requestedQuantities.value[product.product_id] = minimum;
+  } else if (stock > 0) {
+    requestedQuantities.value[product.product_id] = Math.min(Math.max(Number(existing), minimum), stock);
+  } else {
+    requestedQuantities.value[product.product_id] = 0;
+  }
+
   supplierSort.value[product.product_id] ||= "price-low";
 }
 
@@ -662,44 +691,25 @@ onUnmounted(() => {
 .catalogue-page *,
 .catalogue-page *::before,
 .catalogue-page *::after { box-sizing: border-box; }
-
 .catalogue-hero,
 .shop-toolbar,
 .category-panel,
 .active-filter,
 .products-area { width: 100%; max-width: 1180px; margin-inline: auto; }
-
 .catalogue-hero { margin-bottom: 28px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: end; }
-
 .eyebrow,
 .category-title > span,
 .basket-summary > span,
-.best-supplier > span {
-  margin: 0;
-  color: var(--sw-gold-500);
-  font-family: "DM Mono", monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.catalogue-page h1 { margin: 8px 0 12px; font-size: clamp(38px, 6vw, 72px); line-height: 0.98; letter-spacing: -0.04em; }
+.best-supplier > span { margin: 0; color: var(--sw-gold-500); font-family: "DM Mono", monospace; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.catalogue-page h1 { margin: 8px 0 12px; font-size: clamp(38px, 6vw, 72px); line-height: .98; letter-spacing: -.04em; }
 .catalogue-page h1 span { color: var(--sw-gold-500); }
 .hero-copy { max-width: 620px; margin: 0; color: var(--catalogue-muted); font-size: 16px; line-height: 1.7; }
-
 .basket-summary,
 .shop-toolbar,
 .category-panel,
 .product-card,
 .empty-state,
-.state {
-  border: 1px solid var(--catalogue-border);
-  background: var(--catalogue-surface);
-  box-shadow: var(--catalogue-shadow);
-  backdrop-filter: blur(var(--sw-glass-blur, 10px));
-}
-
+.state { border: 1px solid var(--catalogue-border); background: var(--catalogue-surface); box-shadow: var(--catalogue-shadow); backdrop-filter: blur(var(--sw-glass-blur, 10px)); }
 .basket-summary { min-width: 210px; padding: 20px; border-radius: 18px; display: grid; gap: 5px; }
 .basket-summary strong { font-size: 38px; line-height: 1; }
 .basket-summary small { color: var(--catalogue-muted); }
@@ -716,14 +726,7 @@ onUnmounted(() => {
 .compare-button,
 .empty-state button,
 .retry-button,
-.load-more-button {
-  min-height: 46px;
-  border: 1px solid var(--catalogue-border);
-  border-radius: 12px;
-  font: inherit;
-  transition: border-color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease;
-}
-
+.load-more-button { min-height: 46px; border: 1px solid var(--catalogue-border); border-radius: 12px; font: inherit; transition: border-color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease; }
 .category-button,
 .shop-toolbar select,
 .price-filter { padding: 12px 15px; background: var(--catalogue-surface-raised); color: var(--sw-page-text); cursor: pointer; }
@@ -735,7 +738,6 @@ onUnmounted(() => {
 .price-filter:hover,
 .category-list button:hover,
 .compare-button:hover:not(:disabled) { border-color: color-mix(in srgb, var(--sw-gold-500) 55%, var(--catalogue-border)); background: var(--catalogue-surface-raised); }
-
 .category-button:focus-visible,
 .shop-toolbar select:focus-visible,
 .search-box:focus-within,
@@ -750,12 +752,10 @@ onUnmounted(() => {
 .active-filter button:focus-visible,
 .quantity-picker button:focus-visible,
 .quantity-picker input:focus-visible { outline: 2px solid var(--sw-gold-500); outline-offset: 2px; }
-
 .search-box { display: flex; align-items: center; gap: 10px; padding: 0 14px; background: var(--catalogue-surface-raised); }
 .search-box > span { color: var(--catalogue-muted); font-size: 20px; }
 .search-box input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--sw-page-text); padding: 12px 0; }
 .search-box input::placeholder { color: var(--catalogue-muted); }
-
 .category-panel { margin-bottom: 18px; padding: 18px; border-radius: 16px; }
 .category-title { display: grid; gap: 4px; margin-bottom: 12px; }
 .category-title small { color: var(--catalogue-muted); }
@@ -763,7 +763,6 @@ onUnmounted(() => {
 .category-list button { padding: 10px 14px; background: var(--catalogue-surface-raised); color: var(--sw-page-text); cursor: pointer; }
 .category-list button.active { border-color: var(--sw-gold-500); background: color-mix(in srgb, var(--sw-gold-500) 12%, var(--catalogue-surface)); color: var(--sw-gold-500); }
 .category-list button span { margin-right: 5px; }
-
 .active-filter { margin-bottom: 14px; padding: 2px 2px 0; display: flex; align-items: center; flex-wrap: wrap; gap: 7px; color: var(--catalogue-muted); font-size: 14px; }
 .active-filter strong { color: var(--sw-page-text); }
 .active-filter button { margin-left: auto; border: 0; background: transparent; color: inherit; cursor: pointer; font-size: 20px; line-height: 1; }
@@ -771,37 +770,33 @@ onUnmounted(() => {
 .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; align-items: stretch; }
 .product-card { overflow: hidden; min-width: 0; display: flex; flex-direction: column; min-height: 100%; border-radius: 20px; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
 .product-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--sw-gold-500) 42%, var(--catalogue-border)); }
-
 .product-image { position: relative; height: 240px; flex: 0 0 240px; display: grid; place-items: center; padding: 20px; border-bottom: 1px solid var(--catalogue-border-soft); background: var(--catalogue-surface-raised); }
 .product-image img { width: auto; max-width: 100%; max-height: 205px; object-fit: contain; }
 .deal-badge,
 .bulk-badge { position: absolute; top: 12px; z-index: 1; padding: 6px 9px; border-radius: 999px; font-family: "DM Mono", monospace; font-size: 9px; font-weight: 700; letter-spacing: .05em; }
 .deal-badge { left: 12px; background: var(--sw-gold-500); color: #171022; }
 .bulk-badge { right: 12px; background: var(--sw-purple-700); color: #fff; }
-
 .product-info { min-height: 0; flex: 1; display: flex; flex-direction: column; padding: 20px; }
 .category-label { color: var(--sw-gold-500); font-family: "DM Mono", monospace; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .product-info h2 { height: 51px; min-height: 51px; margin: 7px 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 21px; line-height: 1.2; }
 .description { height: 42px; min-height: 42px; margin: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: var(--catalogue-muted); font-size: 13px; line-height: 1.5; }
-
 .price-row { min-height: 72px; height: 72px; flex: 0 0 72px; margin: 18px 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .price-block { min-width: 0; }
 .price-row small { display: block; margin-bottom: 3px; color: var(--catalogue-muted); font-size: 11px; }
 .price-row strong { font-size: 25px; line-height: 1; white-space: nowrap; }
 .saving { flex: 0 0 auto; max-width: 48%; color: var(--sw-gold-500); font-size: 12px; font-weight: 700; text-align: right; }
 
-.best-supplier { min-height: 64px; height: 64px; flex: 0 0 64px; display: grid; align-content: center; gap: 4px; padding: 12px; overflow: hidden; border: 1px solid var(--catalogue-border-soft); border-radius: 12px; background: color-mix(in srgb, var(--sw-purple-700) 9%, var(--catalogue-surface)); }
-.best-supplier strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; line-height: 1.25; }
+/* Stable two-line supplier summary: the quantity label and supplier name never collide. */
+.best-supplier { min-height: 70px; height: 70px; flex: 0 0 70px; display: grid; grid-template-rows: 17px minmax(20px, 1fr); align-content: center; gap: 5px; padding: 12px; overflow: hidden; border: 1px solid var(--catalogue-border-soft); border-radius: 12px; background: color-mix(in srgb, var(--sw-purple-700) 9%, var(--catalogue-surface)); }
+.best-supplier > span { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 17px; }
+.best-supplier strong { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; line-height: 20px; }
 .stock-row { min-height: 20px; height: 20px; flex: 0 0 20px; margin: 12px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--catalogue-muted); font-size: 12px; }
 .in-stock { color: #2f9e62; font-weight: 700; }
 .low-stock,
 .out-of-stock { color: var(--sw-red-600); font-weight: 700; }
-
-/* Reserved slot: every card gets the same vertical space, with content hidden when empty. */
 .basket-status { min-height: 36px; height: 36px; flex: 0 0 36px; margin-bottom: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid color-mix(in srgb, var(--sw-gold-500) 35%, var(--catalogue-border-soft)); border-radius: 10px; background: color-mix(in srgb, var(--sw-gold-500) 8%, var(--catalogue-surface)); color: var(--catalogue-muted); font-size: 12px; }
 .basket-status.empty { visibility: hidden; pointer-events: none; }
 .basket-status strong { color: var(--sw-gold-500); }
-
 .quantity-control { min-height: 46px; height: 46px; flex: 0 0 46px; margin-bottom: 8px; padding: 6px 8px 6px 11px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--catalogue-border-soft); border-radius: 12px; background: var(--catalogue-surface-raised); color: var(--catalogue-muted); font-size: 12px; }
 .quantity-control.disabled { opacity: .62; }
 .quantity-picker { display: inline-flex; align-items: center; gap: 5px; }
@@ -809,7 +804,6 @@ onUnmounted(() => {
 .quantity-picker button:disabled,
 .quantity-picker input:disabled { cursor: not-allowed; opacity: .45; }
 .quantity-picker input { width: 45px; height: 30px; border: 1px solid var(--catalogue-border); border-radius: 8px; background: var(--catalogue-surface); color: var(--sw-page-text); text-align: center; font: inherit; font-size: 12px; }
-
 .compare-button,
 .add-button { width: 100%; padding: 11px 13px; cursor: pointer; }
 .compare-button { min-height: 46px; height: 46px; flex: 0 0 46px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; background: transparent; color: var(--sw-page-text); }
@@ -827,7 +821,6 @@ onUnmounted(() => {
 .supplier-toolbar { min-height: 36px; padding: 7px 9px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--catalogue-border-soft); border-radius: 10px; background: var(--catalogue-surface-raised); color: var(--catalogue-muted); font-size: 11px; }
 .supplier-toolbar select { max-width: 170px; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--sw-page-text); font: inherit; cursor: pointer; }
 .supplier-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--catalogue-border-soft); border-radius: 10px; background: var(--catalogue-surface-raised); font-size: 12px; }
-.supplier-row.unavailable { opacity: .68; }
 .supplier-row.cheapest,
 .supplier-row.selected { border-color: var(--sw-gold-500); background: color-mix(in srgb, var(--sw-gold-500) 8%, var(--catalogue-surface)); }
 .supplier-details { min-width: 0; display: grid; gap: 2px; }
@@ -837,19 +830,16 @@ onUnmounted(() => {
 .supplier-action > span { font-weight: 700; white-space: nowrap; }
 .supplier-add-button { min-height: 30px; padding: 6px 10px; border: 1px solid var(--catalogue-border); border-radius: 8px; background: var(--catalogue-surface); color: var(--sw-page-text); font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
 .supplier-add-button:disabled { cursor: not-allowed; opacity: .5; }
-
 .state,
 .empty-state { min-height: 260px; border-radius: 18px; display: grid; place-items: center; align-content: center; gap: 8px; padding: 30px; text-align: center; }
-.state p,
+.empty-state > div { font-size: 42px; }
 .empty-state p,
-.load-more-wrap p { margin: 0; color: var(--catalogue-muted); }
-.error { border-color: var(--sw-red-600); }
-.empty-state > div { font-size: 48px; }
-.empty-state h2 { margin: 0; }
+.state p { margin: 0; color: var(--catalogue-muted); }
 .empty-state button,
 .retry-button,
 .load-more-button { padding: 10px 15px; border-color: transparent; background: var(--sw-button-gradient); color: #fff; cursor: pointer; }
 .load-more-wrap { margin-top: 24px; display: grid; place-items: center; gap: 10px; }
+.load-more-wrap p { margin: 0; color: var(--catalogue-muted); font-size: 13px; }
 .load-more-button { min-width: 210px; }
 .toast { position: fixed; right: 20px; bottom: 20px; z-index: 20; max-width: min(420px, calc(100vw - 32px)); padding: 14px 16px; border: 1px solid color-mix(in srgb, #fff 18%, var(--sw-purple-700)); border-radius: 12px; background: var(--sw-purple-700); color: #fff; box-shadow: var(--catalogue-shadow); }
 .loader { width: 34px; height: 34px; border: 3px solid var(--catalogue-border); border-top-color: var(--sw-gold-500); border-radius: 50%; animation: spin .8s linear infinite; }
@@ -889,6 +879,5 @@ onUnmounted(() => {
   .quantity-control { padding-left: 10px; }
   .quantity-picker input { width: 42px; }
   .add-button { min-height: 48px; height: 48px; font-size: 12px; }
-  .toast { right: 14px; bottom: 14px; }
 }
 </style>
