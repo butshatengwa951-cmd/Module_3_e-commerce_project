@@ -54,8 +54,13 @@ export const confirmCurrentOrder = async () => {
   const response = await api.post("/api/orders/current/confirm");
   if (response.data?.order) {
     const current = JSON.parse(localStorage.getItem("stockwellCartState") || "null");
-    saveCheckoutState({ order: response.data.order, items: current?.items || [], stokvel: current?.stokvel || null });
-    saveCartState({ items: [], order: response.data.order, stokvel: current?.stokvel || null });
+    const items = Array.isArray(current?.items) ? current.items : [];
+    const stokvel = current?.stokvel || null;
+
+    // Keep the cart snapshot intact while the order is in the Payment stage.
+    // It is cleared only after payment succeeds.
+    saveCheckoutState({ order: response.data.order, items, stokvel });
+    saveCartState({ items, order: response.data.order, stokvel });
   }
   return response.data;
 };
@@ -65,6 +70,9 @@ export const getPaymentOptions = async () => {
   if (response.data?.order) {
     const checkout = JSON.parse(localStorage.getItem("stockwellCheckoutState") || "null");
     saveCheckoutState({ order: response.data.order, items: checkout?.items || [], stokvel: checkout?.stokvel || null });
+    if (checkout?.items?.length) {
+      saveCartState({ items: checkout.items, order: response.data.order, stokvel: checkout.stokvel || null });
+    }
   }
   return response.data;
 };
