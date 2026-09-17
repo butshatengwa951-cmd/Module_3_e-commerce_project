@@ -14,9 +14,9 @@ import ResetPassword from "../views/ResetPassword.vue";
 const routes = [
   { path: "/", name: "Home", component: HomeView },
   { path: "/catalogue", name: "Catalogue", component: CatalogueView },
-  { path: "/cart", name: "Cart", component: CartView },
-  { path: "/payment", name: "Payment", component: PaymentView },
-  { path: "/profile", name: "Profile", component: ProfileView },
+  { path: "/cart", name: "Cart", component: CartView, meta: { requiresAuth: true } },
+  { path: "/payment", name: "Payment", component: PaymentView, meta: { requiresAuth: true } },
+  { path: "/profile", name: "Profile", component: ProfileView, meta: { requiresAuth: true } },
   { path: "/login-signup", name: "AuthSelector", component: AuthSelector },
   { path: "/login", name: "Login", component: Login },
   { path: "/signup", name: "Signup", component: Signup },
@@ -27,6 +27,21 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+function hasAuthToken() {
+  return Boolean(localStorage.getItem("token") || localStorage.getItem("sw_token"));
+}
+
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth && !hasAuthToken()) {
+    return {
+      path: "/login-signup",
+      query: { redirect: to.fullPath },
+    };
+  }
+
+  return true;
 });
 
 export default router;
