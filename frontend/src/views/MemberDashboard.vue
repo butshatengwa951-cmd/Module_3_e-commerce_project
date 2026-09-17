@@ -43,7 +43,7 @@
             <div class="progress"><span :style="{width: goalPercent + '%'}"></span></div>
             <div class="meta"><span>{{ goalPercent }}% funded</span><span>{{ memberCount }} members</span></div>
             <button v-if="canManageGoal" class="secondary full" @click="showGoal = true">Manage group goal</button>
-            <small v-else-if="isChairperson" class="permission-note">The Treasurer manages the shared funding goal.</small>
+            <small v-else class="permission-note">Only the Stokvel Treasurer or Chairperson can manage the shared funding goal.</small>
           </article>
         </section>
 
@@ -111,9 +111,8 @@ const walletPercent = computed(() => {
   const available = Number(dashboard.value?.wallet?.available_balance || 0);
   return total ? Math.max(0, Math.min(100, Math.round(available / total * 100))) : 0;
 });
-const stokvelRole = computed(() => String(features.value?.membership?.stokvel_role || "").toUpperCase());
-const canManageGoal = computed(() => ["TREASURER", "CHAIRPERSON"].includes(stokvelRole.value));
-const isChairperson = computed(() => stokvelRole.value === "CHAIRPERSON");
+const stokvelRole = computed(() => String(features.value?.membership?.stokvel_role || "MEMBER").trim().toUpperCase());
+const canManageGoal = computed(() => features.value?.membership?.can_manage_goal === true);
 
 async function load() {
   loading.value = true;
