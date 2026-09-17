@@ -1,0 +1,203 @@
+<template>
+  <section class="tracking-page">
+    <div class="tracking-wrap">
+      <button class="back-button" type="button" @click="goBack">← Back to Order History</button>
+
+      <div v-if="loading" class="state-card glass">Loading your order and delivery details...</div>
+      <div v-else-if="error" class="state-card glass error">
+        <strong>We couldn't load this order.</strong>
+        <span>{{ error }}</span>
+        <button type="button" @click="loadOrder">Try again</button>
+      </div>
+
+      <template v-else-if="order">
+        <header class="tracking-hero glass">
+          <div>
+            <span class="eyebrow">ORDER TRACKING</span>
+            <h1>Order <em>#{{ order.order_id }}</em></h1>
+            <p>Everything you need to follow this StockWell delivery after leaving the site.</p>
+            <div class="hero-meta">
+              <span>{{ formatDate(order.order_date) }}</span>
+              <span>{{ order.stokvel_name }}</span>
+              <span>R {{ money(order.total_amount) }}</span>
+            </div>
+          </div>
+          <div class="status-orb">
+            <span>DELIVERY</span>
+            <strong>{{ order.delivery_status || "Pending" }}</strong>
+          </div>
+        </header>
+
+        <section class="timeline-panel glass">
+          <div class="section-heading">
+            <span>DELIVERY JOURNEY</span>
+            <h2>Where your order stands</h2>
+          </div>
+
+          <div class="tracking-timeline">
+            <div v-for="step in trackingSteps" :key="step.key" class="tracking-step" :class="{ complete: step.complete, current: step.current }">
+              <div class="step-marker">{{ step.complete ? "✓" : step.number }}</div>
+              <div class="step-copy">
+                <strong>{{ step.label }}</strong>
+                <small>{{ step.description }}</small>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="details-grid">
+          <article class="detail-card glass">
+            <span class="card-label">DELIVERY DETAILS</span>
+            <h2>{{ order.delivery_status || "Pending" }}</h2>
+            <dl>
+              <div><dt>Address</dt><dd>{{ order.delivery_address || "Address unavailable" }}</dd></div>
+              <div><dt>Transport</dt><dd>{{ order.transport_type || "To be assigned" }}</dd></div>
+              <div><dt>Expected date</dt><dd>{{ formatDate(order.delivery_date) }}</dd></div>
+            </dl>
+          </article>
+
+          <article class="detail-card glass">
+            <span class="card-label">DRIVER</span>
+            <h2>{{ order.driver_name || "Not assigned yet" }}</h2>
+            <dl>
+              <div><dt>Contact</dt><dd>{{ order.driver_contact || "Not available yet" }}</dd></div>
+              <div><dt>Order status</dt><dd>{{ order.order_status }}</dd></div>
+              <div><dt>Items</dt><dd>{{ items.length }} item{{ items.length === 1 ? "" : "s" }}</dd></div>
+            </dl>
+          </article>
+        </div>
+
+        <article class="items-panel glass">
+          <div class="section-heading">
+            <span>ORDER CONTENTS</span>
+            <h2>What you're receiving</h2>
+          </div>
+          <div class="items-list">
+            <div v-for="item in items" :key="item.order_item_id" class="item-row">
+              <div class="item-image">
+                <img v-if="item.image_url" :src="item.image_url" :alt="item.product_name" />
+                <span v-else>🛍️</span>
+              </div>
+              <div class="item-copy">
+                <strong>{{ item.product_name }}</strong>
+                <small>{{ item.quantity }} × R {{ money(item.unit_price) }} · {{ item.supplier_name }}</small>
+              </div>
+              <strong>R {{ money(item.subtotal) }}</strong>
+            </div>
+          </div>
+        </article>
+      </template>
+    </div>
+  </section>
+</template>
+
+<script setup>
+import { computed, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { getOrderDetails } from "../services/api.js";
+
+const route = useRoute();
+const router = useRouter();
+const order = ref(null);
+const items = ref([]);
+const loading = ref(true);
+const error = ref("");
+
+function money(value) { return Number(value || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function formatDate(value) {
+  if (!value) return "Not scheduled";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "Not scheduled" : date.toLocaleDateString("en-ZA", { day: "2-digit", month: "short", year: "numeric" });
+}
+function goBack() { router.push("/order-history"); }
+
+const trackingSteps = computed(() => {
+  const orderStatus = String(order.value?.order_status || "").toLowerCase();
+  const deliveryStatus = String(order.value?.delivery_status || "pending").toLowerCase();
+  const cancelled = orderStatus === "cancelled" || deliveryStatus === "cancelled";
+  if (cancelled) return [
+    { key: "placed", number: "01", label: "Order placed", description: "Your order was recorded.", complete: true },
+    { key: "cancelled", number: "02", label: "Delivery cancelled", description: "This delivery has been cancelled.", complete: false, current: true },
+    { key: "transit", number: "03", label: "Out for delivery", description: "Not reached.", complete: false },
+    { key: "delivered", number: "04", label: "Delivered", description: "Not reached.", complete: false },
+  ];
+
+  const inTransit = deliveryStatus === "in transit";
+  const delivered = deliveryStatus === "delivered" || orderStatus === "completed";
+  const processing = orderStatus === "processing" || inTransit || delivered;
+  return [
+    { key: "placed", number: "01", label: "Order placed", description: "Your order has been recorded.", complete: true },
+    { key: "processing", number: "02", label: "Preparing order", description: processing ? "Your order is being prepared." : "Waiting for fulfilment to begin.", complete: processing, current: orderStatus === "processing" && !inTransit && !delivered },
+    { key: "transit", number: "03", label: "Out for delivery", description: inTransit || delivered ? "Your order is with the delivery team." : "Waiting for dispatch.", complete: inTransit || delivered, current: inTransit },
+    { key: "delivered", number: "04", label: "Delivered", description: delivered ? "Your order has arrived." : "Not delivered yet.", complete: delivered, current: delivered },
+  ];
+});
+
+async function loadOrder() {
+  loading.value = true;
+  error.value = "";
+  try {
+    const data = await getOrderDetails(route.params.orderId);
+    order.value = data?.order || null;
+    items.value = Array.isArray(data?.items) ? data.items : [];
+    if (!order.value) error.value = "Order not found.";
+  } catch (err) {
+    console.error("Order detail fetch failed:", err);
+    error.value = err.response?.data?.message || "Unable to load this order.";
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(loadOrder);
+</script>
+
+<style scoped>
+.tracking-page { min-height:100vh; background:var(--sw-page-background); color:var(--sw-page-text); }
+.tracking-wrap { width:min(1100px,calc(100% - 32px)); margin:auto; padding:35px 0 75px; }
+.back-button { margin-bottom:16px; padding:9px 13px; border:1px solid var(--sw-input-border); border-radius:999px; background:var(--sw-page-surface); color:var(--sw-page-text); cursor:pointer; font:700 10px var(--sw-font-body); }
+.back-button:hover { border-color:var(--sw-purple-700); }
+.tracking-hero { min-height:285px; padding:42px; display:flex; align-items:center; justify-content:space-between; gap:30px; border-radius:25px; background:var(--sw-page-gradient); overflow:hidden; }
+.eyebrow,.card-label,.section-heading > span { color:var(--sw-gold-500); font:800 10px var(--sw-font-body); letter-spacing:.13em; }
+h1 { margin:16px 0 12px; font:800 clamp(44px,7vw,74px)/.9 var(--sw-font-heading); letter-spacing:-.06em; }
+h1 em { color:var(--sw-purple-700); font-style:normal; }
+.tracking-hero p { max-width:600px; margin:0; color:var(--sw-page-text-soft); line-height:1.6; }
+.hero-meta { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+.hero-meta span { padding:7px 10px; border:1px solid var(--sw-input-border); border-radius:999px; color:var(--sw-page-text-soft); font:700 9px var(--sw-font-body); }
+.status-orb { flex:0 0 190px; width:190px; height:190px; display:grid; place-items:center; align-content:center; gap:8px; border:1px solid var(--sw-gold-500); border-radius:50%; background:rgba(255,255,255,.06); text-align:center; }
+.status-orb span { color:var(--sw-page-text-soft); font:800 9px var(--sw-font-body); letter-spacing:.12em; }
+.status-orb strong { max-width:130px; color:var(--sw-gold-500); font:800 20px var(--sw-font-heading); }
+.timeline-panel,.items-panel { margin-top:16px; padding:24px; border-radius:20px; }
+.section-heading h2 { margin:6px 0 0; font:800 24px var(--sw-font-heading); letter-spacing:-.04em; }
+.tracking-timeline { display:grid; grid-template-columns:repeat(4,1fr); gap:0; margin-top:30px; }
+.tracking-step { position:relative; min-width:0; padding:0 14px; text-align:center; }
+.tracking-step:not(:last-child)::after { content:""; position:absolute; top:17px; left:calc(50% + 17px); right:calc(-50% + 17px); height:2px; background:var(--sw-input-border); }
+.tracking-step.complete:not(:last-child)::after { background:var(--sw-gold-500); }
+.step-marker { position:relative; z-index:2; width:36px; height:36px; margin:0 auto 11px; display:grid; place-items:center; border:1px solid var(--sw-input-border); border-radius:50%; background:var(--sw-page-surface); color:var(--sw-page-text-soft); font:800 10px var(--sw-font-body); }
+.tracking-step.complete .step-marker,.tracking-step.current .step-marker { border-color:var(--sw-gold-500); background:var(--sw-gold-500); color:var(--sw-purple-900); }
+.step-copy { display:grid; gap:5px; }
+.step-copy strong { font:800 12px var(--sw-font-body); }
+.step-copy small { color:var(--sw-page-text-soft); font:10px/1.45 var(--sw-font-body); }
+.details-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+.detail-card { padding:23px; border-radius:20px; }
+.detail-card h2 { margin:8px 0 18px; font:800 23px var(--sw-font-heading); }
+dl { margin:0; display:grid; gap:12px; }
+dl div { display:flex; justify-content:space-between; gap:20px; padding-top:11px; border-top:1px solid var(--sw-input-border); }
+dt { color:var(--sw-page-text-soft); font:10px var(--sw-font-body); }
+dd { max-width:65%; margin:0; text-align:right; font:700 11px/1.5 var(--sw-font-body); }
+.items-list { margin-top:18px; display:grid; gap:8px; }
+.item-row { display:grid; grid-template-columns:48px minmax(0,1fr) auto; gap:12px; align-items:center; padding:10px; border:1px solid var(--sw-input-border); border-radius:12px; }
+.item-image { width:48px; height:48px; display:grid; place-items:center; overflow:hidden; border-radius:10px; background:var(--sw-page-surface); }
+.item-image img { width:100%; height:100%; object-fit:contain; }
+.item-copy { min-width:0; display:grid; gap:4px; }
+.item-copy strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:700 12px var(--sw-font-body); }
+.item-copy small { color:var(--sw-page-text-soft); font:9px var(--sw-font-body); }
+.item-row > strong { white-space:nowrap; font:800 11px var(--sw-font-body); }
+.state-card { min-height:260px; padding:40px; border-radius:20px; display:grid; place-items:center; align-content:center; gap:10px; text-align:center; }
+.state-card strong { font:800 18px var(--sw-font-body); }
+.state-card span { color:var(--sw-page-text-soft); }
+.state-card button { padding:10px 15px; border:0; border-radius:999px; background:var(--sw-gold-500); color:var(--sw-purple-900); cursor:pointer; font-weight:800; }
+.state-card.error { color:var(--sw-orange-600); }
+@media (max-width:750px) { .tracking-hero { padding:30px 24px; flex-direction:column; align-items:flex-start; } .status-orb { align-self:center; } .tracking-timeline { grid-template-columns:1fr; gap:18px; } .tracking-step { display:grid; grid-template-columns:38px 1fr; gap:12px; text-align:left; align-items:center; padding:0; } .tracking-step:not(:last-child)::after { top:36px; bottom:-18px; left:18px; right:auto; width:2px; height:auto; } .step-marker { margin:0; } .details-grid { grid-template-columns:1fr; } }
+@media (max-width:500px) { .tracking-wrap { width:min(100% - 22px,1100px); } .tracking-hero { padding:27px 20px; } .timeline-panel,.items-panel,.detail-card { padding:18px; } .item-row { grid-template-columns:42px minmax(0,1fr); } .item-row > strong { grid-column:2; } .item-image { width:42px; height:42px; } }
+</style>
