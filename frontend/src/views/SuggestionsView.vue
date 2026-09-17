@@ -31,18 +31,60 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from "vue";
+import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { createSuggestion, getMySuggestions } from "../services/api.js";
 
 const categories = ["General", "Products", "Orders", "Delivery", "Stokvel", "Website"];
 const form = reactive({ subject: "", category: "General", message: "" });
-const suggestions = ref([]); const message = ref(""); const submitting = ref(false);
-const notify = (text) => { message.value = text; window.setTimeout(() => { message.value = ""; }, 3500); };
-async function load() { try { const r = await getMySuggestions(); suggestions.value = r.suggestions || []; } catch (e) { notify(e.response?.data?.message || "Unable to load suggestions."); } }
-async function submit() { submitting.value = true; try { const r = await createSuggestion(form); suggestions.value.unshift(r.suggestion); form.subject = ""; form.category = "General"; form.message = ""; notify("Suggestion submitted. Thank you for helping improve StockWell."); } catch (e) { notify(e.response?.data?.message || "Unable to submit suggestion."); } finally { submitting.value = false; } }
+const suggestions = ref([]);
+const message = ref("");
+const submitting = ref(false);
+let refreshTimer = null;
+
+const notify = (text) => {
+  message.value = text;
+  window.setTimeout(() => { message.value = ""; }, 3500);
+};
+
+async function load() {
+  try {
+    const r = await getMySuggestions();
+    suggestions.value = r.suggestions || [];
+  } catch (e) {
+    notify(e.response?.data?.message || "Unable to load suggestions.");
+  }
+}
+
+async function submit() {
+  submitting.value = true;
+  try {
+    const r = await createSuggestion(form);
+    suggestions.value.unshift(r.suggestion);
+    form.subject = "";
+    form.category = "General";
+    form.message = "";
+    notify("Suggestion submitted. Thank you for helping improve StockWell.");
+  } catch (e) {
+    notify(e.response?.data?.message || "Unable to submit suggestion.");
+  } finally {
+    submitting.value = false;
+  }
+}
+
 function formatDate(value) { return value ? new Date(value).toLocaleDateString() : "—"; }
 function statusClass(status) { return status.toLowerCase().replace(/\s+/g, "-"); }
-onMounted(load);
+function refreshWhenVisible() { if (document.visibilityState === "visible") load(); }
+
+onMounted(() => {
+  load();
+  refreshTimer = window.setInterval(load, 15000);
+  document.addEventListener("visibilitychange", refreshWhenVisible);
+});
+
+onBeforeUnmount(() => {
+  if (refreshTimer) window.clearInterval(refreshTimer);
+  document.removeEventListener("visibilitychange", refreshWhenVisible);
+});
 </script>
 
 <style scoped>
