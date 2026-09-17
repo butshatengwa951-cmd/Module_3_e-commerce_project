@@ -31,20 +31,29 @@ CREATE TABLE IF NOT EXISTS stokvel_wallet_transactions (
     ON DELETE SET NULL ON UPDATE CASCADE
 );
 
+-- The Stokvel feature migration adds money_contributions.stokvel_id.
+-- Run backend/sql/stokvel_features.sql before this migration.
+
 INSERT INTO stokvel_wallets (stokvel_id, balance)
 SELECT
   s.stokvel_id,
   GREATEST(
     0,
-    COALESCE((SELECT SUM(mc.amount)
-              FROM money_contributions mc
-              WHERE mc.stokvel_id = s.stokvel_id
-                AND mc.payment_status = 'Paid'), 0)
-    -
-    COALESCE((SELECT SUM(od.total_amount)
-              FROM order_details od
-              WHERE od.stokvel_id = s.stokvel_id
-                AND od.order_status IN ('Confirmed','Processing','Completed')), 0)
+    COALESCE((SELECT SUM(mc.amount) FROM money_contributions mc WHERE mc.stokvel_id=s.stokvel_id AND mc.payment_status='Paid'),0)
+    - COALESCE((SELECT SUM(od.total_amount) FROM order_details od WHERE od.stokvel_id=s.stokvel_id AND od.order_status IN ('Confirmed','Processing','Completed')),0)
   )
 FROM stokvels s
-ON DUPLICATE KEY UPDATE balance = balance;
+ON DUPLICATE KEY UPDATE balance=balance;
+
+INSERT INTO stokvel_wallet_transactions (stokvel_id,user_id,transaction_type,amount,reference_id,description,created_at)
+SELECT mc.stokvel_id,u.user_id,'CONTRIBUTION',mc.amount,mc.contribution_id,CONCAT('Legacy member contribution #',mc.contribution_id),mc.contribution_date
+FROM money_contributions mc
+LEFT JOIN users u ON u.full_name=mc.member_name
+WHERE mc.stokvel_id IS NOT NULL AND mc.payment_status='Paid'
+  AND NOT EXISTS (SELECT 1 FROM stokvel_wallet_transactions t WHERE t.transaction_type='CONTRIBUTION' AND t.reference_id=mc.contribution_id);
+
+INSERT INTO stokvel_wallet_transactions (stokvel_id,user_id,transaction_type,amount,reference_id,description,created_at)
+SELECT od.stokvel_id,od.user_id,'PURCHASE',od.total_amount,od.order_id,CONCAT('Legacy group purchase #',od.order_id),od.order_date
+FROM order_details od
+WHERE od.stokvel_id IS NOT NULL AND od.order_status IN ('Confirmed','Processing','Completed')
+  AND NOT EXISTS (SELECT 1 FROM stokvel_wallet_transactions t WHERE t.transaction_type='PURCHASE' AND t.reference_id=od.order_id);
