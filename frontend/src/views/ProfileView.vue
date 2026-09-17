@@ -296,6 +296,45 @@ h1 { margin:0; font-size:clamp(34px,5vw,56px); letter-spacing:-.04em; }
 .order-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid rgba(255,255,255,.07); }
 .order-row:last-child { border-bottom:0; }
 .order-row > div { display:grid; gap:4px; }
+
+/* Match the light-mode text treatment used on the other member pages. */
+:global(html.light-mode) .profile-page { color:#1b1630; }
+:global(html.light-mode) .profile-page h1,
+:global(html.light-mode) .profile-page .stat-card strong,
+:global(html.light-mode) .profile-page .saving-amount,
+:global(html.light-mode) .profile-page .dashboard-details strong,
+:global(html.light-mode) .profile-page .detail strong,
+:global(html.light-mode) .profile-page .stokvel-card h2,
+:global(html.light-mode) .profile-page .member-row strong,
+:global(html.light-mode) .profile-page .order-row strong { color:#1b1630; }
+:global(html.light-mode) .profile-page .intro,
+:global(html.light-mode) .profile-page .state-card,
+:global(html.light-mode) .profile-page .stat-card span,
+:global(html.light-mode) .profile-page .stat-card small,
+:global(html.light-mode) .profile-page .detail span,
+:global(html.light-mode) .profile-page .membership small,
+:global(html.light-mode) .profile-page .order-row small,
+:global(html.light-mode) .profile-page .muted,
+:global(html.light-mode) .profile-page .progress-meta,
+:global(html.light-mode) .profile-page .panel-heading > span,
+:global(html.light-mode) .profile-page .member-row small,
+:global(html.light-mode) .profile-page .empty,
+:global(html.light-mode) .profile-page .contribution-form label { color:#5f5870; }
+:global(html.light-mode) .profile-page .panel-title { color:#332b48; }
+:global(html.light-mode) .profile-page .glass { background:rgba(255,255,255,.72); border-color:rgba(51,43,72,.12); box-shadow:0 18px 50px rgba(51,43,72,.08); }
+:global(html.light-mode) .profile-page .stokvel-card { background:rgba(51,43,72,.045); border-color:rgba(51,43,72,.1); }
+:global(html.light-mode) .profile-page .progress-track { background:rgba(51,43,72,.1); }
+:global(html.light-mode) .profile-page .dashboard-details div,
+:global(html.light-mode) .profile-page .detail,
+:global(html.light-mode) .profile-page .member-row,
+:global(html.light-mode) .profile-page .order-row { border-color:rgba(51,43,72,.1); }
+:global(html.light-mode) .profile-page .role-badge { background:rgba(51,43,72,.09); color:#332b48; }
+:global(html.light-mode) .profile-page .contribution-form input { background:rgba(255,255,255,.8); border-color:rgba(51,43,72,.18); color:#1b1630; }
+:global(html.light-mode) .profile-page .contribution-form input::placeholder { color:#81798f; }
+:global(html.light-mode) .profile-page .success-message { color:#287a4b; }
+:global(html.light-mode) .profile-page .error-message,
+:global(html.light-mode) .profile-page .error { color:#b4233b; }
+
 @media (max-width:900px){
   .stats-grid,.dashboard-grid,.content-grid { grid-template-columns:1fr; }
 }
