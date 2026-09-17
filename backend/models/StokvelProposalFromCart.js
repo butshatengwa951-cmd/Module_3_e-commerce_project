@@ -35,7 +35,13 @@ export const createProposalFromCurrentCart = async ({ userId, title, description
         [proposal.insertId,row.product_id,row.supplier_price_id,row.quantity,row.unit_price,row.subtotal]
       );
     }
-    await connection.query(`UPDATE order_details SET order_status='Cancelled' WHERE order_id=?`, [orderIds[0]]);
+
+    // The pending order is only a temporary database representation of the group basket.
+    // Once its items have been copied into the proposal, remove that temporary order so
+    // it cannot appear later as a real Cancelled order in Order History.
+    await connection.query(`DELETE FROM order_items WHERE order_id=?`, [orderIds[0]]);
+    await connection.query(`DELETE FROM order_details WHERE order_id=? AND order_status='Pending'`, [orderIds[0]]);
+
     await connection.commit();
     return { proposal_id: proposal.insertId, total: rows.reduce((sum, row) => sum + Number(row.subtotal), 0), status: "VOTING", delivery_mode: mode };
   } catch (error) {
