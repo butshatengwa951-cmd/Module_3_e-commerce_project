@@ -55,12 +55,12 @@ export const getStokvels = async (req, res) => {
         s.stokvel_name,
         s.description,
         s.created_at,
-        u.full_name AS chairperson_name,
+        COALESCE(u.full_name, 'Chairperson not assigned') AS chairperson_name,
         COUNT(sm.stokvel_member_id) AS member_count
       FROM stokvels s
-      JOIN users u ON u.user_id = s.chairperson_id
+      LEFT JOIN users u ON u.user_id = s.chairperson_id
       LEFT JOIN stokvel_members sm ON sm.stokvel_id = s.stokvel_id
-      GROUP BY s.stokvel_id
+      GROUP BY s.stokvel_id, s.stokvel_name, s.description, s.created_at, u.full_name
       ORDER BY s.stokvel_id
     `);
     return res.json({ success: true, stokvels });
