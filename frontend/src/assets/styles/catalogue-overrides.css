@@ -1,0 +1,14 @@
+/* Catalogue toolbar: remove the legacy "Up to R" price filter. */
+.catalogue-page .price-filter {
+  display: none !important;
+}
+
+.catalogue-page .shop-toolbar {
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+}
+
+@media (max-width: 900px) {
+  .catalogue-page .shop-toolbar {
+    grid-template-columns: 1fr !important;
+  }
+}
