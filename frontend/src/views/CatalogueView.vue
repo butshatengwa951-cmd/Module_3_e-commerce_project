@@ -122,11 +122,22 @@
                 class="supplier-row"
                 :class="{ cheapest: Number(supplier.price) === getLowestPrice(product) }"
               >
-                <div>
+                <div class="supplier-details">
                   <strong>{{ supplier.supplier_name }}</strong>
                   <small>Minimum {{ supplier.minimum_quantity }}</small>
                 </div>
-                <span>R{{ Number(supplier.price).toFixed(2) }}</span>
+
+                <div class="supplier-action">
+                  <span>R{{ Number(supplier.price).toFixed(2) }}</span>
+                  <button
+                    class="supplier-add-button"
+                    type="button"
+                    :aria-label="`Add ${product.product_name} from ${supplier.supplier_name} to group basket`"
+                    @click="addSupplierToBasket(product, supplier)"
+                  >
+                    Add
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -278,11 +289,15 @@ function toggleProduct(id) {
   expandedProduct.value = expandedProduct.value === id ? null : id;
 }
 
+function showBasketMessage(text, duration = 3000) {
+  message.value = text;
+  window.setTimeout(() => { message.value = ""; }, duration);
+}
+
 async function addToBasket(product) {
   syncAuth();
   if (!isAuthenticated.value) {
-    message.value = "Please join or log in before adding items to your group basket.";
-    window.setTimeout(() => { message.value = ""; }, 3500);
+    showBasketMessage("Please join or log in before adding items to your group basket.", 3500);
     return;
   }
 
@@ -290,12 +305,33 @@ async function addToBasket(product) {
     await addCartItem({ product_id: product.product_id, supplier_price_id: null, quantity: 1 });
     await syncCloudBasket();
     window.dispatchEvent(new CustomEvent("basket-updated", { detail: basketCount.value }));
-    message.value = `${product.product_name} added to your group's cloud basket.`;
+    showBasketMessage(`${product.product_name} added to your group's cloud basket.`);
   } catch (error) {
     console.error("Cloud basket add failed:", error);
-    message.value = error.response?.data?.message || "We could not add this product to the group basket.";
+    showBasketMessage(error.response?.data?.message || "We could not add this product to the group basket.");
   }
-  window.setTimeout(() => { message.value = ""; }, 3000);
+}
+
+async function addSupplierToBasket(product, supplier) {
+  syncAuth();
+  if (!isAuthenticated.value) {
+    showBasketMessage("Please join or log in before adding items to your group basket.", 3500);
+    return;
+  }
+
+  try {
+    await addCartItem({
+      product_id: product.product_id,
+      supplier_price_id: supplier.supplier_price_id,
+      quantity: 1,
+    });
+    await syncCloudBasket();
+    window.dispatchEvent(new CustomEvent("basket-updated", { detail: basketCount.value }));
+    showBasketMessage(`${product.product_name} added from ${supplier.supplier_name} at R${Number(supplier.price).toFixed(2)}.`);
+  } catch (error) {
+    console.error("Supplier basket add failed:", error);
+    showBasketMessage(error.response?.data?.message || "We could not add this supplier option to the group basket.");
+  }
 }
 
 const filteredProducts = computed(() => {
@@ -495,6 +531,7 @@ onUnmounted(() => {
 .category-list button:focus-visible,
 .compare-button:focus-visible,
 .add-button:focus-visible,
+.supplier-add-button:focus-visible,
 .empty-state button:focus-visible,
 .active-filter button:focus-visible {
   outline: 2px solid var(--sw-gold-500);
@@ -794,6 +831,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 8px;
   background: transparent;
   color: var(--sw-page-text);
 }
@@ -812,22 +850,24 @@ onUnmounted(() => {
 }
 
 .add-button:hover,
-.empty-state button:hover {
+.empty-state button:hover,
+.supplier-add-button:hover {
   transform: translateY(-1px);
   box-shadow: var(--catalogue-shadow);
 }
 
 .supplier-list {
-  margin-top: 9px;
+  margin-top: 0;
+  margin-bottom: 8px;
   display: grid;
   gap: 7px;
 }
 
 .supplier-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 10px;
   border: 1px solid var(--catalogue-border-soft);
   border-radius: 10px;
@@ -835,14 +875,50 @@ onUnmounted(() => {
   font-size: 12px;
 }
 
-.supplier-row div {
+.supplier-details {
   min-width: 0;
   display: grid;
   gap: 2px;
 }
 
-.supplier-row small {
+.supplier-details strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.supplier-details small {
   color: var(--catalogue-muted);
+}
+
+.supplier-action {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.supplier-action > span {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.supplier-add-button {
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid var(--catalogue-border);
+  border-radius: 8px;
+  background: var(--catalogue-surface);
+  color: var(--sw-page-text);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.supplier-add-button:hover {
+  border-color: var(--sw-gold-500);
+  background: color-mix(in srgb, var(--sw-gold-500) 10%, var(--catalogue-surface));
 }
 
 .supplier-row.cheapest {
@@ -980,6 +1056,16 @@ onUnmounted(() => {
   }
 
   .price-row {
+    align-items: center;
+  }
+
+  .supplier-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .supplier-action {
+    grid-template-columns: auto auto;
+    justify-items: stretch;
     align-items: center;
   }
 
