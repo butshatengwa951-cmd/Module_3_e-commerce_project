@@ -1,10 +1,30 @@
 import axios from "axios";
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4040/api",
-});
-api.interceptors.request.use((c) => {
-  const t = localStorage.getItem("sw_token") || localStorage.getItem("token");
-  if (t) c.headers.Authorization = `Bearer ${t}`;
-  return c;
-});
+const api=axios.create({baseURL:import.meta.env.VITE_API_URL||"http://localhost:4040/api"});
+api.interceptors.request.use(c=>{const t=localStorage.getItem("sw_token")||localStorage.getItem("token");if(t)c.headers.Authorization=`Bearer ${t}`;return c;});
+export const getAdminDashboard=async()=> (await api.get("/admin/dashboard")).data;
+export const getAdminUsers=async()=> (await api.get("/admin/users")).data;
+export const getAdminStokvels=async()=> (await api.get("/admin/stokvels")).data;
+export const getAdminProducts=async()=> (await api.get("/admin/products")).data;
+export const createAdminProduct=async d=>(await api.post("/admin/products",d)).data;
+export const updateAdminProduct=async(id,d)=>(await api.put(`/admin/products/${id}`,d)).data;
+export const deleteAdminProduct=async id=>(await api.delete(`/admin/products/${id}`)).data;
+export const getAdminSupplierPrices=async()=> (await api.get("/admin/supplier-prices")).data;
+export const createAdminSupplierPrice=async d=>(await api.post("/admin/supplier-prices",d)).data;
+export const updateAdminSupplierPrice=async(id,d)=>(await api.put(`/admin/supplier-prices/${id}`,d)).data;
+export const deleteAdminSupplierPrice=async id=>(await api.delete(`/admin/supplier-prices/${id}`)).data;
+export const getAdminOrders=async()=> (await api.get("/admin/orders")).data;
+export const updateAdminOrderStatus=async(id,status)=>(await api.patch(`/admin/orders/${id}/status`,{status})).data;
+export const getAdminDeliveries=async()=> (await api.get("/admin/deliveries")).data;
+export const updateAdminDelivery=async(id,d)=>(await api.patch(`/admin/deliveries/${id}`,d)).data;
+export const getAdminManagedUsers=async()=> (await api.get("/admin/management/users")).data;
+export const updateAdminUserRole=async(id,role)=>(await api.patch(`/admin/management/users/${id}/role`,{role})).data;
+export const getAdminStokvelMembers=async id=>(await api.get(`/admin/management/stokvels/${id}/members`)).data;
+export const addAdminStokvelMember=async(id,user_id)=>(await api.post(`/admin/management/stokvels/${id}/members`,{user_id})).data;
+export const removeAdminStokvelMember=async(stokvelId,userId)=>(await api.delete(`/admin/management/stokvels/${stokvelId}/members/${userId}`)).data;
+export const getAdminAnalytics=async()=> (await api.get("/admin/analytics")).data;
+export const getAdminAuditLog=async()=> (await api.get("/admin/audit-log")).data;
+export const createSuggestion=async d=>(await api.post("/suggestions",d)).data;
+export const getMySuggestions=async()=> (await api.get("/suggestions/mine")).data;
+export const getAllSuggestions=async()=> (await api.get("/suggestions/admin")).data;
+export const updateSuggestion=async(id,status,admin_response)=>(await api.patch(`/suggestions/admin/${id}`,{status,admin_response})).data;
 export default api;
