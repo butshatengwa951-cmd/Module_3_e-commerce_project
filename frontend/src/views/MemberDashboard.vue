@@ -112,7 +112,7 @@ const walletPercent = computed(() => {
   return total ? Math.max(0, Math.min(100, Math.round(available / total * 100))) : 0;
 });
 const stokvelRole = computed(() => String(features.value?.membership?.stokvel_role || "").toUpperCase());
-const canManageGoal = computed(() => stokvelRole.value === "TREASURER");
+const canManageGoal = computed(() => ["TREASURER", "CHAIRPERSON"].includes(stokvelRole.value));
 const isChairperson = computed(() => stokvelRole.value === "CHAIRPERSON");
 
 async function load() {
