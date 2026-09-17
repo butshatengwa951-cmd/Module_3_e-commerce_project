@@ -20,7 +20,7 @@ export const saveGoal = async (req, res) => {
   try {
     const goal = await saveStokvelGoal({
       userId: req.user.user_id,
-      targetAmount: req.body.target_amount,
+      targetAmount: req.body.target_amount ?? req.body.targetAmount,
       deadline: req.body.deadline,
     });
     return res.json({ success: true, message: "Funding goal saved.", goal });
