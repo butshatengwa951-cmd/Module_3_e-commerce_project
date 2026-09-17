@@ -32,9 +32,11 @@ const showSiteShell = computed(() => !authRoutes.has(route.name));
 const handleLoginCompleted = () => {
   try {
     const user = JSON.parse(localStorage.getItem("user") || "null");
-    router.push(user?.role === "admin" ? "/admin" : "/catalogue");
+    const redirect = typeof route.query.redirect === "string" ? route.query.redirect : "";
+    const destination = redirect || (user?.role === "admin" ? "/admin" : "/member-dashboard");
+    router.push(destination);
   } catch {
-    router.push("/catalogue");
+    router.push("/member-dashboard");
   }
 };
 
