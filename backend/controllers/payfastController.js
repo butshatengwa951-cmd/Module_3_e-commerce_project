@@ -38,10 +38,15 @@ export const createContributionCheckout = async (req, res) => {
 };
 
 export const payfastNotify = async (req, res) => {
+  const itnId = String(req.body?.m_payment_id || "unknown");
   try {
-    // Render/Cloudflare can expose PayFast's public IP through a proxy header.
-    // Check all trusted candidates instead of rejecting a valid ITN because
-    // Express only sees the reverse-proxy address.
+    console.log("PayFast ITN received", {
+      m_payment_id: itnId,
+      payment_status: req.body?.payment_status || null,
+      pf_payment_id: req.body?.pf_payment_id || null,
+      amount_gross: req.body?.amount_gross || null,
+    });
+
     const forwardedClientIp = String(req.headers["cf-connecting-ip"] || "").trim();
     const forwardedFor = String(req.headers["x-forwarded-for"] || "").split(",").map((value) => value.trim()).filter(Boolean);
     const trustedProxyIp = String(req.ip || "").trim();
@@ -49,33 +54,55 @@ export const payfastNotify = async (req, res) => {
     const sourceCandidates = [forwardedClientIp, ...forwardedFor, trustedProxyIp, socketIp].filter(Boolean);
 
     let sourceVerified = false;
+    let verifiedSourceIp = null;
     for (const candidate of sourceCandidates) {
       if (await isPayfastSourceIp(candidate)) {
         sourceVerified = true;
+        verifiedSourceIp = candidate;
         break;
       }
     }
 
     if (!sourceVerified) {
-      console.warn("PayFast ITN rejected: source IP did not match PayFast allowlist", { sourceCandidates });
+      console.warn("PayFast ITN rejected: source IP did not match PayFast allowlist", { m_payment_id: itnId, sourceCandidates });
       return res.status(403).send("Invalid source IP");
     }
+    console.log("PayFast ITN source verified", { m_payment_id: itnId, sourceIp: verifiedSourceIp });
 
-    if (!verifyPayfastSignature(req.body || {})) return res.status(400).send("Invalid signature");
-    if (!(await validatePayfastNotification(req.body || {}))) return res.status(400).send("Invalid notification");
+    if (!verifyPayfastSignature(req.body || {})) {
+      console.warn("PayFast ITN rejected: invalid signature", { m_payment_id: itnId });
+      return res.status(400).send("Invalid signature");
+    }
+    console.log("PayFast ITN signature verified", { m_payment_id: itnId });
 
-    const mPaymentId = String(req.body.m_payment_id || "");
+    const notificationValid = await validatePayfastNotification(req.body || {});
+    if (!notificationValid) {
+      console.warn("PayFast ITN rejected: PayFast validation returned INVALID", { m_payment_id: itnId });
+      return res.status(400).send("Invalid notification");
+    }
+    console.log("PayFast ITN PayFast validation succeeded", { m_payment_id: itnId });
+
     const status = String(req.body.payment_status || "").toUpperCase();
     const [payments] = await pool.query(`
       SELECT p.*, u.full_name AS user_name
       FROM payfast_payments p
       LEFT JOIN users u ON u.user_id=p.user_id
-      WHERE p.m_payment_id=? LIMIT 1`, [mPaymentId]);
-    if (!payments.length) return res.status(404).send("Payment not found");
+      WHERE p.m_payment_id=? LIMIT 1`, [itnId]);
+    if (!payments.length) {
+      console.warn("PayFast ITN rejected: payment not found", { m_payment_id: itnId });
+      return res.status(404).send("Payment not found");
+    }
     const payment = payments[0];
+    console.log("PayFast ITN payment matched", { m_payment_id: itnId, paymentId: payment.payment_id, currentStatus: payment.status, stokvelId: payment.stokvel_id });
 
-    if (Number(req.body.amount_gross).toFixed(2) !== Number(payment.amount).toFixed(2)) return res.status(400).send("Amount mismatch");
-    if (String(req.body.merchant_id) !== String(process.env.PAYFAST_MERCHANT_ID)) return res.status(400).send("Merchant mismatch");
+    if (Number(req.body.amount_gross).toFixed(2) !== Number(payment.amount).toFixed(2)) {
+      console.warn("PayFast ITN rejected: amount mismatch", { m_payment_id: itnId, received: req.body.amount_gross, expected: payment.amount });
+      return res.status(400).send("Amount mismatch");
+    }
+    if (String(req.body.merchant_id) !== String(process.env.PAYFAST_MERCHANT_ID)) {
+      console.warn("PayFast ITN rejected: merchant mismatch", { m_payment_id: itnId });
+      return res.status(400).send("Merchant mismatch");
+    }
 
     if (status === "COMPLETE" && payment.status !== "COMPLETE") {
       const connection = await pool.getConnection();
@@ -91,14 +118,18 @@ export const payfastNotify = async (req, res) => {
           await connection.query(`INSERT INTO money_contributions (card_id,stokvel_id,user_id,member_name,amount,payment_status) VALUES (NULL,?,?,?,?, 'Paid')`, [payment.stokvel_id, payment.user_id, payment.user_name || "Member", payment.amount]);
         }
         await connection.commit();
+        console.log("PayFast ITN wallet credit completed", { m_payment_id: itnId, amount: payment.amount, stokvelId: payment.stokvel_id });
       } catch (error) { await connection.rollback(); throw error; }
       finally { connection.release(); }
     } else if (["FAILED", "CANCELLED"].includes(status)) {
       await pool.query(`UPDATE payfast_payments SET status=?,pf_payment_id=?,raw_status=? WHERE payment_id=?`, [status, req.body.pf_payment_id || null, status, payment.payment_id]);
+      console.log("PayFast ITN payment marked non-complete", { m_payment_id: itnId, status });
+    } else {
+      console.log("PayFast ITN acknowledged without wallet mutation", { m_payment_id: itnId, status, currentStatus: payment.status });
     }
     return res.status(200).send("OK");
   } catch (error) {
-    console.error("PayFast ITN failed:", error);
+    console.error("PayFast ITN failed:", { m_payment_id: itnId, error: error.message, stack: error.stack });
     return res.status(500).send("ITN processing failed");
   }
 };
