@@ -57,8 +57,9 @@ export const saveStokvelGoal = async ({ userId, targetAmount, deadline }) => {
   if (!membership) {
     const error = new Error("You are not a member of a Stokvel."); error.statusCode = 403; throw error;
   }
-  if (String(membership.stokvel_role).toUpperCase() !== "TREASURER") {
-    const error = new Error("Only the Stokvel treasurer can manage the funding goal."); error.statusCode = 403; throw error;
+  const stokvelRole = String(membership.stokvel_role || "").toUpperCase();
+  if (!["TREASURER", "CHAIRPERSON"].includes(stokvelRole)) {
+    const error = new Error("Only the Stokvel treasurer or chairperson can manage the funding goal."); error.statusCode = 403; throw error;
   }
 
   await pool.query(
