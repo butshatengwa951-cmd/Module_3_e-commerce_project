@@ -5,54 +5,23 @@ import productsRoutes from "./routes/products.js";
 import authRoutes from "./routes/auth.js";
 import cardsRoutes from "./routes/cards.js";
 import vouchersRoutes from "./routes/vouchers.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import suggestionRoutes from "./routes/suggestionRoutes.js";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.join(__dirname, ".env") });
+const __filename=fileURLToPath(import.meta.url); const __dirname=path.dirname(__filename);
+dotenv.config({path:path.join(__dirname,".env")});
 import express from "express";
 import cors from "cors";
 import {testConnection} from "./config/db.js";
 import initDB from "./models/init.js";
-const app = express();
-app.use(
-  cors({
-    origin: [process.env.FRONTEND_URL, "http://localhost:5173"],
-    credentials: true,
-  }),
-);
+const app=express();
+app.use(cors({origin:[process.env.FRONTEND_URL,"http://localhost:5173"],credentials:true}));
 app.use(express.json());
-app.get("/", (req, res) =>
-  res.json({
-    ok: true,
-    message: "StockWell API - real schema",
-    backend: 4040,
-    frontend: 5173,
-    db: process.env.DB_NAME,
-  }),
-);
-app.get("/api/health", (req, res) =>
-  res.json({
-    ok: true,
-    backend: 4040,
-    db: process.env.DB_NAME,
-    time: new Date(),
-  }),
-);
-app.use("/api/cart", cartRoutes);
-app.use("/api/pay", payRoutes);
-app.use("/api/delivery", deliveryRoutes);
-app.use("/api/products", productsRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/cards", cardsRoutes);
-app.use("/api/vouchers", vouchersRoutes);
-const PORT = process.env.PORT || 4040;
-(async () => {
-  await testConnection();
-  await initDB();
-  app.listen(PORT, () =>
-    console.log(`Backend on http://localhost:${PORT} - using REAL schema.sql`),
-  );
-})();
+app.get("/",(req,res)=>res.json({ok:true,message:"StockWell API - real schema",backend:4040,frontend:5173,db:process.env.DB_NAME}));
+app.get("/api/health",(req,res)=>res.json({ok:true,backend:4040,db:process.env.DB_NAME,time:new Date()}));
+app.use("/api/cart",cartRoutes); app.use("/api/pay",payRoutes); app.use("/api/delivery",deliveryRoutes); app.use("/api/products",productsRoutes); app.use("/api/auth",authRoutes); app.use("/api/cards",cardsRoutes); app.use("/api/vouchers",vouchersRoutes);
+app.use("/api/admin",adminRoutes); app.use("/api/suggestions",suggestionRoutes);
+const PORT=process.env.PORT||4040;
+(async()=>{await testConnection();await initDB();app.listen(PORT,()=>console.log(`Backend on http://localhost:${PORT} - using REAL schema.sql`));})();
