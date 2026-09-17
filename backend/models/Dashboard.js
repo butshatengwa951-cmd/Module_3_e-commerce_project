@@ -28,9 +28,10 @@ export const getMemberDashboardData = async (userId) => {
     FROM stokvel_members sm
     INNER JOIN users u ON u.user_id = sm.user_id
     LEFT JOIN stokvel_member_roles smr ON smr.stokvel_member_id = sm.stokvel_member_id
+    LEFT JOIN stokvel_member_roles smr ON smr.stokvel_member_id = sm.stokvel_member_id
     LEFT JOIN money_contributions mc ON mc.user_id = u.user_id AND mc.stokvel_id = sm.stokvel_id
     WHERE sm.stokvel_id = ?
-    GROUP BY u.user_id,u.full_name,u.email,u.role,sm.joined_at,smr.stokvel_role
+    GROUP BY u.user_id,u.full_name,u.email,u.role,sm.joined_at,smr.stokvel_role,smr.stokvel_role
     ORDER BY u.full_name ASC`, [stokvel.stokvel_id]);
 
   const [walletRows] = await pool.query(`
