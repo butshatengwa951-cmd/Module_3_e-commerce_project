@@ -96,8 +96,6 @@ export const addItemToGroupCart = async ({
       throw new Error("Quantity must be a positive whole number");
     }
 
-    // Keep the Stokvel row locked during pending-cart creation so two members
-    // cannot create competing pending shared orders at the same time.
     await db.query(
       `SELECT stokvel_id FROM stokvels WHERE stokvel_id = ? FOR UPDATE`,
       [stokvelId],
@@ -105,9 +103,6 @@ export const addItemToGroupCart = async ({
 
     const selectedSupplierId = supplierPriceId ? Number(supplierPriceId) : null;
 
-    // Fetch the product and all supplier prices in one round-trip. The
-    // catalogue can then choose the cheapest supplier that can fulfil the
-    // requested quantity, while an explicitly selected supplier remains exact.
     const [products] = await db.query(
       `
         SELECT
@@ -159,7 +154,6 @@ export const addItemToGroupCart = async ({
     const unitPrice = Number(candidate.price);
     const supplierName = candidate.supplier_name;
 
-    // Get the latest pending order and the matching cart item together.
     const [pendingRows] = await db.query(
       `
         SELECT
@@ -254,8 +248,6 @@ export const addItemToGroupCart = async ({
       orderItemId = createdItem.insertId;
     }
 
-    // Update the order total by the exact change introduced by this operation.
-    // This removes the extra SUM(subtotal) round-trip while preserving the same total.
     const finalOrderTotal = Number((currentOrderTotal + totalDelta).toFixed(2));
 
     await db.query(
@@ -298,6 +290,39 @@ export const updateCartItemQuantity = async (orderItemId, quantity) => {
 
   if (!Number.isInteger(requestedQuantity) || requestedQuantity < 1) {
     throw new Error("Quantity must be a positive whole number");
+  }
+
+  const [itemRows] = await pool.query(
+    `
+      SELECT
+        oi.order_item_id,
+        p.quantity_available,
+        sp.minimum_quantity,
+        sp.supplier_name
+      FROM order_items oi
+      INNER JOIN order_details od ON od.order_id = oi.order_id
+      INNER JOIN products p ON p.product_id = oi.product_id
+      INNER JOIN supplier_prices sp ON sp.supplier_price_id = oi.supplier_price_id
+      WHERE oi.order_item_id = ?
+        AND od.order_status = 'Pending'
+      LIMIT 1
+    `,
+    [orderItemId],
+  );
+
+  if (!itemRows.length) {
+    throw new Error("Pending cart item not found");
+  }
+
+  const item = itemRows[0];
+  const minimumQuantity = Number(item.minimum_quantity || 1);
+
+  if (requestedQuantity < minimumQuantity) {
+    throw new Error(`Minimum quantity for ${item.supplier_name} is ${minimumQuantity}`);
+  }
+
+  if (requestedQuantity > Number(item.quantity_available)) {
+    throw new Error("Requested quantity exceeds available stock");
   }
 
   const [result] = await pool.query(
