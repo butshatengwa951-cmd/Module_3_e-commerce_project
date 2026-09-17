@@ -6,6 +6,20 @@ export function attachOrderHistoryNavigation() {
   if (listenerAttached) return;
   listenerAttached = true;
 
+  const style = document.createElement("style");
+  style.textContent = `
+    .history-page .order-card { cursor: pointer; }
+    .history-page .order-card::after {
+      content: "View delivery →";
+      float: right;
+      margin-top: 10px;
+      color: var(--sw-purple-700);
+      font: 800 9px var(--sw-font-body);
+      letter-spacing: .04em;
+    }
+  `;
+  document.head.appendChild(style);
+
   document.addEventListener("click", (event) => {
     const card = event.target.closest(".order-card");
     if (!card || !document.querySelector(".history-page")) return;
