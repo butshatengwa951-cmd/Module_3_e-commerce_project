@@ -600,8 +600,10 @@ onUnmounted(() => {
 
 .product-card {
   overflow: hidden;
-  border-radius: 20px;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -613,6 +615,7 @@ onUnmounted(() => {
 .product-image {
   position: relative;
   height: 240px;
+  flex: 0 0 240px;
   display: grid;
   place-items: center;
   padding: 20px;
@@ -652,6 +655,10 @@ onUnmounted(() => {
 }
 
 .product-info {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   padding: 20px;
 }
 
@@ -758,7 +765,9 @@ onUnmounted(() => {
 }
 
 .add-button {
-  margin-top: 10px;
+  margin-top: auto;
+  padding-top: 12px;
+  padding-bottom: 12px;
   border-color: transparent;
   background: var(--sw-button-gradient);
   color: #fff;
@@ -917,6 +926,7 @@ onUnmounted(() => {
 
   .product-image {
     height: 220px;
+    flex-basis: 220px;
   }
 
   .product-info {
