@@ -275,10 +275,11 @@ h1 { margin: 0; color: var(--sw-page-text); font-size: clamp(34px, 5vw, 56px); l
 }
 
 .glass {
-  background: var(--sw-glass-light);
-  border: 1px solid var(--sw-glass-light-border);
-  backdrop-filter: blur(var(--sw-glass-blur)) saturate(var(--sw-glass-saturation));
-  box-shadow: var(--sw-glass-shadow-light);
+  background: var(--sw-page-surface);
+  border: 1px solid var(--sw-input-border);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: var(--sw-card-shadow, 0 12px 30px rgba(0, 0, 0, .07));
 }
 .state-card { padding: 28px; border-radius: 24px; text-align: center; color: var(--sw-page-text-soft); }
 .error { color: var(--sw-red-600); }
@@ -296,7 +297,7 @@ h1 { margin: 0; color: var(--sw-page-text); font-size: clamp(34px, 5vw, 56px); l
 .panel { border-radius: 24px; padding: 26px; }
 .panel-title { color: var(--sw-page-text); margin-bottom: 22px; }
 .saving-amount { color: var(--sw-page-text); font-size: 34px; font-weight: 800; margin-bottom: 4px; }
-.progress-track { height: 10px; margin: 24px 0 10px; background: rgba(49, 43, 80, .12); border-radius: 999px; overflow: hidden; }
+.progress-track { height: 10px; margin: 24px 0 10px; background: color-mix(in srgb, var(--sw-page-text) 10%, var(--sw-page-background)); border-radius: 999px; overflow: hidden; }
 .progress-fill { height: 100%; background: var(--sw-gold-500); border-radius: 999px; transition: width .3s ease; }
 .progress-meta { display: flex; justify-content: space-between; gap: 16px; color: var(--sw-page-text-muted); font-size: 12px; }
 .progress-meta strong { color: var(--sw-page-text-soft); }
@@ -364,19 +365,6 @@ h1 { margin: 0; color: var(--sw-page-text); font-size: clamp(34px, 5vw, 56px); l
 .order-row > div { display: grid; gap: 4px; }
 .order-row > div strong,
 .order-row > strong { color: var(--sw-page-text); }
-
-/* Dark mode uses the same selectors; only the global theme variables change. */
-:global(html.dark-mode) .profile-page .glass {
-  background: var(--sw-glass-dark);
-  border-color: var(--sw-glass-dark-border);
-  box-shadow: var(--sw-glass-shadow-dark);
-}
-:global(html.dark-mode) .profile-page .progress-track { background: rgba(247, 245, 241, .09); }
-:global(html.dark-mode) .profile-page .membership span,
-:global(html.dark-mode) .profile-page .status { color: #130e23; background: var(--sw-gold-500); }
-:global(html.dark-mode) .profile-page .role-badge { color: rgba(247, 245, 241, .8); background: rgba(255, 255, 255, .09); border-color: rgba(255, 255, 255, .1); }
-:global(html.dark-mode) .profile-page .member-avatar { color: var(--sw-gold-500); background: rgba(216, 180, 106, .18); }
-:global(html.dark-mode) .profile-page .success-message { color: #8ef0b3; }
 
 @media (max-width: 900px) {
   .dashboard-grid,
