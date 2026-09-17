@@ -21,6 +21,7 @@ export const updateCartItem = async (itemId, quantity) => { const response = awa
 export const removeCartItem = async (itemId) => { const response = await api.delete(`/api/cart/items/${itemId}`); try { const saved = JSON.parse(localStorage.getItem("stockwellCartState") || "null"); const remainingItems = Array.isArray(saved?.items) ? saved.items.filter((item) => Number(item.order_item_id) !== Number(itemId)) : []; if (remainingItems.length) saveCartState({ items: remainingItems, order: saved.order || null, stokvel: saved.stokvel || null }); else clearCartState(); } catch { clearCartState(); } await refreshCartStorage(); return response.data; };
 export const getCurrentOrder = async () => { const response = await api.get("/api/orders/current"); if (response.data?.order) saveCheckoutState({ order: response.data.order, items: response.data.items || [] }); return response.data; };
 export const getOrderHistory = async () => (await api.get("/api/orders/history")).data;
+export const getOrderDetails = async (orderId) => (await api.get(`/api/orders/history/${orderId}`)).data;
 export const getMemberDashboard = async () => (await api.get("/api/users/member-dashboard")).data;
 export const confirmCurrentOrder = async () => { const response = await api.post("/api/orders/current/confirm"); if (response.data?.order) { const current = JSON.parse(localStorage.getItem("stockwellCartState") || "null"); const items = Array.isArray(current?.items) ? current.items : []; const stokvel = current?.stokvel || null; saveCheckoutState({ order: response.data.order, items, stokvel }); saveCartState({ items, order: response.data.order, stokvel }); } return response.data; };
 export const getPaymentOptions = async () => { const response = await api.get("/api/payment/current"); if (response.data?.order) { const checkout = JSON.parse(localStorage.getItem("stockwellCheckoutState") || "null"); saveCheckoutState({ order: response.data.order, items: checkout?.items || [], stokvel: checkout?.stokvel || null }); if (checkout?.items?.length) saveCartState({ items: checkout.items, order: response.data.order, stokvel: checkout.stokvel || null }); } return response.data; };
@@ -46,7 +47,6 @@ export const getAdminOrders = async () => (await api.get("/api/admin/orders")).d
 export const updateAdminOrderStatus = async (id, status) => (await api.patch(`/api/admin/orders/${id}/status`, { status })).data;
 export const getAdminDeliveries = async () => (await api.get("/api/admin/deliveries")).data;
 export const updateAdminDelivery = async (id, data) => (await api.patch(`/api/admin/deliveries/${id}`, data)).data;
-
 export const getAdminManagedUsers = async () => (await api.get("/api/admin/management/users")).data;
 export const updateAdminUserRole = async (id, role) => (await api.patch(`/api/admin/management/users/${id}/role`, { role })).data;
 export const getAdminStokvelMembers = async (id) => (await api.get(`/api/admin/management/stokvels/${id}/members`)).data;
@@ -54,7 +54,6 @@ export const addAdminStokvelMember = async (id, user_id) => (await api.post(`/ap
 export const removeAdminStokvelMember = async (stokvelId, userId) => (await api.delete(`/api/admin/management/stokvels/${stokvelId}/members/${userId}`)).data;
 export const getAdminAnalytics = async () => (await api.get("/api/admin/analytics")).data;
 export const getAdminAuditLog = async () => (await api.get("/api/admin/audit-log")).data;
-
 export const createSuggestion = async (data) => (await api.post("/api/suggestions", data)).data;
 export const getMySuggestions = async () => (await api.get("/api/suggestions/mine")).data;
 export const getAllSuggestions = async () => (await api.get("/api/suggestions/admin")).data;
