@@ -1,38 +1,15 @@
 import axios from "axios";
-import {
-  saveCartState,
-  saveCheckoutState,
-  clearCartState,
-  clearCheckoutState,
-} from "../composables/useCartState.js";
+import { saveCartState, saveCheckoutState, clearCartState, clearCheckoutState } from "../composables/useCartState.js";
 
-const api = axios.create({
-  baseURL: "http://localhost:4040",
-  headers: { "Content-Type": "application/json" },
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token") || localStorage.getItem("sw_token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+const api = axios.create({ baseURL: "http://localhost:4040", headers: { "Content-Type": "application/json" } });
+api.interceptors.request.use((config) => { const token = localStorage.getItem("token") || localStorage.getItem("sw_token"); if (token) config.headers.Authorization = `Bearer ${token}`; return config; });
 
 async function refreshCartStorage({ preserveSavedCart = false } = {}) {
   try {
-    const response = await api.get("/api/cart");
-    const backendItems = response.data.items || [];
-    if (preserveSavedCart && !backendItems.length) {
-      try {
-        const saved = JSON.parse(localStorage.getItem("stockwellCartState") || "null");
-        if (Array.isArray(saved?.items) && saved.items.length) return { ...response.data, items: saved.items, order: saved.order || response.data.order || null, stokvel: saved.stokvel || response.data.stokvel || null };
-      } catch {}
-    }
-    saveCartState({ items: backendItems, order: response.data.order || null, stokvel: response.data.stokvel || null });
-    return response.data;
-  } catch (error) {
-    if (error.response?.status !== 403 && error.response?.status !== 401) console.error("Cart storage sync failed:", error);
-    throw error;
-  }
+    const response = await api.get("/api/cart"); const backendItems = response.data.items || [];
+    if (preserveSavedCart && !backendItems.length) { try { const saved = JSON.parse(localStorage.getItem("stockwellCartState") || "null"); if (Array.isArray(saved?.items) && saved.items.length) return { ...response.data, items: saved.items, order: saved.order || response.data.order || null, stokvel: saved.stokvel || response.data.stokvel || null }; } catch {} }
+    saveCartState({ items: backendItems, order: response.data.order || null, stokvel: response.data.stokvel || null }); return response.data;
+  } catch (error) { if (error.response?.status !== 403 && error.response?.status !== 401) console.error("Cart storage sync failed:", error); throw error; }
 }
 
 export const getStokvels = async () => (await api.get("/api/stokvels")).data;
@@ -52,7 +29,6 @@ export const forgotPassword = async (email) => (await api.post("/api/auth/forgot
 export const resetPassword = async (resetData) => (await api.post("/api/auth/reset-password", resetData)).data;
 export const verifyResetToken = async (token) => (await api.get("/api/auth/verify-reset-token", { params: { token } })).data;
 
-// Company-admin API. These endpoints are protected by JWT + adminMiddleware on the server.
 export const getAdminDashboard = async () => (await api.get("/api/admin/dashboard")).data;
 export const getAdminUsers = async () => (await api.get("/api/admin/users")).data;
 export const getAdminStokvels = async () => (await api.get("/api/admin/stokvels")).data;
@@ -69,10 +45,16 @@ export const updateAdminOrderStatus = async (id, status) => (await api.patch(`/a
 export const getAdminDeliveries = async () => (await api.get("/api/admin/deliveries")).data;
 export const updateAdminDelivery = async (id, data) => (await api.patch(`/api/admin/deliveries/${id}`, data)).data;
 
-// Suggestions
+export const getAdminManagedUsers = async () => (await api.get("/api/admin/management/users")).data;
+export const updateAdminUserRole = async (id, role) => (await api.patch(`/api/admin/management/users/${id}/role`, { role })).data;
+export const getAdminStokvelMembers = async (id) => (await api.get(`/api/admin/management/stokvels/${id}/members`)).data;
+export const addAdminStokvelMember = async (id, user_id) => (await api.post(`/api/admin/management/stokvels/${id}/members`, { user_id })).data;
+export const removeAdminStokvelMember = async (stokvelId, userId) => (await api.delete(`/api/admin/management/stokvels/${stokvelId}/members/${userId}`)).data;
+export const getAdminAnalytics = async () => (await api.get("/api/admin/analytics")).data;
+export const getAdminAuditLog = async () => (await api.get("/api/admin/audit-log")).data;
+
 export const createSuggestion = async (data) => (await api.post("/api/suggestions", data)).data;
 export const getMySuggestions = async () => (await api.get("/api/suggestions/mine")).data;
 export const getAllSuggestions = async () => (await api.get("/api/suggestions/admin")).data;
 export const updateSuggestion = async (id, status, admin_response) => (await api.patch(`/api/suggestions/admin/${id}`, { status, admin_response })).data;
-
 export default api;
