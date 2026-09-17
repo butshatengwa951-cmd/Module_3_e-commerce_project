@@ -167,20 +167,48 @@ const money = (value) => Number(value || 0).toLocaleString("en-ZA", { minimumFra
 const formatDate = (value) => value ? new Date(value).toLocaleDateString("en-ZA", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 const memberInitials = (name) => name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
 
+function normalizeProfileResponse(data) {
+  const user = data?.user || data;
+  const storedStokvel = JSON.parse(localStorage.getItem("stokvel") || "null");
+
+  return {
+    user,
+    stats: {
+      contribution_total: 0,
+      contribution_count: 0,
+      paid_total: 0,
+      order_count: 0,
+      order_total: 0,
+    },
+    stokvels: storedStokvel?.stokvel_id
+      ? [{
+          stokvel_id: storedStokvel.stokvel_id,
+          stokvel_name: storedStokvel.stokvel_name,
+          description: storedStokvel.description || "",
+          membership_role: user?.role || "member",
+          joined_at: storedStokvel.joined_at || null,
+        }]
+      : [],
+    recentOrders: [],
+  };
+}
+
 async function loadProfile() {
   loading.value = true;
   error.value = "";
   try {
-    const { data } = await api.get("/auth/profile");
-    profile.value = data;
+    const { data } = await api.get("/api/users/profile");
+    profile.value = normalizeProfileResponse(data);
+
     try {
       const dashboardResponse = await api.get("/dashboard/member");
       dashboard.value = dashboardResponse.data;
     } catch (dashboardErr) {
+      dashboard.value = null;
       console.warn("Member dashboard data unavailable:", dashboardErr);
     }
   } catch (err) {
-    error.value = err.response?.data?.error || "We could not load your profile. Please sign in again.";
+    error.value = err.response?.data?.message || err.response?.data?.error || "We could not load your profile. Please sign in again.";
   } finally {
     loading.value = false;
   }
@@ -196,7 +224,7 @@ async function submitContribution() {
     contributionAmount.value = null;
     await loadProfile();
   } catch (err) {
-    contributionError.value = err.response?.data?.error || "Could not record the contribution.";
+    contributionError.value = err.response?.data?.message || err.response?.data?.error || "Could not record the contribution.";
   } finally {
     contributionLoading.value = false;
   }
@@ -261,14 +289,24 @@ h1 { margin:0; font-size:clamp(34px,5vw,56px); letter-spacing:-.04em; }
 .contribution-form input { width:100%; box-sizing:border-box; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:12px 14px; background:rgba(255,255,255,.06); color:#fff; outline:none; font:inherit; }
 .contribution-form button { border:0; border-radius:12px; padding:13px 18px; background:#d8b46a; color:#130e23; font-weight:800; cursor:pointer; }
 .contribution-form button:disabled { opacity:.55; cursor:not-allowed; }
-.success-message { color:#b9f0c2; margin:14px 0 0; }
+.success-message { color:#8ef0b3; margin:14px 0 0; }
 .error-message { color:#ffb4b4; margin:14px 0 0; }
-.orders { display:grid; margin-top:18px; }
-.order-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:24px; padding:16px 0; border-bottom:1px solid rgba(255,255,255,.07); }
+.empty { color:rgba(255,255,255,.45); padding:12px 0; }
+.orders { margin-top:8px; }
+.order-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid rgba(255,255,255,.07); }
 .order-row:last-child { border-bottom:0; }
-.order-row div { display:grid; gap:5px; }
-.status { background:rgba(255,255,255,.09); color:rgba(255,255,255,.8); }
-.empty { padding:20px 0; color:rgba(255,255,255,.48); }
-@media (max-width:800px) { .stats-grid,.content-grid,.dashboard-grid { grid-template-columns:1fr; } .profile-heading { align-items:flex-start; } }
-@media (max-width:560px) { .profile-page { padding-left:16px; padding-right:16px; } .avatar { width:58px; height:58px; font-size:17px; } .detail { display:grid; gap:6px; } .detail strong { text-align:left; } .progress-meta { display:grid; gap:5px; } .member-row { grid-template-columns:auto 1fr; } .role-badge { grid-column:2; justify-self:start; } .contribution-form { display:grid; align-items:stretch; } .order-row { grid-template-columns:1fr auto; } .order-row .status { grid-column:2; grid-row:1; } }
+.order-row > div { display:grid; gap:4px; }
+@media (max-width:900px){
+  .stats-grid,.dashboard-grid,.content-grid { grid-template-columns:1fr; }
+}
+@media (max-width:620px){
+  .profile-page { padding:28px 16px 48px; }
+  .profile-heading { align-items:flex-start; }
+  .avatar { width:60px; height:60px; font-size:18px; }
+  .panel { padding:20px; }
+  .contribution-form { flex-direction:column; align-items:stretch; }
+  .detail,.progress-meta { flex-direction:column; align-items:flex-start; gap:6px; }
+  .detail strong { text-align:left; }
+  .order-row { grid-template-columns:1fr; align-items:flex-start; gap:8px; }
+}
 </style>
