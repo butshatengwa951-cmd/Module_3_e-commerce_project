@@ -5,6 +5,7 @@ import CatalogueView from "../views/CatalogueView.vue";
 import CartView from "../views/CartView.vue";
 import PaymentView from "../views/PaymentView.vue";
 import ProfileView from "../views/ProfileView.vue";
+import MemberDashboard from "../views/MemberDashboard.vue";
 import OrderHistoryView from "../views/OrderHistoryView.vue";
 import AdminProfileView from "../views/AdminProfileView.vue";
 import AdminDashboard from "../views/AdminDashboard.vue";
@@ -21,6 +22,7 @@ const routes = [
   { path: "/catalogue", name: "Catalogue", component: CatalogueView },
   { path: "/cart", name: "Cart", component: CartView, meta: { requiresAuth: true } },
   { path: "/payment", name: "Payment", component: PaymentView, meta: { requiresAuth: true } },
+  { path: "/member-dashboard", name: "MemberDashboard", component: MemberDashboard, meta: { requiresAuth: true } },
   { path: "/order-history", name: "OrderHistory", component: OrderHistoryView, meta: { requiresAuth: true } },
   { path: "/profile", name: "Profile", component: ProfileView, meta: { requiresAuth: true } },
   { path: "/admin/profile", name: "AdminProfile", component: AdminProfileView, meta: { requiresAuth: true, requiresAdmin: true } },
