@@ -23,11 +23,17 @@ CREATE TABLE IF NOT EXISTS stokvel_member_roles (
     REFERENCES stokvel_members(stokvel_member_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+-- Older/live databases may not have stokvels.chairperson_id even though the
+-- original reset schema did. The current users table already stores the
+-- platform/member role, so use that to seed Stokvel-level roles instead.
 INSERT INTO stokvel_member_roles (stokvel_member_id,stokvel_role)
 SELECT sm.stokvel_member_id,
-       CASE WHEN sm.user_id=s.chairperson_id THEN 'CHAIRPERSON' ELSE 'MEMBER' END
+       CASE
+         WHEN LOWER(COALESCE(u.role,'member'))='chairperson' THEN 'CHAIRPERSON'
+         ELSE 'MEMBER'
+       END
 FROM stokvel_members sm
-INNER JOIN stokvels s ON s.stokvel_id=sm.stokvel_id
+INNER JOIN users u ON u.user_id=sm.user_id
 LEFT JOIN stokvel_member_roles smr ON smr.stokvel_member_id=sm.stokvel_member_id
 WHERE smr.stokvel_member_id IS NULL;
 
