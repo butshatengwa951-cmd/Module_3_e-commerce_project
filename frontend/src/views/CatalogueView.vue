@@ -91,9 +91,9 @@
             <p class="description">{{ product.description || "Quality household essential." }}</p>
 
             <div class="price-row">
-              <div>
+              <div class="price-block">
                 <small>Best group price</small>
-                <strong v-if="getBestSupplier(product)">R{{ getBestSupplier(product).price.toFixed(2) }}</strong>
+                <strong v-if="getBestSupplier(product)">R{{ Number(getBestSupplier(product).price).toFixed(2) }}</strong>
                 <strong v-else>Unavailable</strong>
               </div>
               <div v-if="getSaving(product) > 0" class="saving">
@@ -108,19 +108,17 @@
 
             <div class="stock-row">
               <span>{{ product.quantity_available }} available</span>
-              <span :class="product.quantity_available > 20 ? 'in-stock' : product.quantity_available > 0 ? 'low-stock' : 'out-of-stock'">
-                {{ product.quantity_available > 20 ? "IN STOCK" : product.quantity_available > 0 ? "LOW STOCK" : "OUT OF STOCK" }}
-              </span>
+              <span :class="getStockClass(product)">{{ getStockLabel(product) }}</span>
             </div>
 
             <div class="quantity-control" :class="{ disabled: product.quantity_available < 1 }">
               <span>Quantity</span>
               <div class="quantity-picker">
-                <button type="button" aria-label="Decrease quantity" :disabled="getPurchaseQuantity(product) <= 1" @click="changeQuantity(product, -1)">−</button>
+                <button type="button" aria-label="Decrease quantity" :disabled="getPurchaseQuantity(product) <= getMinimumSelectableQuantity(product)" @click="changeQuantity(product, -1)">−</button>
                 <input
                   :value="getPurchaseQuantity(product)"
                   type="number"
-                  min="1"
+                  :min="Math.max(1, getMinimumSelectableQuantity(product))"
                   :max="Math.max(1, Number(product.quantity_available || 0))"
                   aria-label="Purchase quantity"
                   :disabled="product.quantity_available < 1"
@@ -172,9 +170,10 @@
               </div>
             </div>
 
+            <div class="card-action-spacer" aria-hidden="true"></div>
             <button class="add-button" type="button" :disabled="!canAddProduct(product)" @click="addToBasket(product)">
               <span aria-hidden="true">+</span>
-              {{ product.quantity_available < 1 ? "Out of Stock" : canAddProduct(product) ? "Add to Group Basket" : "Choose a valid quantity" }}
+              {{ product.quantity_available < 1 ? "Out of Stock" : canAddProduct(product) ? "Add to Group Basket" : getMinimumSelectableQuantity(product) > 1 ? `Select ${getMinimumSelectableQuantity(product)}+ units` : "No eligible supplier" }}
             </button>
           </div>
         </article>
@@ -216,7 +215,7 @@
                 </div>
               </div>
               <button class="modal-add-button" type="button" :disabled="!canAddProduct(selectedProduct)" @click="addToBasket(selectedProduct)">
-                {{ selectedProduct.quantity_available > 0 ? `Add ${getPurchaseQuantity(selectedProduct)} to Group Basket` : "Out of Stock" }}
+                {{ selectedProduct.quantity_available < 1 ? "Out of Stock" : canAddProduct(selectedProduct) ? `Add ${getPurchaseQuantity(selectedProduct)} to Group Basket` : `Select ${getMinimumSelectableQuantity(selectedProduct)}+ units` }}
               </button>
             </div>
           </div>
@@ -258,6 +257,7 @@ const message = ref("");
 const showCategories = ref(false);
 const isAuthenticated = ref(false);
 const basketCount = ref(0);
+const toastTimer = ref(null);
 
 const categories = ["All Products", "Staples", "Cooking Essentials", "Food", "Canned Food", "Spices", "Breakfast", "Beverages"];
 const imageFallback = "https://images.unsplash.com/photo-1542838132-92c53300491e?w=700&h=700&fit=crop";
@@ -334,32 +334,30 @@ function handleImageError(event) {
   if (event.target.src !== imageFallback) event.target.src = imageFallback;
 }
 
-function getLowestPrice(product) {
-  return product.supplier_prices?.length
-    ? Math.min(...product.supplier_prices.map((s) => Number(s.price)))
-    : 0;
-}
-
-function getHighestPrice(product) {
-  return product.supplier_prices?.length
-    ? Math.max(...product.supplier_prices.map((s) => Number(s.price)))
-    : 0;
-}
-
-function getSaving(product) {
-  return product.supplier_prices?.length >= 2 ? getHighestPrice(product) - getLowestPrice(product) : 0;
-}
-
 function getMinimumQuantity(product) {
   if (!product.supplier_prices?.length) return 1;
   return Math.min(...product.supplier_prices.map((supplier) => Number(supplier.minimum_quantity || 1)));
 }
 
+function getMinimumSelectableQuantity(product) {
+  const stock = Number(product.quantity_available || 0);
+  if (stock <= 0 || !product.supplier_prices?.length) return stock > 0 ? 1 : 0;
+
+  const possibleMinimums = product.supplier_prices
+    .map((supplier) => Number(supplier.minimum_quantity || 1))
+    .filter((minimum) => Number.isFinite(minimum) && minimum >= 1 && minimum <= stock);
+
+  return possibleMinimums.length ? Math.min(...possibleMinimums) : 1;
+}
+
 function getPurchaseQuantity(product) {
   const stock = Number(product.quantity_available || 0);
+  if (stock <= 0) return 0;
+
   const current = Number(requestedQuantities.value[product.product_id]);
-  if (!Number.isFinite(current) || current < 1) return stock > 0 ? 1 : 0;
-  return Math.min(Math.max(Math.round(current), 1), Math.max(stock, 1));
+  const fallback = getMinimumSelectableQuantity(product);
+  if (!Number.isFinite(current) || current < fallback) return Math.min(fallback, stock);
+  return Math.min(Math.round(current), stock);
 }
 
 function setPurchaseQuantity(product, value) {
@@ -369,21 +367,43 @@ function setPurchaseQuantity(product, value) {
     return;
   }
 
+  const minimum = getMinimumSelectableQuantity(product);
   const parsed = Number(value);
-  const quantity = Number.isFinite(parsed) ? Math.round(parsed) : 1;
-  requestedQuantities.value[product.product_id] = Math.min(Math.max(quantity, 1), stock);
+  const quantity = Number.isFinite(parsed) ? Math.round(parsed) : minimum;
+  requestedQuantities.value[product.product_id] = Math.min(Math.max(quantity, minimum), stock);
 }
 
 function changeQuantity(product, delta) {
   setPurchaseQuantity(product, getPurchaseQuantity(product) + delta);
 }
 
-function getBestSupplier(product) {
+function getEligibleSuppliers(product) {
   const quantity = getPurchaseQuantity(product);
-  return [...(product.supplier_prices || [])]
-    .filter((supplier) => Number(supplier.minimum_quantity || 1) <= quantity)
-    .filter(() => Number(product.quantity_available || 0) >= quantity)
-    .sort((a, b) => Number(a.price) - Number(b.price))[0] || null;
+  const stock = Number(product.quantity_available || 0);
+  return (product.supplier_prices || []).filter((supplier) => {
+    const minimum = Number(supplier.minimum_quantity || 1);
+    return stock >= quantity && minimum <= quantity;
+  });
+}
+
+function getBestSupplier(product) {
+  return [...getEligibleSuppliers(product)].sort((a, b) => Number(a.price) - Number(b.price))[0] || null;
+}
+
+function getLowestPrice(product) {
+  const prices = getEligibleSuppliers(product).map((supplier) => Number(supplier.price));
+  return prices.length ? Math.min(...prices) : 0;
+}
+
+function getHighestPrice(product) {
+  const prices = getEligibleSuppliers(product).map((supplier) => Number(supplier.price));
+  return prices.length ? Math.max(...prices) : 0;
+}
+
+function getSaving(product) {
+  const lowest = getLowestPrice(product);
+  const highest = getHighestPrice(product);
+  return highest > lowest ? highest - lowest : 0;
 }
 
 function isSupplierEligible(product, supplier) {
@@ -405,6 +425,16 @@ function canAddProduct(product) {
   return Number(product.quantity_available || 0) > 0 && Boolean(getBestSupplier(product));
 }
 
+function getStockClass(product) {
+  const stock = Number(product.quantity_available || 0);
+  return stock > 20 ? "in-stock" : stock > 0 ? "low-stock" : "out-of-stock";
+}
+
+function getStockLabel(product) {
+  const stock = Number(product.quantity_available || 0);
+  return stock > 20 ? "IN STOCK" : stock > 0 ? "LOW STOCK" : "OUT OF STOCK";
+}
+
 function toggleProduct(id) {
   expandedProduct.value = expandedProduct.value === id ? null : id;
 }
@@ -420,7 +450,8 @@ function closeProductDetails() {
 
 function showBasketMessage(text, duration = 3000) {
   message.value = text;
-  window.setTimeout(() => {
+  window.clearTimeout(toastTimer.value);
+  toastTimer.value = window.setTimeout(() => {
     message.value = "";
   }, duration);
 }
@@ -436,7 +467,7 @@ async function addToBasket(product) {
   const supplier = getBestSupplier(product);
 
   if (!supplier) {
-    showBasketMessage("No supplier can fulfil the selected quantity. Increase the quantity or compare suppliers.", 3500);
+    showBasketMessage("No supplier can fulfil the selected quantity. Compare suppliers or choose an eligible quantity.", 3500);
     return;
   }
 
@@ -499,8 +530,18 @@ const filteredProducts = computed(() => {
   return result;
 });
 
+function initialiseProductState(product) {
+  const stock = Number(product.quantity_available || 0);
+  requestedQuantities.value[product.product_id] = stock > 0 ? getMinimumSelectableQuantity(product) : 0;
+  supplierSort.value[product.product_id] = "price-low";
+}
+
 function handleAuthChange() {
   syncAuth();
+  syncCloudBasket();
+}
+
+function handleBasketChange() {
   syncCloudBasket();
 }
 
@@ -513,10 +554,7 @@ onMounted(async () => {
   try {
     const response = await getProducts();
     products.value = Array.isArray(response) ? response : response.products || [];
-    products.value.forEach((product) => {
-      requestedQuantities.value[product.product_id] = product.quantity_available > 0 ? 1 : 0;
-      supplierSort.value[product.product_id] = "price-low";
-    });
+    products.value.forEach(initialiseProductState);
     await syncCloudBasket();
   } catch (error) {
     console.error("Catalogue loading failed:", error);
@@ -527,12 +565,19 @@ onMounted(async () => {
 
   window.addEventListener("login-completed", handleAuthChange);
   window.addEventListener("auth-updated", handleAuthChange);
+  window.addEventListener("basket-updated", handleBasketChange);
+  window.addEventListener("cart-state-updated", handleBasketChange);
+  window.addEventListener("storage", handleBasketChange);
   window.addEventListener("keydown", handleEscape);
 });
 
 onUnmounted(() => {
+  window.clearTimeout(toastTimer.value);
   window.removeEventListener("login-completed", handleAuthChange);
   window.removeEventListener("auth-updated", handleAuthChange);
+  window.removeEventListener("basket-updated", handleBasketChange);
+  window.removeEventListener("cart-state-updated", handleBasketChange);
+  window.removeEventListener("storage", handleBasketChange);
   window.removeEventListener("keydown", handleEscape);
 });
 </script>
@@ -563,6 +608,7 @@ onUnmounted(() => {
 .category-panel,
 .active-filter,
 .products-area {
+  width: 100%;
   max-width: 1180px;
   margin-inline: auto;
 }
@@ -800,6 +846,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
   gap: 18px;
+  align-items: stretch;
 }
 
 .product-card {
@@ -807,6 +854,7 @@ onUnmounted(() => {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  min-height: 100%;
   border-radius: 20px;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -828,6 +876,7 @@ onUnmounted(() => {
 }
 
 .product-image img {
+  width: auto;
   max-width: 100%;
   max-height: 205px;
   object-fit: contain;
@@ -932,7 +981,7 @@ onUnmounted(() => {
   gap: 12px;
 }
 
-.price-row > div:first-child {
+.price-block {
   min-width: 0;
 }
 
@@ -946,10 +995,12 @@ onUnmounted(() => {
 .price-row strong {
   font-size: 25px;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .saving {
   flex: 0 0 auto;
+  max-width: 48%;
   color: var(--sw-gold-500);
   font-size: 12px;
   font-weight: 700;
@@ -992,22 +1043,15 @@ onUnmounted(() => {
   font-size: 12px;
 }
 
-.in-stock,
-.low-stock,
-.out-of-stock {
+.in-stock {
+  color: #2f9e62;
   font-weight: 700;
 }
 
-.in-stock {
-  color: #2f9e62;
-}
-
-.low-stock {
-  color: var(--sw-red-600);
-}
-
+.low-stock,
 .out-of-stock {
   color: var(--sw-red-600);
+  font-weight: 700;
 }
 
 .quantity-control {
@@ -1094,16 +1138,28 @@ onUnmounted(() => {
   box-shadow: none;
 }
 
+.card-action-spacer {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
 .add-button {
   min-height: 46px;
   height: 46px;
   flex: 0 0 46px;
-  margin-top: auto;
-  padding-top: 12px;
-  padding-bottom: 12px;
+  margin-top: 8px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   border-color: transparent;
   background: var(--sw-button-gradient);
   color: #fff;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -1117,7 +1173,7 @@ onUnmounted(() => {
 
 .supplier-list {
   margin-top: 0;
-  margin-bottom: 8px;
+  margin-bottom: 0;
   display: grid;
   gap: 7px;
 }
@@ -1407,18 +1463,19 @@ onUnmounted(() => {
   font-size: 12px;
 }
 
-.modal-supplier-list strong {
+.modal-supplier-list strong,
+.modal-supplier-list small {
   white-space: nowrap;
 }
 
 .modal-supplier-list small {
   color: var(--catalogue-muted);
-  white-space: nowrap;
 }
 
 .modal-add-button {
   min-height: 46px;
   margin-top: auto;
+  padding: 0 14px;
   border: 0;
   border-radius: 12px;
   background: var(--sw-button-gradient);
@@ -1521,7 +1578,12 @@ onUnmounted(() => {
   }
 
   .price-row {
-    align-items: center;
+    gap: 8px;
+  }
+
+  .saving {
+    max-width: 42%;
+    font-size: 11px;
   }
 
   .supplier-row {
@@ -1550,6 +1612,12 @@ onUnmounted(() => {
 
   .quantity-picker input {
     width: 42px;
+  }
+
+  .add-button {
+    min-height: 48px;
+    height: 48px;
+    font-size: 12px;
   }
 
   .details-button {
