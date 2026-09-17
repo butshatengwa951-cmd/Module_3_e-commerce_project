@@ -31,10 +31,13 @@ export const findMembershipByUserId = async (userId) => {
             sm.user_id,
             sm.joined_at,
             s.stokvel_name,
-            s.description
+            s.description,
+            COALESCE(smr.stokvel_role, 'MEMBER') AS stokvel_role
         FROM stokvel_members sm
         INNER JOIN stokvels s
             ON sm.stokvel_id = s.stokvel_id
+        LEFT JOIN stokvel_member_roles smr
+            ON smr.stokvel_member_id = sm.stokvel_member_id
         WHERE sm.user_id = ?
         LIMIT 1
         `,
@@ -73,10 +76,13 @@ export const getMembersByStokvelId = async (stokvelId) => {
             u.full_name,
             u.email,
             u.phone_number,
-            u.role
+            u.role,
+            COALESCE(smr.stokvel_role, 'MEMBER') AS stokvel_role
         FROM stokvel_members sm
         INNER JOIN users u
             ON sm.user_id = u.user_id
+        LEFT JOIN stokvel_member_roles smr
+            ON smr.stokvel_member_id = sm.stokvel_member_id
         WHERE sm.stokvel_id = ?
         ORDER BY sm.joined_at
         `,
