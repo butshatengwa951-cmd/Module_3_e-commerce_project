@@ -90,6 +90,12 @@ export const addItemToGroupCart = async ({
   try {
     await db.beginTransaction();
 
+    const requestedQuantity = Number(quantity);
+
+    if (!Number.isInteger(requestedQuantity) || requestedQuantity < 1) {
+      throw new Error("Quantity must be a positive whole number");
+    }
+
     // Keep the Stokvel row locked during pending-cart creation so two members
     // cannot create competing pending shared orders at the same time.
     await db.query(
@@ -99,7 +105,9 @@ export const addItemToGroupCart = async ({
 
     const selectedSupplierId = supplierPriceId ? Number(supplierPriceId) : null;
 
-    // Product and supplier selection are handled in one database round-trip.
+    // Fetch the product and all supplier prices in one round-trip. The
+    // catalogue can then choose the cheapest supplier that can fulfil the
+    // requested quantity, while an explicitly selected supplier remains exact.
     const [products] = await db.query(
       `
         SELECT
@@ -109,14 +117,14 @@ export const addItemToGroupCart = async ({
           p.image_url,
           sp.supplier_price_id,
           sp.price,
-          sp.supplier_name
+          sp.supplier_name,
+          sp.minimum_quantity
         FROM products p
         LEFT JOIN supplier_prices sp
           ON sp.product_id = p.product_id
          AND (? IS NULL OR sp.supplier_price_id = ?)
         WHERE p.product_id = ?
         ORDER BY sp.price ASC
-        LIMIT 1
       `,
       [selectedSupplierId, selectedSupplierId, productId],
     );
@@ -125,29 +133,31 @@ export const addItemToGroupCart = async ({
       throw new Error("Product not found");
     }
 
-    const product = products[0];
+    if (requestedQuantity > Number(products[0].quantity_available)) {
+      throw new Error("Requested quantity exceeds available stock");
+    }
 
-    if (!product.supplier_price_id) {
+    const candidate = selectedSupplierId
+      ? products[0]
+      : products.find((supplier) => supplier.supplier_price_id && requestedQuantity >= Number(supplier.minimum_quantity || 1));
+
+    if (!candidate?.supplier_price_id) {
       if (selectedSupplierId) {
         throw new Error("Selected supplier price is not valid for this product");
       }
 
-      throw new Error("No supplier price is available for this product");
+      throw new Error("No supplier price is available for the requested quantity");
     }
 
-    const selectedSupplierPriceId = product.supplier_price_id;
-    const unitPrice = Number(product.price);
-    const supplierName = product.supplier_name;
+    const minimumQuantity = Number(candidate.minimum_quantity || 1);
 
-    const requestedQuantity = Number(quantity);
-
-    if (!Number.isInteger(requestedQuantity) || requestedQuantity < 1) {
-      throw new Error("Quantity must be a positive whole number");
+    if (requestedQuantity < minimumQuantity) {
+      throw new Error(`Minimum quantity for ${candidate.supplier_name} is ${minimumQuantity}`);
     }
 
-    if (requestedQuantity > Number(product.quantity_available)) {
-      throw new Error("Requested quantity exceeds available stock");
-    }
+    const selectedSupplierPriceId = candidate.supplier_price_id;
+    const unitPrice = Number(candidate.price);
+    const supplierName = candidate.supplier_name;
 
     // Get the latest pending order and the matching cart item together.
     const [pendingRows] = await db.query(
@@ -199,8 +209,12 @@ export const addItemToGroupCart = async ({
     if (existingItem) {
       finalQuantity = Number(existingItem.quantity) + requestedQuantity;
 
-      if (finalQuantity > Number(product.quantity_available)) {
+      if (finalQuantity > Number(candidate.quantity_available)) {
         throw new Error("Requested quantity exceeds available stock");
+      }
+
+      if (finalQuantity < minimumQuantity) {
+        throw new Error(`Minimum quantity for ${supplierName} is ${minimumQuantity}`);
       }
 
       finalSubtotal = Number((unitPrice * finalQuantity).toFixed(2));
@@ -264,8 +278,8 @@ export const addItemToGroupCart = async ({
         quantity: finalQuantity,
         unit_price: unitPrice,
         subtotal: finalSubtotal,
-        product_name: product.product_name,
-        image_url: product.image_url,
+        product_name: candidate.product_name,
+        image_url: candidate.image_url,
         supplier_name: supplierName,
         total_amount: finalOrderTotal,
       },
