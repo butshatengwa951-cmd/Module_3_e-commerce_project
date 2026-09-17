@@ -19,7 +19,6 @@ import Footer from "./components/ui/Footer.vue";
 const route = useRoute();
 const router = useRouter();
 
-// Shared authentication pages keep their original full-screen presentation.
 const authRoutes = new Set([
   "AuthSelector",
   "Login",
@@ -31,7 +30,12 @@ const authRoutes = new Set([
 const showSiteShell = computed(() => !authRoutes.has(route.name));
 
 const handleLoginCompleted = () => {
-  router.push("/catalogue");
+  try {
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    router.push(user?.role === "admin" ? "/admin" : "/catalogue");
+  } catch {
+    router.push("/catalogue");
+  }
 };
 
 onMounted(() => {
