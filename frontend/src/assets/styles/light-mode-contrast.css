@@ -65,15 +65,18 @@ html:not(.dark-mode) textarea:focus {
 
 /* ORDER HISTORY — LIGHT MODE TEXT CONTRAST */
 html:not(.dark-mode) .history-page .stat-card.featured span {
-  color: var(--sw-purple-700);
+  color: #3d335f;
+  font-weight: 900;
 }
 
 html:not(.dark-mode) .history-page .stat-card.featured strong {
-  color: var(--sw-purple-900);
+  color: #211a38;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
 }
 
 html:not(.dark-mode) .history-page .stat-card.featured small {
-  color: rgba(49, 43, 80, 0.72);
+  color: #554b6d;
+  font-weight: 600;
 }
 
 /* DARK MODE */
