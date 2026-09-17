@@ -672,14 +672,25 @@ onUnmounted(() => {
 }
 
 .product-info h2 {
+  height: 51px;
+  min-height: 51px;
   margin: 7px 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   font-size: 21px;
   line-height: 1.2;
 }
 
 .description {
+  height: 42px;
   min-height: 42px;
   margin: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   color: var(--catalogue-muted);
   font-size: 13px;
   line-height: 1.5;
@@ -696,6 +707,10 @@ onUnmounted(() => {
   gap: 12px;
 }
 
+.price-row > div:first-child {
+  min-width: 0;
+}
+
 .price-row small {
   display: block;
   margin-bottom: 3px;
@@ -709,6 +724,7 @@ onUnmounted(() => {
 }
 
 .saving {
+  flex: 0 0 auto;
   color: var(--sw-gold-500);
   font-size: 12px;
   font-weight: 700;
@@ -717,17 +733,23 @@ onUnmounted(() => {
 
 .best-supplier {
   min-height: 64px;
+  height: 64px;
   flex: 0 0 64px;
   display: grid;
   align-content: center;
   gap: 4px;
   padding: 12px;
+  overflow: hidden;
   border: 1px solid var(--catalogue-border-soft);
   border-radius: 12px;
   background: color-mix(in srgb, var(--sw-purple-700) 9%, var(--catalogue-surface));
 }
 
 .best-supplier strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 14px;
   line-height: 1.25;
 }
