@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { getCart, updateCartItem, removeCartItem, confirmCurrentOrder } from "../services/api.js";
-import { saveCartState, saveCheckoutState, clearCartState } from "../composables/useCartState.js";
+import { readCheckoutState, saveCartState, saveCheckoutState, clearCartState } from "../composables/useCartState.js";
 
 const router = useRouter();
 const items = ref([]);
@@ -17,7 +17,6 @@ const total = computed(() => items.value.reduce((sum, item) => sum + Number(item
 const itemCount = computed(() => items.value.reduce((sum, item) => sum + Number(item.quantity || 0), 0));
 
 function syncState() { saveCartState({ items: items.value, order: order.value, stokvel: stokvel.value }); }
-function notifyCartChange() { syncState(); }
 
 async function loadCart() {
   loading.value = true; error.value = "";
@@ -26,10 +25,37 @@ async function loadCart() {
     items.value = response.items || [];
     stokvel.value = response.stokvel || null;
     order.value = response.order || null;
-    if (items.value.length) syncState(); else clearCartState();
+
+    // A confirmed order is no longer returned by /api/cart, but it is still
+    // the user's active checkout until payment succeeds. Restore that snapshot
+    // when returning from Payment instead of showing an empty basket.
+    if (!items.value.length) {
+      const checkout = readCheckoutState();
+      if (checkout?.items?.length && checkout?.order?.order_status === "Confirmed") {
+        items.value = checkout.items;
+        stokvel.value = checkout.stokvel || null;
+        order.value = checkout.order;
+        syncState();
+      } else {
+        clearCartState();
+      }
+    } else {
+      syncState();
+    }
   } catch (err) {
     console.error("Failed to load group basket:", err);
-    error.value = err.response?.data?.message || "Unable to load your group basket.";
+
+    // If the backend is temporarily unavailable, retain the last checkout
+    // snapshot so navigating back does not destroy the user's visible cart.
+    const checkout = readCheckoutState();
+    if (checkout?.items?.length && checkout?.order?.order_status === "Confirmed") {
+      items.value = checkout.items;
+      stokvel.value = checkout.stokvel || null;
+      order.value = checkout.order;
+      syncState();
+    } else {
+      error.value = err.response?.data?.message || "Unable to load your group basket.";
+    }
   } finally { loading.value = false; }
 }
 
@@ -61,10 +87,8 @@ async function confirmOrder() {
 }
 function continueShopping() { router.push("/catalogue"); }
 function formatMoney(value) { return `R ${Number(value || 0).toFixed(2)}`; }
-function handleExternalCartState(event) { if (!event.detail) return; if (event.detail.items) items.value = event.detail.items; }
 
 onMounted(loadCart);
-onUnmounted(() => {});
 </script>
 
 <template>
