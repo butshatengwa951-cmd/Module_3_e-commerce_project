@@ -1,52 +1,135 @@
 <template>
   <main class="hub-page">
     <div class="hub-wrap">
-      <header class="hub-hero glass">
-        <div><span class="eyebrow">GROUP HUB · STOCKWELL</span><h1>{{ dashboard?.stokvel?.stokvel_name || 'Your Group' }}</h1><p>One place for your group to manage contributions, make buying decisions, shop together and follow every order.</p><div class="hero-actions"><RouterLink class="primary-btn" to="/catalogue">Shop together →</RouterLink><RouterLink class="secondary-btn" to="/order-history">Orders & delivery</RouterLink></div></div>
-        <div class="hero-orb"><span>GROUP</span><strong>HUB</strong></div>
+      <header class="hero glass">
+        <div>
+          <span class="eyebrow">GROUP HUB · STOCKWELL</span>
+          <h1>{{ dashboard?.stokvel?.stokvel_name || 'Your Group' }}</h1>
+          <p>Manage contributions, group purchase decisions, approved spending and delivery from one place.</p>
+          <div class="actions">
+            <RouterLink class="primary" to="/proposals">View group decisions →</RouterLink>
+            <RouterLink class="secondary" to="/catalogue">Shop together</RouterLink>
+          </div>
+        </div>
+        <div class="orb"><span>GROUP</span><strong>HUB</strong></div>
       </header>
 
       <div v-if="loading" class="state glass">Loading your Group Hub...</div>
       <div v-else-if="error" class="state glass error">{{ error }}</div>
+
       <template v-else-if="dashboard">
         <section class="quick-grid">
-          <RouterLink class="quick-card glass" to="/catalogue"><b>SHOP TOGETHER</b><small>Compare suppliers and build the group basket.</small><strong>→</strong></RouterLink>
-          <RouterLink class="quick-card glass" to="/payment"><b>CONTRIBUTE</b><small>Add money to the group's shared spending pool.</small><strong>+</strong></RouterLink>
-          <RouterLink class="quick-card glass" to="/order-history"><b>ORDERS & DELIVERY</b><small>Review purchases and open delivery tracking.</small><strong>→</strong></RouterLink>
-          <RouterLink class="quick-card glass" to="/suggestions"><b>GROUP SUGGESTIONS</b><small>Share ideas and see what the group needs.</small><strong>→</strong></RouterLink>
+          <RouterLink class="quick-card glass" to="/payment"><b>CONTRIBUTE</b><small>Add money to the shared Stokvel wallet through PayFast.</small><strong>+</strong></RouterLink>
+          <RouterLink class="quick-card glass" to="/proposals"><b>GROUP DECISIONS</b><small>Review proposals and vote before group money is spent.</small><strong>→</strong></RouterLink>
+          <RouterLink class="quick-card glass" to="/cart"><b>GROUP BASKET</b><small>Prepare a basket and submit it as a purchase proposal.</small><strong>→</strong></RouterLink>
+          <RouterLink class="quick-card glass" to="/order-history"><b>ORDERS & DELIVERY</b><small>Follow authorised group purchases through delivery.</small><strong>→</strong></RouterLink>
         </section>
 
         <section class="overview-grid">
-          <article class="wallet-feature glass"><span class="section-kicker">SHARED WALLET</span><div class="wallet-head"><div><span>AVAILABLE</span><strong>R {{ money(dashboard.wallet.available_balance) }}</strong></div><div class="wallet-ring">{{ walletPercent }}%</div></div><div class="progress"><span :style="{width:walletPercent+'%'}"></span></div><div class="wallet-meta"><span>R {{ money(dashboard.wallet.paid_contributions) }} contributed</span><span>R {{ money(dashboard.wallet.spent_amount) }} spent</span></div><p>Recorded contributions less group spending. Use this view to understand what your group can currently spend together.</p><RouterLink class="text-btn" to="/payment">Add a contribution →</RouterLink></article>
-          <article class="goal-card glass"><span class="section-kicker">GROUP PROGRESS</span><h2>{{ goal ? 'Shared funding goal' : 'Set a group goal' }}</h2><p>{{ goal?.deadline ? `Target deadline: ${formatDate(goal.deadline)}` : 'A shared target makes saving and shopping decisions easier to coordinate.' }}</p><div class="goal-numbers"><strong>R {{ money(goalCurrent) }}</strong><span>of R {{ money(goalTarget) }}</span></div><div class="progress"><span :style="{width:goalPercent+'%'}"></span></div><div class="wallet-meta"><span>{{ goalPercent }}% funded</span><span>{{ memberCount }} members</span></div><button v-if="canManageGoal" class="outline-btn" @click="showGoal=true">Set group goal</button></article>
+          <article class="wallet glass">
+            <span class="label">SHARED WALLET</span>
+            <div class="wallet-head"><div><small>AVAILABLE TO THE GROUP</small><strong>R {{ money(dashboard.wallet.available_balance) }}</strong></div><div class="ring">{{ walletPercent }}%</div></div>
+            <div class="progress"><span :style="{width: walletPercent + '%'}"></span></div>
+            <div class="meta"><span>R {{ money(dashboard.wallet.paid_contributions) }} contributed</span><span>R {{ money(dashboard.wallet.spent_amount) }} spent</span></div>
+            <p>Wallet funds are not spent from the shopping cart. An approved proposal must be authorised by a Stokvel officer before funds are released.</p>
+            <RouterLink class="text" to="/payment">Add a contribution →</RouterLink>
+          </article>
+
+          <article class="goal glass">
+            <span class="label">GROUP PROGRESS</span>
+            <h2>{{ goal ? 'Shared funding goal' : 'Set a group goal' }}</h2>
+            <p>{{ goal?.deadline ? `Target deadline: ${formatDate(goal.deadline)}` : 'Set a target so members can coordinate saving and group purchases.' }}</p>
+            <div class="goal-numbers"><strong>R {{ money(goalCurrent) }}</strong><span>of R {{ money(goalTarget) }}</span></div>
+            <div class="progress"><span :style="{width: goalPercent + '%'}"></span></div>
+            <div class="meta"><span>{{ goalPercent }}% funded</span><span>{{ memberCount }} members</span></div>
+            <button v-if="canManageGoal" class="secondary full" @click="showGoal = true">Manage group goal</button>
+          </article>
         </section>
 
-        <section class="section-block"><div class="section-title"><div><span class="section-kicker">GROUP DECISIONS</span><h2>Decide what to buy.</h2><p>Vote on products before heading to the catalogue.</p></div><RouterLink class="text-btn" to="/catalogue">Browse products →</RouterLink></div><div v-if="categories.length" class="vote-grid"><article v-for="category in categories.slice(0,3)" :key="category.category" class="vote-card glass"><div class="vote-top"><b>{{ category.category }}</b><small>{{ category.options?.length || 0 }} options</small></div><button v-for="option in (category.options||[]).slice(0,3)" :key="option.product_id" class="vote-option" :class="{selected:option.user_voted}" @click="vote(option.product_id)"><span><b>{{ option.product_name }}</b><small>{{ option.vote_count || 0 }} group votes</small></span><i>{{ option.user_voted?'✓':'+' }}</i></button></article></div><div v-else class="empty glass">Product voting will appear here when products and group categories are available.</div></section>
+        <section class="decision glass">
+          <div class="section-title"><div><span class="label">THE PURCHASE FLOW</span><h2>How group spending works.</h2><p>StockWell separates shopping from the decision to spend shared funds.</p></div><RouterLink class="text" to="/proposals">Open proposals →</RouterLink></div>
+          <div class="flow">
+            <div><b>01</b><strong>Contribute</strong><small>Members fund the shared wallet.</small></div>
+            <div><b>02</b><strong>Propose</strong><small>A basket becomes a purchase proposal.</small></div>
+            <div><b>03</b><strong>Vote</strong><small>Members approve or reject the proposal.</small></div>
+            <div><b>04</b><strong>Authorise</strong><small>Chairperson or treasurer releases funds.</small></div>
+            <div><b>05</b><strong>Deliver</strong><small>The authorised order moves to delivery.</small></div>
+          </div>
+        </section>
 
         <section class="activity-grid">
-          <article class="activity-panel glass"><div class="section-title compact"><div><span class="section-kicker">MEMBER ACTIVITY</span><h2>Who's contributing.</h2></div><span class="count-pill">{{ dashboard.contributions.length }} records</span></div><div v-if="dashboard.contributions.length"><div v-for="item in dashboard.contributions.slice(0,6)" :key="item.contribution_id" class="feed-row"><span class="avatar">{{ initials(item.full_name) }}</span><div><b>{{ item.full_name }}</b><small>{{ formatDate(item.contribution_date) }}</small></div><strong>R {{ money(item.amount) }}</strong></div></div><div v-else class="empty-inline">No contributions recorded yet.</div></article>
-          <article class="activity-panel glass"><div class="section-title compact"><div><span class="section-kicker">GROUP MEMBERS</span><h2>Contributors.</h2></div><span class="count-pill">{{ memberCount }}</span></div><div v-for="member in dashboard.members.slice(0,6)" :key="member.user_id" class="feed-row"><span class="avatar">{{ initials(member.full_name) }}</span><div><b>{{ member.full_name }}</b><small>{{ member.role }}</small></div><strong>R {{ money(member.paid_contributions) }}</strong></div></article>
+          <article class="panel glass">
+            <div class="section-title compact"><div><span class="label">MEMBER ACTIVITY</span><h2>Recent contributions.</h2></div><span class="pill">{{ dashboard.contributions.length }} records</span></div>
+            <div v-if="dashboard.contributions.length">
+              <div v-for="item in dashboard.contributions.slice(0,6)" :key="item.contribution_id" class="row"><span class="avatar">{{ initials(item.full_name) }}</span><div><b>{{ item.full_name }}</b><small>{{ formatDate(item.contribution_date) }} · {{ item.payment_status }}</small></div><strong>R {{ money(item.amount) }}</strong></div>
+            </div>
+            <div v-else class="empty-inline">No contributions recorded yet.</div>
+          </article>
+          <article class="panel glass">
+            <div class="section-title compact"><div><span class="label">GROUP MEMBERS</span><h2>Contributors.</h2></div><span class="pill">{{ memberCount }}</span></div>
+            <div v-for="member in dashboard.members.slice(0,6)" :key="member.user_id" class="row"><span class="avatar">{{ initials(member.full_name) }}</span><div><b>{{ member.full_name }}</b><small>{{ member.role }}</small></div><strong>R {{ money(member.paid_contributions) }}</strong></div>
+          </article>
         </section>
-
-        <section class="journey glass"><div><span class="section-kicker">GROUP SHOPPING JOURNEY</span><h2>Contribution to doorstep.</h2></div><nav><RouterLink to="/payment">01 · Contribute</RouterLink><RouterLink to="/member-dashboard">02 · Vote</RouterLink><RouterLink to="/catalogue">03 · Compare & shop</RouterLink><RouterLink to="/cart">04 · Group basket</RouterLink><RouterLink to="/order-history">05 · Track delivery</RouterLink></nav></section>
       </template>
 
-      <div v-if="showGoal" class="modal-backdrop" @click.self="showGoal=false"><form class="modal glass" @submit.prevent="saveGoal"><button class="close" type="button" @click="showGoal=false">×</button><span class="section-kicker">GROUP GOAL</span><h2>Set a shared target.</h2><input v-model.number="goalForm.target_amount" type="number" min="1" step="0.01" placeholder="Target amount (R)" required><input v-model="goalForm.deadline" type="date" required><button class="primary-btn full" type="submit" :disabled="saving">{{ saving?'Saving...':'Save goal →' }}</button></form></div>
+      <div v-if="showGoal" class="backdrop" @click.self="showGoal=false">
+        <form class="modal glass" @submit.prevent="saveGoal">
+          <button class="close" type="button" @click="showGoal=false">×</button>
+          <span class="label">GROUP GOAL</span><h2>Set a shared target.</h2>
+          <input v-model.number="goalForm.target_amount" type="number" min="1" step="0.01" placeholder="Target amount (R)" required>
+          <input v-model="goalForm.deadline" type="date" required>
+          <button class="primary full" type="submit" :disabled="saving">{{ saving ? 'Saving...' : 'Save goal →' }}</button>
+        </form>
+      </div>
     </div>
   </main>
 </template>
 
 <script setup>
-import { computed,onMounted,ref } from 'vue';
-import { getMemberDashboard,getStokvelFeatures,saveStokvelGoal,voteForProduct } from '../services/api.js';
-const dashboard=ref(null),features=ref(null),loading=ref(true),error=ref(''),saving=ref(false),showGoal=ref(false);const goalForm=ref({target_amount:null,deadline:''});
-const money=v=>Number(v||0).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});const formatDate=v=>v?new Date(v).toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'}):'—';const initials=v=>String(v||'Member').split(' ').filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();
-const memberCount=computed(()=>dashboard.value?.members?.length||0),categories=computed(()=>features.value?.products||[]),goal=computed(()=>features.value?.goal||null),goalCurrent=computed(()=>Number(dashboard.value?.wallet?.paid_contributions||0)),goalTarget=computed(()=>Number(goal.value?.target_amount||0));const goalPercent=computed(()=>goalTarget.value?Math.min(100,Math.round(goalCurrent.value/goalTarget.value*100)):0);const walletPercent=computed(()=>{const total=Number(dashboard.value?.wallet?.paid_contributions||0),available=Number(dashboard.value?.wallet?.available_balance||0);return total?Math.max(0,Math.min(100,Math.round(available/total*100))):0});const canManageGoal=computed(()=>['admin','chairperson'].includes(String(features.value?.membership?.role||'').toLowerCase()));
-async function load(){loading.value=true;error.value='';try{[dashboard.value,features.value]=await Promise.all([getMemberDashboard(),getStokvelFeatures()])}catch(e){console.error(e);error.value=e.response?.data?.message||'Unable to load your Group Hub.'}finally{loading.value=false}}
-async function saveGoal(){saving.value=true;try{await saveStokvelGoal({targetAmount:goalForm.value.target_amount,deadline:goalForm.value.deadline});showGoal.value=false;await load()}catch(e){alert(e.response?.data?.message||'Goal could not be saved.')}finally{saving.value=false}}
-async function vote(id){try{await voteForProduct(id);features.value=await getStokvelFeatures()}catch(e){alert(e.response?.data?.message||'Vote could not be recorded.')}}onMounted(load);
+import { computed, onMounted, ref } from "vue";
+import { getMemberDashboard, getStokvelFeatures, saveStokvelGoal } from "../services/api.js";
+
+const dashboard = ref(null);
+const features = ref(null);
+const loading = ref(true);
+const error = ref("");
+const saving = ref(false);
+const showGoal = ref(false);
+const goalForm = ref({ target_amount: null, deadline: "" });
+
+const money = (value) => Number(value || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const formatDate = (value) => value ? new Date(value).toLocaleDateString("en-ZA", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+const initials = (value) => String(value || "Member").split(" ").filter(Boolean).slice(0, 2).map((x) => x[0]).join("").toUpperCase();
+const memberCount = computed(() => dashboard.value?.members?.length || 0);
+const goal = computed(() => features.value?.goal || null);
+const goalCurrent = computed(() => Number(dashboard.value?.wallet?.paid_contributions || 0));
+const goalTarget = computed(() => Number(goal.value?.target_amount || 0));
+const goalPercent = computed(() => goalTarget.value ? Math.min(100, Math.round(goalCurrent.value / goalTarget.value * 100)) : 0);
+const walletPercent = computed(() => {
+  const total = Number(dashboard.value?.wallet?.paid_contributions || 0);
+  const available = Number(dashboard.value?.wallet?.available_balance || 0);
+  return total ? Math.max(0, Math.min(100, Math.round(available / total * 100))) : 0;
+});
+const canManageGoal = computed(() => ["CHAIRPERSON", "TREASURER"].includes(String(features.value?.membership?.stokvel_role || "").toUpperCase()));
+
+async function load() {
+  loading.value = true;
+  error.value = "";
+  try { [dashboard.value, features.value] = await Promise.all([getMemberDashboard(), getStokvelFeatures()]); }
+  catch (e) { console.error(e); error.value = e.response?.data?.message || "Unable to load your Group Hub."; }
+  finally { loading.value = false; }
+}
+
+async function saveGoal() {
+  saving.value = true;
+  try { await saveStokvelGoal({ targetAmount: goalForm.value.target_amount, deadline: goalForm.value.deadline }); showGoal.value = false; await load(); }
+  catch (e) { alert(e.response?.data?.message || "Goal could not be saved."); }
+  finally { saving.value = false; }
+}
+
+onMounted(load);
 </script>
 
 <style scoped>
-.hub-page{min-height:100vh;background:var(--sw-page-background);color:var(--sw-page-text)}.hub-wrap{width:min(1180px,calc(100% - 32px));margin:auto;padding:40px 0 80px}.glass{background:var(--sw-glass-light);border:1px solid var(--sw-glass-light-border);box-shadow:var(--sw-glass-shadow-light);backdrop-filter:blur(var(--sw-glass-blur));border-radius:22px}.hub-hero{min-height:330px;padding:45px 50px;display:grid;grid-template-columns:1fr 260px;gap:25px;align-items:center;background:var(--sw-page-gradient);overflow:hidden}.eyebrow,.section-kicker{font:800 10px var(--sw-font-body);letter-spacing:.14em;color:var(--sw-purple-700)}.eyebrow{color:var(--sw-page-text-soft);padding:8px 12px;border:1px solid var(--sw-input-border);border-radius:99px;display:inline-block}.hub-hero h1{font:800 clamp(45px,7vw,76px)/.9 var(--sw-font-heading);letter-spacing:-.07em;margin:20px 0 16px}.hub-hero p{max-width:650px;color:var(--sw-page-text-soft);line-height:1.7}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.primary-btn,.secondary-btn,.outline-btn,.text-btn{font:800 11px var(--sw-font-body);cursor:pointer;text-decoration:none}.primary-btn{display:inline-flex;justify-content:center;padding:13px 18px;border:0;border-radius:10px;background:var(--sw-gold-500);color:#17120a}.secondary-btn,.outline-btn{padding:12px 17px;border:1px solid var(--sw-input-border);border-radius:10px;background:transparent;color:var(--sw-page-text)}.hero-orb{height:230px;width:230px;border:1px solid var(--sw-input-border);border-radius:50%;display:grid;place-items:center;align-content:center;justify-self:center;position:relative}.hero-orb:before{content:'';position:absolute;inset:24px;border:1px solid var(--sw-input-border);border-radius:50%}.hero-orb span,.hero-orb strong{z-index:1}.hero-orb span{font:800 9px var(--sw-font-body);letter-spacing:.15em;color:var(--sw-page-text-soft)}.hero-orb strong{font:800 46px var(--sw-font-heading);color:var(--sw-gold-500)}.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}.quick-card{min-height:108px;padding:18px;display:flex;flex-direction:column;gap:8px;text-align:left;color:var(--sw-page-text);text-decoration:none;cursor:pointer}.quick-card b{font:800 10px var(--sw-font-body);letter-spacing:.08em}.quick-card small{flex:1;color:var(--sw-page-text-soft);font:10px/1.5 var(--sw-font-body)}.quick-card>strong{color:var(--sw-gold-500)}.overview-grid,.activity-grid{display:grid;grid-template-columns:1.3fr .9fr;gap:16px;margin-top:18px}.wallet-feature,.goal-card,.activity-panel{padding:25px}.wallet-head{display:flex;justify-content:space-between;align-items:center;margin-top:20px}.wallet-head span{display:block;color:var(--sw-page-text-soft);font:800 9px var(--sw-font-body);letter-spacing:.12em}.wallet-head strong{display:block;font:800 39px var(--sw-font-heading);margin-top:7px}.wallet-ring{width:72px;height:72px;border-radius:50%;border:7px solid var(--sw-gold-500);display:grid;place-items:center;font:800 12px var(--sw-font-body)}.progress{height:7px;background:rgba(128,128,128,.14);border-radius:99px;overflow:hidden;margin-top:23px}.progress span{height:100%;display:block;background:var(--sw-gold-500);border-radius:inherit}.wallet-meta{display:flex;justify-content:space-between;gap:12px;margin-top:8px;color:var(--sw-page-text-soft);font:9px var(--sw-font-body)}.wallet-feature p,.goal-card p{color:var(--sw-page-text-soft);font:11px/1.6 var(--sw-font-body);margin:22px 0 12px}.text-btn{background:none;border:0;padding:0;color:var(--sw-purple-700)}.goal-card h2{font:800 27px var(--sw-font-heading);margin:12px 0 0}.goal-numbers{display:flex;align-items:end;gap:7px;margin-top:20px}.goal-numbers strong{font:800 25px var(--sw-font-heading)}.goal-numbers span{font:10px var(--sw-font-body);color:var(--sw-page-text-soft)}.section-block{margin-top:42px}.section-title{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:17px}.section-title h2{margin:7px 0 0;font:800 34px var(--sw-font-heading);letter-spacing:-.05em}.section-title p{margin:6px 0 0;color:var(--sw-page-text-soft);font:11px var(--sw-font-body)}.vote-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.vote-card{padding:20px}.vote-top{display:flex;justify-content:space-between;margin-bottom:10px;font:800 9px var(--sw-font-body);letter-spacing:.1em}.vote-top small{color:var(--sw-page-text-soft);letter-spacing:0}.vote-option{width:100%;display:flex;justify-content:space-between;align-items:center;background:transparent;border:0;border-top:1px solid var(--sw-input-border);padding:13px 0;color:var(--sw-page-text);text-align:left;cursor:pointer}.vote-option b,.feed-row b{display:block;font:700 11px var(--sw-font-body)}.vote-option small,.feed-row small{display:block;margin-top:4px;color:var(--sw-page-text-soft);font:9px var(--sw-font-body)}.vote-option i{width:25px;height:25px;border:1px solid var(--sw-input-border);border-radius:50%;display:grid;place-items:center;color:var(--sw-purple-700);font-style:normal}.vote-option.selected i{background:var(--sw-gold-500);border-color:var(--sw-gold-500);color:#111}.activity-grid{margin-top:42px}.section-title.compact{align-items:center;margin-bottom:8px}.section-title.compact h2{font-size:25px}.count-pill{font:800 9px var(--sw-font-body);padding:6px 9px;border-radius:99px;background:rgba(121,93,137,.1);color:var(--sw-purple-700)}.feed-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid var(--sw-input-border)}.feed-row:last-child{border-bottom:0}.avatar{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:rgba(121,93,137,.1);border:1px solid var(--sw-input-border);color:var(--sw-gold-500);font:800 9px var(--sw-font-body)}.feed-row>strong{font:800 11px var(--sw-font-body)}.journey{margin-top:16px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:25px}.journey h2{font:800 25px var(--sw-font-heading);margin:7px 0 0}.journey nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.journey a{padding:11px;border:1px solid var(--sw-input-border);border-radius:10px;text-decoration:none;color:var(--sw-page-text);font:700 9px var(--sw-font-body)}.state,.empty{padding:55px;text-align:center;margin-top:18px;color:var(--sw-page-text-soft)}.error{color:#d86f61}.empty-inline{padding:30px 0;color:var(--sw-page-text-soft);font:11px var(--sw-font-body)}.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:grid;place-items:center;padding:20px}.modal{width:min(430px,100%);padding:28px;position:relative}.modal h2{font:800 30px var(--sw-font-heading);margin:10px 0}.modal input,.modal select{width:100%;box-sizing:border-box;margin-top:10px;padding:12px;border:1px solid var(--sw-input-border);border-radius:9px;background:var(--sw-page-surface);color:var(--sw-page-text);font:11px var(--sw-font-body)}.full{width:100%;margin-top:14px}.close{position:absolute;right:17px;top:15px;border:0;background:transparent;color:var(--sw-page-text);font-size:24px;cursor:pointer}@media(max-width:900px){.quick-grid{grid-template-columns:1fr 1fr}.overview-grid,.activity-grid{grid-template-columns:1fr}.vote-grid{grid-template-columns:1fr}.hub-hero{grid-template-columns:1fr}.hero-orb{display:none}.journey{display:block}.journey nav{margin-top:20px;justify-content:flex-start}}@media(max-width:560px){.hub-wrap{width:calc(100% - 20px);padding-top:20px}.hub-hero{padding:30px 23px}.quick-grid{grid-template-columns:1fr}.wallet-head strong{font-size:31px}.section-title{display:block}.section-title .text-btn{display:inline-block;margin-top:12px}}
+.hub-page{min-height:100vh;background:var(--sw-page-background);color:var(--sw-page-text)}.hub-wrap{width:min(1180px,calc(100% - 32px));margin:auto;padding:40px 0 80px}.glass{background:var(--sw-glass-light);border:1px solid var(--sw-glass-light-border);box-shadow:var(--sw-glass-shadow-light);backdrop-filter:blur(var(--sw-glass-blur));border-radius:22px}.hero{min-height:310px;padding:45px 50px;display:grid;grid-template-columns:1fr 230px;gap:30px;align-items:center;background:var(--sw-page-gradient)}.eyebrow,.label{font:800 10px var(--sw-font-body);letter-spacing:.14em;color:var(--sw-purple-700)}.eyebrow{display:inline-block;padding:8px 12px;border:1px solid var(--sw-input-border);border-radius:99px}.hero h1{font:800 clamp(44px,7vw,74px)/.9 var(--sw-font-heading);letter-spacing:-.07em;margin:20px 0 14px}.hero p,.wallet p,.goal p,.decision p{color:var(--sw-page-text-soft);line-height:1.7}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.primary,.secondary,.text{font:800 11px var(--sw-font-body);text-decoration:none;cursor:pointer}.primary{display:inline-flex;justify-content:center;padding:13px 18px;border:0;border-radius:10px;background:var(--sw-gold-500);color:#17120a}.secondary{padding:12px 17px;border:1px solid var(--sw-input-border);border-radius:10px;background:transparent;color:var(--sw-page-text)}.text{color:var(--sw-purple-700)}.orb{height:210px;width:210px;border:1px solid var(--sw-input-border);border-radius:50%;display:grid;place-items:center;align-content:center;justify-self:center}.orb span{font:800 9px var(--sw-font-body);letter-spacing:.15em;color:var(--sw-page-text-soft)}.orb strong{font:800 45px var(--sw-font-heading);color:var(--sw-gold-500)}.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}.quick-card{min-height:105px;padding:18px;display:flex;flex-direction:column;gap:8px;color:var(--sw-page-text);text-decoration:none}.quick-card b{font:800 10px var(--sw-font-body);letter-spacing:.08em}.quick-card small{flex:1;color:var(--sw-page-text-soft);font:10px/1.5 var(--sw-font-body)}.quick-card strong{color:var(--sw-gold-500)}.overview-grid,.activity-grid{display:grid;grid-template-columns:1.3fr .9fr;gap:16px;margin-top:18px}.wallet,.goal,.panel{padding:25px}.wallet-head{display:flex;justify-content:space-between;align-items:center;margin-top:20px}.wallet-head small{display:block;color:var(--sw-page-text-soft);font:800 9px var(--sw-font-body)}.wallet-head strong{display:block;font:800 38px var(--sw-font-heading);margin-top:7px}.ring{width:68px;height:68px;border-radius:50%;border:7px solid var(--sw-gold-500);display:grid;place-items:center;font:800 12px var(--sw-font-body)}.progress{height:7px;background:rgba(128,128,128,.14);border-radius:99px;overflow:hidden;margin-top:22px}.progress span{height:100%;display:block;background:var(--sw-gold-500)}.meta{display:flex;justify-content:space-between;gap:12px;margin-top:8px;color:var(--sw-page-text-soft);font:9px var(--sw-font-body)}.wallet p,.goal p{font:11px/1.6 var(--sw-font-body);margin:20px 0 12px}.goal h2,.decision h2,.panel h2{font:800 27px var(--sw-font-heading);margin:10px 0}.goal-numbers{display:flex;align-items:end;gap:7px;margin-top:20px}.goal-numbers strong{font:800 25px var(--sw-font-heading)}.goal-numbers span{font:10px var(--sw-font-body);color:var(--sw-page-text-soft)}.full{width:100%;margin-top:15px;box-sizing:border-box}.decision{margin-top:42px;padding:25px}.section-title{display:flex;justify-content:space-between;align-items:end;gap:20px}.section-title.compact{align-items:center}.section-title p{margin:6px 0;color:var(--sw-page-text-soft);font:11px var(--sw-font-body)}.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:22px}.flow>div{padding:17px;border:1px solid var(--sw-input-border);border-radius:14px}.flow b{display:block;color:var(--sw-gold-500);font:800 10px var(--sw-font-body)}.flow strong{display:block;margin-top:9px;font:800 14px var(--sw-font-body)}.flow small{display:block;margin-top:5px;color:var(--sw-page-text-soft);font:10px/1.5 var(--sw-font-body)}.activity-grid{margin-top:18px}.pill{font:800 9px var(--sw-font-body);padding:6px 9px;border-radius:99px;background:rgba(121,93,137,.1);color:var(--sw-purple-700)}.row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid var(--sw-input-border)}.row:last-child{border:0}.avatar{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:rgba(121,93,137,.1);border:1px solid var(--sw-input-border);color:var(--sw-gold-500);font:800 9px var(--sw-font-body)}.row b{display:block;font:700 11px var(--sw-font-body)}.row small{display:block;margin-top:4px;color:var(--sw-page-text-soft);font:9px var(--sw-font-body)}.row>strong{font:800 11px var(--sw-font-body)}.state{padding:55px;text-align:center;margin-top:18px}.error{color:#d86f61}.empty-inline{padding:30px 0;color:var(--sw-page-text-soft);font:11px var(--sw-font-body)}.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:grid;place-items:center;padding:20px}.modal{width:min(430px,100%);padding:28px;position:relative}.modal h2{font:800 30px var(--sw-font-heading);margin:10px 0}.modal input{width:100%;box-sizing:border-box;margin-top:10px;padding:12px;border:1px solid var(--sw-input-border);border-radius:9px;background:var(--sw-page-surface);color:var(--sw-page-text)}.close{position:absolute;right:17px;top:15px;border:0;background:transparent;color:var(--sw-page-text);font-size:24px;cursor:pointer}@media(max-width:900px){.hero{grid-template-columns:1fr}.orb{display:none}.quick-grid{grid-template-columns:1fr 1fr}.overview-grid,.activity-grid{grid-template-columns:1fr}.flow{grid-template-columns:1fr 1fr}}@media(max-width:560px){.hub-wrap{width:calc(100% - 20px);padding-top:20px}.hero{padding:30px 23px}.quick-grid{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.section-title{display:block}.section-title .text{display:inline-block;margin-top:10px}}
 </style>
