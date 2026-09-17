@@ -7,6 +7,7 @@ import PaymentView from "../views/PaymentView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import MemberDashboard from "../views/MemberDashboard.vue";
 import OrderHistoryView from "../views/OrderHistoryView.vue";
+import OrderTrackingView from "../views/OrderTrackingView.vue";
 import AdminProfileView from "../views/AdminProfileView.vue";
 import AdminDashboard from "../views/AdminDashboard.vue";
 import AdminSuggestionsView from "../views/AdminSuggestionsView.vue";
@@ -24,6 +25,7 @@ const routes = [
   { path: "/payment", name: "Payment", component: PaymentView, meta: { requiresAuth: true } },
   { path: "/member-dashboard", name: "MemberDashboard", component: MemberDashboard, meta: { requiresAuth: true } },
   { path: "/order-history", name: "OrderHistory", component: OrderHistoryView, meta: { requiresAuth: true } },
+  { path: "/order-history/:orderId", name: "OrderTracking", component: OrderTrackingView, meta: { requiresAuth: true } },
   { path: "/profile", name: "Profile", component: ProfileView, meta: { requiresAuth: true } },
   { path: "/admin/profile", name: "AdminProfile", component: AdminProfileView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: "/suggestions", name: "Suggestions", component: SuggestionsView, meta: { requiresAuth: true } },
