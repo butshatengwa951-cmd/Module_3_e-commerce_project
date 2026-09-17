@@ -37,13 +37,13 @@
 
           <article class="goal glass">
             <span class="label">GROUP PROGRESS</span>
-            <h2>{{ goal ? 'Shared funding goal' : 'Set a group goal' }}</h2>
-            <p>{{ goal?.deadline ? `Target deadline: ${formatDate(goal.deadline)}` : 'Set a target so members can coordinate saving and group purchases.' }}</p>
+            <h2>Shared funding goal</h2>
+            <p>{{ goal?.deadline ? `Target deadline: ${formatDate(goal.deadline)}` : 'Current group funding progress.' }}</p>
             <div class="goal-numbers"><strong>R {{ money(goalCurrent) }}</strong><span>of R {{ money(goalTarget) }}</span></div>
             <div class="progress"><span :style="{width: goalPercent + '%'}"></span></div>
             <div class="meta"><span>{{ goalPercent }}% funded</span><span>{{ memberCount }} members</span></div>
             <button v-if="canManageGoal" class="secondary full" @click="showGoal = true">Manage group goal</button>
-            <small v-else class="permission-note">Only the Stokvel Treasurer or Chairperson can manage the shared funding goal.</small>
+            <small v-else class="permission-note">View-only group funding progress.</small>
           </article>
         </section>
 
