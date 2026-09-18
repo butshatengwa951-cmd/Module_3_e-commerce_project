@@ -1,1 +1,532 @@
-# StockWell — Collective Purchasing for Stokvels\n\nStockWell is a Vue 3 + Node.js/Express + MySQL application for Stokvel members to contribute to a shared group wallet, shop from a product catalogue, create purchase proposals, vote on group decisions, and complete authorised group orders.\n\n## How StockWell works\n\n```text\nMember\n  ↓\nCatalogue / Cart\n  ↓\nPurchase proposal\n  ↓\nMembers vote\n  ↓\nApproved proposal\n  ↓\nAuthorised Stokvel officer\n  ↓\nWallet + stock checks\n  ↓\nGroup order\n  ↓\nDelivery + order tracking\n```\n\nA normal member does **not** directly spend the shared Stokvel wallet from the cart. The cart feeds the proposal/voting workflow. An approved purchase is then completed through the authorised Stokvel workflow, subject to wallet, stock and order checks.\n\n## Architecture\n\n### Frontend\n- Vue 3\n- Vite\n- Vue Router\n- Pinia\n- Axios\n- Bootstrap\n- Shared StockWell theme, consistency, responsive/mobile and light-mode styling\n\n### Backend\n- Node.js\n- Express 5\n- MySQL 8+ with mysql2\n- JWT authentication\n- bcryptjs password hashing\n- Nodemailer\n- REST API under /api\n\n### Payments\n- PayFast contribution checkout\n- PayFast ITN/webhook handling\n- Source-IP verification\n- Signature verification\n- PayFast validation\n- Amount and merchant validation\n- Idempotent wallet crediting after a confirmed COMPLETE payment\n\nStockWell does not store card details locally. A successful PayFast ITN credits the Stokvel wallet and records the contribution in the wallet transaction/contribution history.\n\n## Roles\n\nStockWell has two separate role layers.\n\n### Company/platform role\nStored in users.role:\n- member\n- admin\n\nThe admin role is protected by backend admin middleware and is used for the company-wide administration area.\n\n### Stokvel role\nStored in stokvel_member_roles.stokvel_role:\n- MEMBER\n- CHAIRPERSON\n- TREASURER\n\nChairperson and Treasurer are Stokvel-specific roles, not company-wide roles.\n\nThe current application model uses **one Stokvel membership per user**.\n\n## Main application features\n\n### Member features\n- Registration, login, logout and password reset\n- Persisted authentication/refresh sessions\n- Home page\n- Product catalogue\n- Product images\n- Search/filtering and catalogue browsing\n- Shopping cart / group basket\n- Supplier-price comparison\n- Stokvel contribution/payment page\n- PayFast contribution checkout\n- Group wallet balance and contribution history\n- Purchase proposals\n- Member voting and group decisions\n- Member/group dashboard\n- Profile and account information\n- Delivery address management\n- Order history\n- Reorder support\n- Delivery tracking\n- Suggestions/feedback\n\n### Admin features\n- Protected admin dashboard\n- Company-wide operational overview\n- User management\n- Stokvel management\n- Product/catalogue management\n- Supplier-price management\n- Company-wide order management\n- Delivery operations/status management\n- Suggestions review\n- Admin profile\n- Administrator audit log\n\n## Project structure\n\n```text\nModule_3_e-commerce_project/\n├── frontend/\n│   ├── src/\n│   │   ├── components/\n│   │   ├── router/\n│   │   ├── services/\n│   │   ├── stores/\n│   │   ├── views/\n│   │   └── assets/styles/\n│   └── package.json\n│\n├── backend/\n│   ├── config/\n│   ├── controllers/\n│   ├── middleware/\n│   ├── models/\n│   ├── routes/\n│   ├── scripts/\n│   ├── sql/\n│   ├── utils/\n│   ├── server.js\n│   └── package.json\n│\n└── README.md\n```\n\n## Installation\n\n### Prerequisites\n- Node.js 18+\n- MySQL 8+\n- Git\n\n### Frontend\n```bash\ncd frontend\nnpm install\nnpm run dev\n```\nFrontend development server: http://localhost:5173\n\n### Backend\n```bash\ncd backend\nnpm install\nnpm run dev\n```\nBackend development server: http://localhost:4040\n\nThe frontend API service uses VITE_API_URL when supplied. Otherwise it uses the local backend at http://localhost:4040.\n\n## Environment configuration\n\nCreate backend/.env locally. Do **not** commit real credentials, database passwords, JWT secrets, PayFast secrets, or private certificates.\n\nDatabase configuration uses: DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT, DB_SSL, DB_SSL_CA_PATH, DB_CONNECTION_LIMIT and DB_CONNECT_TIMEOUT.\n\nThe API also uses PORT, FRONTEND_URL and TRUST_PROXY.\n\nPayFast configuration is required for real/sandbox contribution checkout and ITN processing. Keep merchant credentials and related secrets in backend/.env.\n\nFor Aiven/MySQL SSL deployments, set DB_SSL=true and provide the appropriate CA certificate/path. When the API is behind a trusted reverse proxy, configure TRUST_PROXY correctly so PayFast source-IP validation can use the real client IP.\n\n## Database setup\n\nThe live Aiven database must **not** be rebuilt from an old destructive bootstrap.\n\nUse backend/sql/README.md as the authoritative database migration guide. The current integrated migration path includes:\n\n1. integration_hardening.sql\n2. stokvel_delivery_addresses.sql\n3. final_hardening.sql\n4. auth_sessions.sql\n\nAdditional SQL files may exist for specific feature/data migrations; do not run old destructive SQL against the live database without checking its purpose and migration order first.\n\nThe current schema supports the integrated Stokvel role model, wallet/contribution flow, proposals/voting, delivery addresses, orders, authentication sessions and administration features.\n\n## PayFast payment flow\n\n1. The authenticated member enters a contribution amount.\n2. StockWell creates a PayFast payment record with a unique m_payment_id.\n3. The member is sent to PayFast checkout.\n4. PayFast sends an ITN to POST /api/payment/payfast/notify.\n5. StockWell verifies the source IP, signature, PayFast validation, merchant ID and amount.\n6. Only a confirmed COMPLETE payment credits the Stokvel wallet.\n7. StockWell records the wallet transaction and contribution.\n8. Duplicate ITNs do not credit the wallet twice.\n\nThe ITN endpoint must remain publicly reachable by PayFast and must not require the normal JWT authentication middleware.\n\n## API areas\n\nThe backend exposes API groups for:\n- /api/auth\n- /api/stokvels\n- /api/stokvel-features\n- /api/stokvel-proposals\n- /api/stokvel-addresses\n- /api/users\n- /api/products\n- /api/cart\n- /api/orders\n- /api/reorder\n- /api/payment\n- /api/admin\n- /api/suggestions\n\nHealth endpoints:\n- GET /\n- GET /health\n\n## Testing\n\nBackend test scripts include:\n```bash\nnpm test\nnpm run test:auth\nnpm run test:governance\n```\nRun these from the backend directory.\n\n## Responsive design\n\nThe frontend includes shared responsive/mobile styling rather than relying only on individual page styles. Catalogue image containment and mobile layouts are handled through the shared style system so the catalogue, cart, dashboards and other application pages remain usable on smaller screens.\n\n## Security and data handling\n- Passwords are hashed with bcryptjs.\n- Authentication uses JWTs with persisted refresh-session storage.\n- Admin endpoints require the admin role.\n- PayFast ITNs are independently validated.\n- Card details are not stored by StockWell.\n- Database credentials and payment secrets belong in environment variables.\n- Production deployments should use HTTPS and correctly configured proxy/SSL settings.\n\n## Legacy SQL\n\nDo not use superseded/destructive SQL from older branches to rebuild the live Aiven database. The integrated migration policy and current role model are documented in backend/sql/README.md.\n\n## Repository workflow\n\nThe repository contains multiple development branches. Changes intended for the integrated application should be made against the agreed integration branch and verified before being promoted to main.
+# StockWell
+
+> **Collective purchasing and Stokvel management platform**
+
+StockWell is a full-stack e-commerce application built for Stokvels. It allows members to contribute money to a shared wallet, browse products, compare supplier prices, build a group basket, submit purchase proposals, vote on purchases, and manage deliveries and orders.
+
+---
+
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [How StockWell Works](#how-stockwell-works)
+- [Key Features](#key-features)
+- [Roles](#roles)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Environment Configuration](#environment-configuration)
+- [Database Setup](#database-setup)
+- [Payment Flow](#payment-flow)
+- [API Structure](#api-structure)
+- [Testing](#testing)
+- [Responsive Design](#responsive-design)
+- [Security](#security)
+- [Development Workflow](#development-workflow)
+
+---
+
+## Project Overview
+
+StockWell combines **e-commerce, Stokvel governance and group payments** into one application.
+
+The main purchasing workflow is:
+
+```text
+Member
+   |
+   v
+Browse Catalogue
+   |
+   v
+Add Products to Cart
+   |
+   v
+Create Purchase Proposal
+   |
+   v
+Members Vote
+   |
+   v
+Proposal Approved
+   |
+   v
+Authorised Stokvel Officer
+   |
+   +---- Check Wallet
+   +---- Check Stock
+   |
+   v
+Confirm Group Order
+   |
+   v
+Delivery & Tracking
+```
+
+Contributions are handled separately through the PayFast payment flow described in the **Payment Flow** section.
+
+---
+
+## How StockWell Works
+
+### 1. Members contribute
+
+Members can make contributions through PayFast checkout. When PayFast confirms the transaction, StockWell updates the shared Stokvel wallet and records the contribution.
+
+### 2. Members shop
+
+Members browse the product catalogue, view product images, compare supplier prices, and add products to the group basket.
+
+### 3. Members propose purchases
+
+The cart feeds into the purchase-proposal system. An ordinary member does not directly spend the shared Stokvel wallet from the cart.
+
+### 4. Members vote
+
+Members review proposals and vote on whether the group should make the purchase.
+
+### 5. Approved purchases are processed
+
+Once a proposal is approved, the authorised Stokvel workflow checks the wallet, stock and order requirements before the group order is processed.
+
+### 6. Orders are fulfilled
+
+Orders can then move through delivery, tracking and order-history functionality.
+
+---
+
+## Key Features
+
+### Member Features
+
+- Registration, login and logout
+- Password reset
+- Persisted authentication sessions
+- Product catalogue and search
+- Product filtering
+- Product images
+- Shopping cart / group basket
+- Supplier-price comparison
+- Stokvel contributions
+- PayFast contribution checkout
+- Shared Stokvel wallet
+- Contribution history
+- Purchase proposals
+- Member voting
+- Group decision workflow
+- Member dashboard
+- Profile management
+- Delivery address management
+- Order history
+- Reorder functionality
+- Delivery tracking
+- Suggestions and feedback
+
+### Admin Features
+
+- Protected admin dashboard
+- Company-wide operational overview
+- User management
+- Stokvel management
+- Product and catalogue management
+- Supplier-price management
+- Company-wide order management
+- Delivery management
+- Suggestions review
+- Admin profile
+- Administrator audit log
+
+---
+
+## Roles
+
+StockWell has two separate role systems.
+
+### Platform Role
+
+Stored in `users.role`.
+
+| Role | Purpose |
+|---|---|
+| `member` | Normal StockWell user |
+| `admin` | Company-wide administration |
+
+### Stokvel Role
+
+Stored in `stokvel_member_roles.stokvel_role`.
+
+| Role | Purpose |
+|---|---|
+| `MEMBER` | Standard Stokvel member |
+| `CHAIRPERSON` | Stokvel leadership and approval responsibilities |
+| `TREASURER` | Stokvel financial responsibilities |
+
+The platform `admin` role and the Stokvel roles are separate. The current application model uses **one Stokvel membership per user**.
+
+---
+
+## Technology Stack
+
+### Frontend
+
+- Vue 3
+- Vite
+- Vue Router
+- Pinia
+- Axios
+- Bootstrap
+- Shared responsive/mobile styling
+- Light/dark interface styling
+
+### Backend
+
+- Node.js
+- Express 5
+- MySQL 8+
+- mysql2
+- JWT authentication
+- bcryptjs
+- Nodemailer
+- REST API
+
+### Payments
+
+- PayFast Sandbox / PayFast checkout
+- PayFast ITN notifications
+- Source-IP verification
+- Signature verification
+- PayFast validation
+- Merchant and amount validation
+- Idempotent wallet crediting
+
+---
+
+## Project Structure
+
+```text
+Module_3_e-commerce_project/
+|
++-- frontend/
+|   +-- src/
+|   |   +-- components/
+|   |   +-- router/
+|   |   +-- services/
+|   |   +-- stores/
+|   |   +-- views/
+|   |   +-- assets/
+|   |       +-- styles/
+|   +-- package.json
+|
++-- backend/
+|   +-- config/
+|   +-- controllers/
+|   +-- middleware/
+|   +-- models/
+|   +-- routes/
+|   +-- scripts/
+|   +-- sql/
+|   +-- utils/
+|   +-- server.js
+|   +-- package.json
+|
++-- README.md
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+- MySQL 8+
+- Git
+
+### Clone the repository
+
+```bash
+git clone https://github.com/butshatengwa951-cmd/Module_3_e-commerce_project.git
+cd Module_3_e-commerce_project
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend development server:
+
+`http://localhost:5173`
+
+### Backend
+
+Open a second terminal:
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+Backend development server:
+
+`http://localhost:4040`
+
+The frontend API service uses `VITE_API_URL` when configured. Otherwise it uses the local backend at `http://localhost:4040`.
+
+---
+
+## Environment Configuration
+
+Create:
+
+```text
+backend/.env
+```
+
+Do **not** commit real credentials, database passwords, JWT secrets, PayFast credentials or private certificates.
+
+### Database
+
+```text
+DB_HOST
+DB_USER
+DB_PASSWORD
+DB_NAME
+DB_PORT
+DB_SSL
+DB_SSL_CA_PATH
+DB_CONNECTION_LIMIT
+DB_CONNECT_TIMEOUT
+```
+
+### Server
+
+```text
+PORT
+FRONTEND_URL
+TRUST_PROXY
+```
+
+### PayFast
+
+Configure the required PayFast merchant and integration values in `backend/.env` for sandbox or production use.
+
+For Aiven/MySQL SSL deployments, configure `DB_SSL=true` and provide the required CA certificate. If the API is behind a trusted reverse proxy, configure `TRUST_PROXY` correctly so source-IP validation works as intended.
+
+---
+
+## Database Setup
+
+The live Aiven database must **not** be rebuilt using old destructive bootstrap SQL.
+
+Use:
+
+```text
+backend/sql/README.md
+```
+
+as the authoritative migration guide.
+
+The current integrated migration order is:
+
+1. `integration_hardening.sql`
+2. `stokvel_delivery_addresses.sql`
+3. `final_hardening.sql`
+4. `auth_sessions.sql`
+
+Always check the migration documentation before applying additional SQL files to an existing database.
+
+---
+
+## Payment Flow
+
+StockWell uses **PayFast** for Stokvel contributions.
+
+A successful payment is not treated as complete just because the member reaches a PayFast success page. The backend waits for and validates the PayFast **ITN (Instant Transaction Notification)** before changing the group's financial records.
+
+### Payment lifecycle
+
+```text
+Member enters contribution amount
+             |
+             v
+StockWell creates payment record
+             |
+             v
+Unique m_payment_id generated
+             |
+             v
+Member redirected to PayFast
+             |
+             v
+PayFast processes payment
+             |
+             v
+PayFast sends ITN
+POST /api/payment/payfast/notify
+             |
+             v
+StockWell validates notification
+             |
+             +---- Source IP
+             +---- Signature
+             +---- PayFast validation
+             +---- Merchant ID
+             +---- Payment amount
+             |
+             v
+Transaction confirmed COMPLETE
+             |
+             +-------------------+
+             |                   |
+             v                   v
+       Credit wallet      Record contribution
+             |                   |
+             +---------+---------+
+                       |
+                       v
+                Wallet transaction
+```
+
+### Payment lifecycle explained
+
+1. The authenticated member enters a contribution amount.
+2. StockWell creates a PayFast payment record with a unique `m_payment_id`.
+3. The member is redirected to PayFast checkout.
+4. PayFast processes the payment.
+5. PayFast sends an ITN to `POST /api/payment/payfast/notify`.
+6. StockWell verifies the source IP, signature, PayFast validation result, merchant ID and payment amount.
+7. Only a confirmed `COMPLETE` payment is allowed to credit the Stokvel wallet.
+8. StockWell records the wallet transaction and contribution.
+9. Duplicate ITNs are handled idempotently so the wallet is not credited twice.
+
+The ITN endpoint must remain publicly reachable by PayFast, so it must **not** be protected by the normal JWT authentication middleware.
+
+StockWell does not store card details locally.
+
+---
+
+## API Structure
+
+| Area | Endpoint |
+|---|---|
+| Authentication | `/api/auth` |
+| Stokvels | `/api/stokvels` |
+| Stokvel features | `/api/stokvel-features` |
+| Proposals | `/api/stokvel-proposals` |
+| Addresses | `/api/stokvel-addresses` |
+| Users | `/api/users` |
+| Products | `/api/products` |
+| Cart | `/api/cart` |
+| Orders | `/api/orders` |
+| Reorders | `/api/reorder` |
+| Payments | `/api/payment` |
+| Administration | `/api/admin` |
+| Suggestions | `/api/suggestions` |
+
+### Health endpoints
+
+```text
+GET /
+GET /health
+```
+
+---
+
+## Testing
+
+Run backend tests from the `backend` directory:
+
+```bash
+npm test
+npm run test:auth
+npm run test:governance
+```
+
+When testing PayFast, verify the complete flow:
+
+- PayFast reports the payment successfully.
+- The StockWell ITN is received.
+- The payment is marked correctly.
+- The Stokvel wallet is credited.
+- The contribution is recorded.
+- A duplicate notification does not create another wallet credit.
+
+---
+
+## Responsive Design
+
+StockWell includes shared responsive styling across the application.
+
+The responsive work covers:
+
+- Mobile navigation
+- Catalogue layouts
+- Product images
+- Shopping cart
+- Dashboards
+- Forms
+- Tables and cards
+- Admin pages
+- Smaller-screen spacing and controls
+
+Product images are styled consistently so catalogue products also display correctly in views such as the cart and other product screens.
+
+---
+
+## Security
+
+StockWell applies several security measures:
+
+- Passwords are hashed with bcryptjs.
+- JWT authentication protects authenticated API operations.
+- Refresh sessions are persisted.
+- Admin endpoints require the admin role.
+- PayFast ITNs are independently validated.
+- Payment processing is idempotent.
+- Card details are not stored by StockWell.
+- Database credentials and payment secrets are stored in environment variables.
+- Production deployments should use HTTPS.
+- Database SSL should be enabled where required.
+- Reverse-proxy configuration must be correct for PayFast IP validation.
+
+---
+
+## Development Workflow
+
+The repository contains multiple development branches.
+
+For integrated application changes:
+
+1. Work on the agreed integration branch.
+2. Test frontend and backend changes together.
+3. Verify database migrations before applying them.
+4. Test payment and wallet changes end-to-end.
+5. Confirm mobile/responsive behaviour.
+6. Commit the completed change.
+7. Promote verified work to `main`.
+
+---
+
+## Important Database Warning
+
+Do **not** use superseded destructive SQL from older branches to rebuild the live Aiven database.
+
+The current database migration path and schema guidance are documented in:
+
+```text
+backend/sql/README.md
+```
+
+---
+
+## Project Status
+
+StockWell is an integrated full-stack coursework project combining:
+
+**E-commerce + Stokvel Governance + Shared Wallet + PayFast Payments + Orders + Delivery + Administration**
