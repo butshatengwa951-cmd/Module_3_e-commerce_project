@@ -131,39 +131,93 @@ At checkout, the member reviews the selected products, quantities, supplier pric
 When a member wants the Stokvel to purchase the items in the cart:
 
 1. The member adds the required products to the cart.
-2. The member reviews quantities, prices and the total.
+2. The member reviews quantities, supplier prices and the total.
 3. The member starts the group purchase/proposal process.
-4. StockWell creates a proposal containing the requested purchase details.
-5. The proposal becomes available to the relevant Stokvel members for review and voting.
+4. StockWell creates the proposal in **VOTING** status.
+5. The proposal has a voting deadline of 48 hours.
+6. The proposal is made available to the Stokvel members for review and voting.
+
+### How the voting system works
+
+The voting system uses a **strict majority of the current Stokvel membership**.
+
+A proposal requires **more than half of all current Stokvel members to vote APPROVE** before the Chairperson can approve it. The calculation is:
+
+```text
+Required approval votes = floor(total members / 2) + 1
+```
+
+Examples:
+
+| Stokvel members | Minimum APPROVE votes |
+|---:|---:|
+| 3 | 2 |
+| 4 | 3 |
+| 5 | 3 |
+| 6 | 4 |
+| 7 | 4 |
+| 10 | 6 |
+
+The proposal must also have **more APPROVE votes than REJECT votes**. A normal member cannot perform the Chairperson approval action, and a Chairperson cannot approve a proposal unless the required majority has been reached.
+
+Each member can cast one vote per proposal. If a member changes their vote while voting is open, the existing vote is updated rather than creating another vote for that member.
+
+### Who does what?
+
+```text
+MEMBER
+  |
+  +--> Add products to cart
+  |
+  +--> Create purchase proposal
+  |
+  +--> Review / vote APPROVE or REJECT
+  |
+  v
+MAJORITY REACHED
+  |
+  v
+CHAIRPERSON
+  |
+  +--> Formally approves proposal
+  |
+  v
+APPROVED
+  |
+  v
+TREASURER
+  |
+  +--> Authorises purchase
+  +--> Checks wallet balance
+  +--> Checks product stock
+  +--> Releases group wallet funds
+  |
+  v
+ORDERED
+  |
+  v
+Delivery & order tracking
+```
 
 ### Approving a group proposal
 
-```text
-Proposal created
-      |
-      v
-Members review proposal
-      |
-      v
-Members vote
-      |
-      v
-Approval requirements satisfied
-      |
-      v
-Proposal approved
-      |
-      v
-Authorised purchase workflow
-      |
-      +---- Check wallet balance
-      +---- Check stock / order details
-      |
-      v
-Group order can proceed
-```
+The governance chain is deliberately separated:
 
-The proposal process provides a governance step between **adding products to the cart** and **using the shared Stokvel funds**. Once the proposal satisfies the application's approval requirements, the authorised Stokvel workflow can continue with wallet, stock and order checks before the group order is processed.
+1. **Any Stokvel member** can create a purchase proposal from the group basket.
+2. **Stokvel members** review the proposal and vote APPROVE or REJECT.
+3. The proposal must obtain a **strict majority of the current Stokvel membership** before it can be approved.
+4. The **Chairperson** then performs the formal proposal approval.
+5. The proposal changes from **VOTING** to **APPROVED**.
+6. The **Treasurer** then authorises the approved purchase.
+7. The Treasurer must be a different person from the Chairperson.
+8. During authorisation, StockWell checks product stock and the Stokvel wallet balance.
+9. If those checks pass, the order is created, the wallet is debited, stock is reduced, delivery records are created, and the proposal changes to **ORDERED**.
+
+This means the process is not simply **cart -> checkout -> payment**. It is a governed group-purchasing workflow:
+
+**Cart -> Proposal -> Member Voting -> Majority -> Chairperson Approval -> Treasurer Authorisation -> Wallet/Stock Checks -> Order -> Delivery.**
+
+The proposal process therefore provides a governance step between **adding products to the cart** and **using the shared Stokvel funds**.
 
 ---
 
