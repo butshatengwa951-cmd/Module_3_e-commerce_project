@@ -300,12 +300,15 @@ async function syncCloudBasket() {
   try {
     const response = await getCart();
     const quantities = {};
-    basketCount.value = (response.items || []).reduce((total, item) => {
+    const cartItems = Array.isArray(response.items) ? response.items : [];
+    // The basket badge counts distinct cart lines, not units.
+    // Example: 10 Huletts Sugar = 1 item in the cart.
+    basketCount.value = cartItems.length;
+    cartItems.forEach((item) => {
       const quantity = Number(item.quantity || 0);
       const productId = getCartProductId(item);
       if (productId != null) quantities[productId] = (quantities[productId] || 0) + quantity;
-      return total + quantity;
-    }, 0);
+    });
     basketQuantities.value = quantities;
     localStorage.setItem("basketCount", String(basketCount.value));
   } catch (error) {
@@ -516,7 +519,7 @@ async function addProductToBasket(product, supplier) {
     quantity,
   });
   await syncCloudBasket();
-  window.dispatchEvent(new CustomEvent("basket-updated", { detail: basketCount.value }));
+  window.dispatchEvent(new CustomEvent("basket-updated", { detail: { itemCount: basketCount.value } }));
   showBasketMessage(`${quantity} × ${product.product_name} added from ${supplier.supplier_name} at R${Number(supplier.price).toFixed(2)} each.`);
 }
 
