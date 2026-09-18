@@ -11,21 +11,28 @@ function safeParse(value, fallback = null) {
 }
 
 export function readCartState() {
-  return safeParse(localStorage.getItem(CART_STORAGE_KEY), {
-    itemCount: Number(localStorage.getItem(LEGACY_COUNT_KEY) || 0),
+  const stored = safeParse(localStorage.getItem(CART_STORAGE_KEY), null);
+  if (stored && Array.isArray(stored.items)) {
+    return {
+      ...stored,
+      itemCount: stored.items.length,
+    };
+  }
+
+  return {
+    itemCount: 0,
     total: 0,
     order: null,
     items: [],
     stokvel: null,
-  });
+  };
 }
 
 export function saveCartState({ items = [], order = null, stokvel = null } = {}) {
   const normalizedItems = Array.isArray(items) ? items : [];
-  const itemCount = normalizedItems.reduce(
-    (sum, item) => sum + Number(item.quantity || 0),
-    0,
-  );
+  // The cart badge counts item lines, not individual units.
+  // Example: 10 bags of Huletts Sugar = 1 cart item.
+  const itemCount = normalizedItems.length;
   const total = normalizedItems.reduce(
     (sum, item) => sum + Number(item.subtotal || 0),
     0,
