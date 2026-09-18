@@ -736,30 +736,41 @@ onUnmounted(() => {
 
 .basket-summary{
   min-width:190px;
-  padding:20px;
+  padding:17px 18px;
+  display:grid;
+  align-content:center;
+  gap:3px;
   background:var(--sw-page-surface);
   border:1px solid var(--sw-input-border);
   border-radius:16px;
 }
+.basket-summary>span{
+  display:block;
+  color:var(--sw-page-text-soft);
+  font:700 9px var(--sw-font-mono,"DM Mono",monospace);
+  letter-spacing:.12em;
+}
 .basket-summary strong{
   display:inline-block;
-  margin:6px 5px 0 0;
-  font-family:var(--sw-font-heading);
-  font-size:35px;
-  line-height:1;
+  margin:4px 5px 0 0;
+  color:var(--sw-page-text);
+  font:800 35px/1 var(--sw-font-heading);
 }
 .basket-summary small{
   color:var(--sw-page-text-soft);
   font-size:10px;
 }
 .basket-summary a{
-  display:block;
-  margin-top:12px;
+  display:inline-block;
+  width:max-content;
+  margin-top:9px;
   color:var(--sw-purple-700);
   font-size:11px;
   font-weight:700;
+  line-height:1.3;
   text-decoration:none;
 }
+.basket-summary a:hover{text-decoration:underline;text-underline-offset:3px}
 .basket-summary a:hover{text-decoration:underline;text-underline-offset:3px}
 
 .shop-toolbar{
@@ -912,17 +923,23 @@ onUnmounted(() => {
   height:230px;
   display:grid;
   place-items:center;
-  padding:20px;
+  overflow:hidden;
+  padding:14px;
   background:var(--sw-page-background);
   border-bottom:1px solid var(--sw-input-border);
 }
 .product-image img{
-  width:85%;
-  height:85%;
+  display:block;
+  width:auto;
+  height:auto;
+  max-width:92%;
+  max-height:92%;
   object-fit:contain;
+  object-position:center;
+  image-rendering:auto;
   transition:transform .2s ease;
 }
-.product-card:hover .product-image img{transform:scale(1.04)}
+.product-card:hover .product-image img{transform:scale(1.02)}
 .deal-badge,
 .bulk-badge{
   position:absolute;
