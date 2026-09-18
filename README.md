@@ -10,6 +10,7 @@ StockWell is a full-stack e-commerce application built for Stokvels. It allows m
 
 - [Project Overview](#project-overview)
 - [How StockWell Works](#how-stockwell-works)
+- [Checkout and Group Proposal Flow](#checkout-and-group-proposal-flow)
 - [Key Features](#key-features)
 - [Roles](#roles)
 - [Technology Stack](#technology-stack)
@@ -92,6 +93,77 @@ Once a proposal is approved, the authorised Stokvel workflow checks the wallet, 
 ### 6. Orders are fulfilled
 
 Orders can then move through delivery, tracking and order-history functionality.
+
+---
+
+## Checkout and Group Proposal Flow
+
+StockWell separates **shopping** from **spending the shared Stokvel wallet**. A member can build a cart and request a group purchase, but the purchase only moves forward after the Stokvel proposal and approval process.
+
+### Product checkout flow
+
+```text
+Member browses catalogue
+        |
+        v
+Selects a product
+        |
+        v
+Chooses supplier / available price
+        |
+        v
+Adds product to cart
+        |
+        v
+Reviews cart
+        |
+        v
+Continues to group proposal
+        |
+        v
+Creates purchase proposal
+```
+
+At checkout, the member reviews the selected products, quantities, supplier pricing and total before submitting the purchase as a group proposal. The cart therefore becomes the starting point for the Stokvel approval process rather than immediately spending shared funds.
+
+### Adding a group proposal
+
+When a member wants the Stokvel to purchase the items in the cart:
+
+1. The member adds the required products to the cart.
+2. The member reviews quantities, prices and the total.
+3. The member starts the group purchase/proposal process.
+4. StockWell creates a proposal containing the requested purchase details.
+5. The proposal becomes available to the relevant Stokvel members for review and voting.
+
+### Approving a group proposal
+
+```text
+Proposal created
+      |
+      v
+Members review proposal
+      |
+      v
+Members vote
+      |
+      v
+Approval requirements satisfied
+      |
+      v
+Proposal approved
+      |
+      v
+Authorised purchase workflow
+      |
+      +---- Check wallet balance
+      +---- Check stock / order details
+      |
+      v
+Group order can proceed
+```
+
+The proposal process provides a governance step between **adding products to the cart** and **using the shared Stokvel funds**. Once the proposal satisfies the application's approval requirements, the authorised Stokvel workflow can continue with wallet, stock and order checks before the group order is processed.
 
 ---
 
@@ -510,6 +582,16 @@ For integrated application changes:
 5. Confirm mobile/responsive behaviour.
 6. Commit the completed change.
 7. Promote verified work to `main`.
+
+---
+
+## Current Limitations & Future Development
+
+StockWell currently does **not** provide a user-facing function for members to create or add a new Stokvel from the application. The current system operates with the existing Stokvel membership data configured in the database.
+
+A complete **Create Stokvel / Join Stokvel** workflow is planned for **future development**. This could include creating a new Stokvel, setting up its initial details, assigning Stokvel roles, and allowing members to join or be invited through the application.
+
+This limitation does not prevent the existing Stokvel shopping, proposal, voting, wallet, payment, order and administration workflows from operating with the configured Stokvel data.
 
 ---
 
